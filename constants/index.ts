@@ -111,4 +111,11 @@ export const sidebarLinks = [
 
   declare interface getStudentInfoProps {
     userId: string;
-  }
+  };
+
+  declare interface CardProps {
+    title: string;
+    value: string;
+    subtext: string;
+    date: string;
+  };
