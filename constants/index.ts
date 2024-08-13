@@ -14,4 +14,14 @@ export const sidebarLinks = [
       route: "/students",
       label: "Students",
     },
+    {
+      imgURL: "/icons/transaction.svg",
+      route: "/finances",
+      label: "Finances",
+    },
+    {
+      imgURL: "/icons/transaction.svg",
+      route: "/teachers",
+      label: "Teachers",
+    },
   ];
