@@ -1,28 +1,41 @@
+import { Archive, LucideIcon, Home, Users, Landmark, User, Clipboard } from 'lucide-react';
+
 export const sidebarLinks = [
     {
       imgURL: "/icons/home.svg",
       route: "/",
       label: "Home",
+      icon: Home
     },
     {
       imgURL: "/icons/dollar-circle.svg",
       route: "/school-fees",
       label: "School Fees",
+      icon: Archive
     },
     {
       imgURL: "/icons/transaction.svg",
       route: "/students",
       label: "Students",
+      icon: Users
     },
     {
       imgURL: "/icons/transaction.svg",
       route: "/finances",
       label: "Finances",
+      icon: Landmark
     },
     {
       imgURL: "/icons/transaction.svg",
       route: "/teachers",
       label: "Teachers",
+      icon: Clipboard
+    },
+    {
+      imgURL: "/icons/transaction.svg",
+      route: "/users",
+      label: "Users",
+      icon: User
     },
   ];
 
