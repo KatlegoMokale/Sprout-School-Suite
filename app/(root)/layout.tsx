@@ -11,12 +11,13 @@ export default function RootLayout({
 }>) {
 
   return (
-    <main className="flex min-h-screen w-full flex-col bg-muted/40">
+    <main className="flex min-h-screen w-full flex-col">
         <MainNav/>
-        <body className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
+        
+        <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
           <HeaderNav/>
           {children}
-        </body>
+        </div>
         
     </main>
   );
