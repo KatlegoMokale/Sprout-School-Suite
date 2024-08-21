@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button'
 import {Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
-import { Home, Package2, PanelLeft, ShoppingCart, Archive, Users, Landmark, Clipboard, User, Settings, ArchiveIcon, Search} from 'lucide-react'
+import { Home, Package2, PanelLeft, ShoppingCart, Archive, Users, Landmark, Clipboard, User, Settings, ArchiveIcon, Search, CircleUser} from 'lucide-react'
 import React from 'react'
 import Link from 'next/link'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@radix-ui/react-dropdown-menu'
@@ -56,14 +56,16 @@ const HeaderNav = () => {
                 </nav>
               </SheetContent>
               </Sheet>
+              <h1>Dashboard</h1>
               <div className='relative ml-auto flex-1 md:grow-0'>
                 <Search className='absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground' />
                 <Input type='search' placeholder='Search...' className='w-full rounded-lg pl-8 md:w-[240px] lg:w-[336px]' />
               </div>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="icon" className='sm:hidden'>
-                    <Image src="/placeholder-user.jpg" width={36} height={36} alt='Avatar' className='rounded-full' />
+                  <Button variant="outline" size="icon" className=' rounded-full'>
+                    <CircleUser/>
+                    {/* <Image src="/placeholder-user.jpg" width={36} height={36} alt='Avatar' className='rounded-full' /> */}
                     </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align='end'>
