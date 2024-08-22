@@ -68,13 +68,13 @@ const HeaderNav = () => {
                     {/* <Image src="/placeholder-user.jpg" width={36} height={36} alt='Avatar' className='rounded-full' /> */}
                     </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align='end'>
-                      <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                    <DropdownMenuContent align='end' className='bg-white w-36 rounded-md p-1 shadow-md'>
+                      <DropdownMenuLabel className='hover:bg-slate-200 hover:cursor-pointer p-2 rounded-md'>My Account</DropdownMenuLabel>
                       <DropdownMenuSeparator/>
-                      <DropdownMenuLabel>Settings</DropdownMenuLabel>
-                      <DropdownMenuLabel>Support</DropdownMenuLabel>
+                      <DropdownMenuLabel className='hover:bg-slate-200 hover:cursor-pointer px-2 py-1 rounded-md'>Settings</DropdownMenuLabel>
+                      <DropdownMenuLabel className='hover:bg-slate-200 hover:cursor-pointer px-2 py-1 rounded-md'>Support</DropdownMenuLabel>
                       <DropdownMenuSeparator/>
-                      <DropdownMenuLabel>Log Out</DropdownMenuLabel>
+                      <DropdownMenuLabel className='hover:bg-slate-200 hover:cursor-pointer px-2 py-1 rounded-md'>Log Out</DropdownMenuLabel>
                     </DropdownMenuContent>
               </DropdownMenu>
             </header>

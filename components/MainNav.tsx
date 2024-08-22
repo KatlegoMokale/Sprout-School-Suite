@@ -31,14 +31,14 @@ const MainNav = () => {
                     <TooltipProvider key={item.label}>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                      <Link href={item.route} className='flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground 
+                      <Link href={item.route} className='flex hover:bg-blue-400 h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground 
                       transition-colors hover:text-foreground md:h-8 md:w-8 '>
                      <IconComponent 
                         className={cn('h-5 w-5', isActive ? 'text-foreground' : 'text-foreground/60')} />
                       <span className='sr-only'>{item.label}</span>
                     </Link>
                     </TooltipTrigger>
-                    <TooltipContent side='right'>{item.label}</TooltipContent>
+                    <TooltipContent side='right' className='bg-white'>{item.label}</TooltipContent>
                     </Tooltip>
                     </TooltipProvider>
                   )
@@ -55,7 +55,7 @@ const MainNav = () => {
                 <span className='sr-only'>Settings</span>
               </Link>
               </TooltipTrigger>
-              <TooltipContent side='right'>Settings</TooltipContent>
+              <TooltipContent side='right' className='bg-white'>Settings</TooltipContent>
               </Tooltip>
               </TooltipProvider>  
               </nav>
