@@ -18,38 +18,38 @@ const HeaderNav = () => {
                 <span className='sr-only'>Toggle Menu</span>
               </Button>
               </SheetTrigger>
-              <SheetContent side="left" className='sm:max-w-xs'>
-                <nav className='grid gap-6 text-lg font-medium'>
+              <SheetContent side="left" className='sm:max-w-xs bg-white'>
+                <nav className='grid gap-1 text-lg font-medium'>
                   <Link href='#' className='group flex h-10 w-10 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:text-base'>
                 <Package2 className='h-5 w-5 transition-all group-hover:scale-110' />
                 <span className='sr-only'>Acme Inc</span>
                 </Link>
-                <Link href='#' className='flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground'>
+                <Link href='/' className='flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground hover:bg-slate-200 py-2 rounded-md'>
                 <Home className='h-5 w-5' />
                 Home
                 </Link>
     
-                <Link href='#' className='flex items-center gap-4 px-2.5 text-foreground'>
+                <Link href='/school-fees' className='flex items-center gap-4 px-2.5 text-foreground hover:bg-slate-200 py-2 rounded-md'>
                 <Archive className='h-5 w-5' />
                 School Fees
                 </Link>
     
-                <Link href='#' className='flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground'>
+                <Link href='/students' className='flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground hover:bg-slate-200 py-2 rounded-md'>
                 <Users className='h-5 w-5' />
                 Students
                 </Link>
     
-                <Link href='#' className='flex items-center gap-4 px-2.5 text-foreground'>
+                <Link href='/finances' className='flex items-center gap-4 px-2.5 text-foreground hover:bg-slate-200 py-2 rounded-md'>
                 <Landmark className='h-5 w-5' />
                 Finances
                 </Link>
     
-                <Link href='#' className='flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground'>
+                <Link href='/teachers' className='flex items-center gap-4 px-2.5 text-muted-foreground hover:bg-slate-200 py-2 rounded-md'>
                 <Clipboard className='h-5 w-5' />
                 Teachers
                 </Link>
     
-                <Link href='#' className='flex items-center gap-4 px-2.5 text-foreground'>
+                <Link href='/user' className='flex items-center gap-4 px-2.5 text-foreground hover:bg-slate-200 py-2 rounded-md'>
                 <User className='h-5 w-5' />
                 Users
                 </Link>
