@@ -41,7 +41,6 @@ export const sidebarLinks = [
 
   declare type Student = {
     $id: string;
-    userId: string;
     firstName: string;
     SecondName: string;
     Surname: string;
@@ -52,6 +51,10 @@ export const sidebarLinks = [
     dateOfBirth: string;
     gender: string;
     class: string;
+    medicalAidNumber: string;
+    medicalAidScheme: string;
+    homeLanguage: string;
+    allergies: string;
   };
 
   declare type Teacher = {
@@ -82,7 +85,6 @@ export const sidebarLinks = [
     $id: string;
     userId: string;
     firstName: string;
-    SecondName: string;
     Surname: string;
     address1: string;
     city: string;

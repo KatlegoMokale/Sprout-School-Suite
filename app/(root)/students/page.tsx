@@ -7,160 +7,191 @@ import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-
- 
-const formSchema = z.object({
-  username: z.string().min(2, {
-    message: "Username must be at least 2 characters.",
-  }),
-  surname: z.string().min(2, {
-    message: "Surname must be at least 2 characters.",
-  }),
-  dateOfBirth: z.string().min(2, {
-    message: "Please select a date.",
-  }),
-  age: z.string().min(2, {
-    message: "Please enter an age.",
-  }),
-  gender: z.string().min(2, {
-    message: "Please select a gender.",
-  }),
-  address: z.string().min(2, {
-    message: "Please enter an address.",
-  }),
-  phoneNumber: z.string().min(2, {
-    message: "Please enter a phone number.",
-  }),
-  homeLanguage: z.string().min(2, {
-    message: "Please enter a home language.",
-  }),
-  allergies: z.string().min(2, {
-    message: "Please enter allergies.",
-  }),
-  medicalAidNumber: z.string().min(2, {
-    message: "Please enter a medical aid number.",
-  }),
-  medicalAidScheme: z.string().min(2, {
-    message: "Please enter a medical aid scheme.",
-  })
-})
- 
-export function ProfileForm() {
-  // 1. Define your form.
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      username: "",
-      surname: "",
-
-    },
-  })
- 
-  // 2. Define a submit handler.
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    console.log(values)
-  }
-}
+import CustomInput from '@/components/ui/CustomInput'
+import { newParentFormSchema, newStudentFormSchema } from '@/lib/utils'
 
 const Students = () => {
-  const form = useForm()
+
+  const studentFormSchema = newStudentFormSchema();
+  const form = useForm<z.infer<typeof studentFormSchema>>({
+    resolver: zodResolver(studentFormSchema),
+    defaultValues: {
+      firstName:"",
+      secondName: "",
+      surname: "",
+      dateOfBirth: "",
+      age: "",
+      gender: "",
+      address1: "",
+      city: "",
+      province: "",
+      homeLanguage:"",
+      allergies: "",
+      medicalAidScheme: "",
+      medicalAidNumber: "",
+      class: "",
+      p1_firstName: "",
+      p1_surname: "",
+      p1_address1: "",
+      p1_city: "",
+      p1_province: "",
+      p1_postalCode: "",
+      p1_dateOfBirth: "",
+      p1_gender: "",
+      p1_idNumber : "",
+      p1_occupation: "",
+      p1_phoneNumber: "",
+      p1_email: "",
+      p1_workNumber: "",
+    
+      p2_firstName: "",
+      p2_surname: "",
+      p2_address1: "",
+      p2_city: "",
+      p2_province: "",
+      p2_postalCode: "",
+      p2_dateOfBirth: "",
+      p2_gender: "",
+      p2_idNumber : "",
+      p2_occupation: "",
+      p2_phoneNumber: "",
+      p2_email: "",
+      p2_workNumber: "",
+    },
+  });
+
+  const onSubmit = (values: z.infer<typeof studentFormSchema>) => {
+    console.log(values);
+  }
+
+
+  // const form = useForm()
   return (
     <div className='flex flex-col gap-4'>
-        <div className='flex grid-cols-2 gap-4 container bg-slate-50 rounded-lg p-5'>
+        <div className='grid grid-cols-2 gap-6 container bg-slate-50 rounded-lg p-5'>
             {/* ChildInformation//////////////////////////////////////////////////// */}
-            <div className='flex flex-col col-span-1 p-4'>
-               <h1>Child Information</h1>
+            <div className='flex flex-col col-span-1 p-6'>
+               <h1 className=''>Child Information</h1>
+
+               <div className='p-4 bg-slate-100 rounded-lg'>
                <div className=' col-span-1'>
                <Form {...form}>
-                <FormField 
+                <div className='grid grid-cols-2 gap-5'>
+                <div className='cols-span-1'>
+                <CustomInput 
+                name="firstName"
+                placeholder="Enter Child Name"
+                control={form.control} 
+                label={'Name'}/>
+                </div>
+
+                <div>
+                  <CustomInput
+                  name="secondName"
+                  placeholder="Enter Child Second Name"
+                  control={form.control}
+                  label={'Second Name'}
+                  />
+                </div>
+
+                <div className='col-span-1'>
+                <CustomInput
+                name="surname"
+                placeholder="Enter Child Surname"
                 control={form.control}
-                name="Childnfo"
-                render={({field}) => (
-                    <FormItem className='grid grid-cols-2 gap-4'>
-                        <div className='cols-span-1 pt-2'>
-                        <FormLabel>Name</FormLabel>
-                        <FormControl>
-                            <Input placeholder='Enter Child Name' {...field} />
-                        </FormControl>
-                       </div>
-                       <div className='col-span-1'>
-                        <FormLabel>Surname</FormLabel>
-                        <FormControl>
-                            <Input placeholder='Enter Child Surname' {...field} />
-                        </FormControl>
-                        </div>
-                        <div className='cols-span-1'>
-                        <FormLabel>Date Of Birth</FormLabel>
-                        <FormControl>
-                            <Input type='date' placeholder='Enter Date of Birth' {...field} />
-                        </FormControl>
-                       </div>
-                       <div className='col-span-1'>
-                        <FormLabel>Age</FormLabel>
-                        <FormControl>
-                            <Input placeholder='Enter Age' {...field} />
-                        </FormControl>
-                        </div>
-                        <div className='cols-span-1'>
-                        <FormLabel>Address</FormLabel>
-                        <FormControl>
-                            <Input placeholder='Enter the address' {...field} />
-                        </FormControl>
-                       </div>
-                       <div className='col-span-1'>
-                        <FormLabel>Phone Number</FormLabel>
-                        <FormControl>
-                            <Input placeholder='Enter the Phone Number' {...field} />
-                        </FormControl>
-                        </div>
-                        <div className='cols-span-1'>
-                        <FormLabel>Home Language</FormLabel>
-                        <FormControl>
-                            <Input placeholder='Enter Home Language' {...field} />
-                        </FormControl>
-                       </div>
-                       <div className='col-span-1'>
-                        <FormLabel>Allergies</FormLabel>
-                        <FormControl>
-                            <Input placeholder='Enter Allergies' {...field} />
-                        </FormControl>
-                        </div>
-                        <div className='cols-span-1'>
-                        <FormLabel>Nationality</FormLabel>
-                        <FormControl>
-                            <Input placeholder='Enter Nationality' {...field} />
-                        </FormControl>
-                       </div>
-                       <div></div>
-                       <div className='col-span-1'>
-                       <FormLabel>Medical Aid/MemberNo</FormLabel>
-                        <FormControl>
-                            <Input placeholder='Enter Nationality' {...field} />
-                        </FormControl>
-
-                        </div>
-                        <div>
-                        <FormLabel>Medical Aid Scheme</FormLabel>
-                        <FormControl>
-                            <Input placeholder='Enter Nationality' {...field} />
-                        </FormControl>
-                        </div>
-                        <div className='pb-5 col-span-2'></div>
-                       
-                       <Button className=' bg-slate-200 w-min'>Close</Button>
-                       
-
-                    </FormItem>
-                    
-                )}
+                label={'Surname'}
                 />
+                </div>
+
+                <div className='cols-span-1'>
+                <CustomInput
+                name="dateOfBirth"
+                placeholder="Enter Child Date of Birth"
+                control={form.control}
+                label={'Date of Birth'}
+                type='date'
+                />
+                </div>
+
+                <div className='col-span-1'>
+                <CustomInput
+                name="age"
+                placeholder="Enter Child Age"
+                control={form.control}
+                label={'Age'}
+                />    
+                </div>
+
+                <div className='col-span-1'>
+                <CustomInput
+                name="gender"
+                placeholder="Enter Child Gender"
+                control={form.control}
+                label={'Gender'}
+                />
+                </div>
+
+                <div className='cols-span-1'>
+                <CustomInput
+                name="address1"
+                placeholder="Enter Child Address"
+                control={form.control}
+                label={'Address'}
+                />
+                </div>
+
+                <div className='col-span-1'>
+                <CustomInput
+                name="city"
+                placeholder="Enter City"
+                control={form.control}
+                label={'City'}
+                />
+                </div>
+                <div className='col-span-1'>
+                <CustomInput
+                name="homeLanguage"
+                placeholder="Home Language"
+                control={form.control}
+                label={'Home Language'}
+                />
+                </div>
+                <div className='col-span-1'>
+                <CustomInput
+                name="allergies"
+                placeholder="Allergies"
+                control={form.control}
+                label={'Allergies'}
+                />
+                </div>
+
+                <div className='col-span-1'>
+                <CustomInput
+                name="medicalAidNumber"
+                placeholder="Medical Aid Number"
+                control={form.control}
+                label={'Medical Aid Number'}
+                />
+                </div>
+
+                <div className='col-span-1'>
+                <CustomInput
+                name="medicalAidScheme"
+                placeholder="Medical Aid Scheme"
+                control={form.control}
+                label={'Medical Aid Scheme'}
+                />
+                
+                </div>
+
+                </div>
+                  <Button type="submit">Submit</Button>
                </Form>
+               </div>
                </div>
             </div>
             {/* ParentInformation//////////////////////////////////////////////////// */}
-            <div className='flex flex-col col-span-1 p-4 rounded-lg bg-white shadow-lg'>
+            <div className='flex flex-col col-span-1 p-6 rounded-lg bg-white shadow-lg'>
                <h1>Parent Information</h1>
                <Tabs defaultValue="parent" className='w-full'>
                 <TabsList>
@@ -169,153 +200,181 @@ const Students = () => {
                 </TabsList>
                 <TabsContent value="guardian1">
                   <Form {...form}>
-                    <FormField
-                    control={form.control}
-                    name="Childnfo"
-                    render={({field}) => (
-                        <FormItem className='grid grid-cols-2 gap-3'>
-                          <div className=' col-span-2 pt-2 w-full'>
-                            <FormLabel>Relationship</FormLabel>
-                            <FormControl>
-                                <Input placeholder='Select Relationship' {...field} />
-                            </FormControl>
-                           </div>
-                            <div className='cols-span-1'>
-                            <FormLabel>Name</FormLabel>
-                            <FormControl>
-                                <Input placeholder='Enter Name' {...field} />
-                            </FormControl>
-                           </div>
-                           <div className='cols-span-1'>
-                            <FormLabel>Surname</FormLabel>
-                            <FormControl>
-                                <Input placeholder='Enter Surname' {...field} />
-                            </FormControl>
-                           </div>
-                           <div className='cols-span-1'>
-                            <FormLabel>Id Number</FormLabel>
-                            <FormControl>
-                                <Input placeholder='Enter ID Number' {...field} />
-                            </FormControl>
-                           </div>
-                           <div className='cols-span-1'>
-                            <FormLabel>Cell Number</FormLabel>
-                            <FormControl>
-                                <Input placeholder='Enter Cell number' {...field} />
-                            </FormControl>
-                           </div>
-                           <div className='cols-span-1'>
-                            <FormLabel>Email</FormLabel>
-                            <FormControl>
-                                <Input placeholder='Enter Email' {...field} />
-                            </FormControl>
-                           </div>
-                           <div></div>
-                           <div className='w-full col-span-2'>
-                            <FormLabel>Address</FormLabel>
-                            <FormControl>
-                                <Input placeholder='Enter Address' {...field} />
-                            </FormControl>
-                           </div>
-                           <div className='cols-span-1'>
-                            <FormLabel>Employer</FormLabel>
-                            <FormControl>
-                                <Input placeholder='Enter Employer' {...field} />
-                            </FormControl>
-                           </div>
-                           <div className='cols-span-1'>
-                            <FormLabel>Occupation</FormLabel>
-                            <FormControl>
-                                <Input placeholder='Enter Occupation' {...field} />
-                            </FormControl>
-                           </div>
-                           <div className='cols-span-1'>
-                            <FormLabel>Work No</FormLabel>
-                            <FormControl>
-                                <Input placeholder='Enter Work No' {...field} />
-                            </FormControl>
-                           </div>
-                           
-                           
-                           </FormItem>
-                    )}
-                    />
+                    <div className='grid grid-cols-2 gap-3'>
+                      <div className=' col-span-2 pt-2 w-full'>
+                            <CustomInput
+                            name="p1_relationship"
+                            placeholder="Enter Relationship"
+                            control={form.control}
+                            label={'Relationship'}
+                            />
+                      </div>
+                      <div className='cols-span-1'>
+                        <CustomInput
+                        name="p1_firstName"
+                        placeholder="Enter Name"
+                        control={form.control}
+                        label={'Name'}
+                        />
+                      </div>
+                      <div className='cols-span-1'>
+                        <CustomInput
+                        name="p1_surname"
+                        placeholder="Enter Surname"
+                        control={form.control}
+                        label={'Surname'}
+                        />
+                      </div>
+                      <div className='cols-span-1'>
+                        <CustomInput
+                        name="p1_email"
+                        placeholder="Enter Email"
+                        control={form.control}
+                        label={'Email'}
+                        type='email'
+                        />
+                      </div>
+                      <div className='cols-span-1'>
+                        <CustomInput
+                        name="p1_phoneNumber"
+                        placeholder="Enter Phone Number"
+                        control={form.control}
+                        label={'Phone Number'}
+                        />
+                      </div>
+                      <div className='cols-span-1'>
+                        <CustomInput
+                        name="p1_occupation"
+                        placeholder="Enter Employer"
+                        control={form.control}
+                        label={'Employer'}
+                        />
+                      </div>
+                      <div className='cols-span-1'>
+                        <CustomInput
+                        name="p1_idNumber"
+                        placeholder="Enter ID Number"
+                        control={form.control}
+                        label={'ID Number'}
+                        />
+                      </div>
+                      <div></div>
+                        <div className='w-full col-span-2'>
+                        <CustomInput
+                        name="p1_address1"
+                        placeholder="Enter Address"
+                        control={form.control}
+                        label={'Address'}
+                        />
+                      </div>
+                      <div className='cols-span-1'>
+                        <CustomInput
+                        name="p1_occupation"
+                        placeholder="Enter Employer Name"
+                        control={form.control}
+                        label={'Employer'}
+                        />
+                      </div>
+                      <div className='cols-span-1'>
+                        <CustomInput
+                        name="p1_workNumber"
+                        placeholder="Enter Employer Phone Number"
+                        control={form.control}
+                        label={'Employer Phone Number'}
+                        />
+                      </div>
+
+                    </div>
                   </Form>
 
                 </TabsContent>
                 <TabsContent value="guardian2">
                 <Form {...form}>
-                    <FormField
-                    control={form.control}
-                    name="Childnfo"
-                    render={({field}) => (
-                        <FormItem className='grid grid-cols-2 gap-3'>
-                          <div className=' col-span-2 pt-2 w-full'>
-                            <FormLabel>Relationship</FormLabel>
-                            <FormControl>
-                                <Input placeholder='Select Relationship' {...field} />
-                            </FormControl>
-                           </div>
-                            <div className='cols-span-1'>
-                            <FormLabel>Name</FormLabel>
-                            <FormControl>
-                                <Input placeholder='Enter Name' {...field} />
-                            </FormControl>
-                           </div>
-                           <div className='cols-span-1'>
-                            <FormLabel>Surname</FormLabel>
-                            <FormControl>
-                                <Input placeholder='Enter Surname' {...field} />
-                            </FormControl>
-                           </div>
-                           <div className='cols-span-1'>
-                            <FormLabel>Id Number</FormLabel>
-                            <FormControl>
-                                <Input placeholder='Enter ID Number' {...field} />
-                            </FormControl>
-                           </div>
-                           <div className='cols-span-1'>
-                            <FormLabel>Cell Number</FormLabel>
-                            <FormControl>
-                                <Input placeholder='Enter Cell number' {...field} />
-                            </FormControl>
-                           </div>
-                           <div className='cols-span-1'>
-                            <FormLabel>Email</FormLabel>
-                            <FormControl>
-                                <Input placeholder='Enter Email' {...field} />
-                            </FormControl>
-                           </div>
-                           <div></div>
-                           <div className='w-full col-span-2'>
-                            <FormLabel>Address</FormLabel>
-                            <FormControl>
-                                <Input placeholder='Enter Address' {...field} />
-                            </FormControl>
-                           </div>
-                           <div className='cols-span-1'>
-                            <FormLabel>Employer</FormLabel>
-                            <FormControl>
-                                <Input placeholder='Enter Employer' {...field} />
-                            </FormControl>
-                           </div>
-                           <div className='cols-span-1'>
-                            <FormLabel>Occupation</FormLabel>
-                            <FormControl>
-                                <Input placeholder='Enter Occupation' {...field} />
-                            </FormControl>
-                           </div>
-                           <div className='cols-span-1'>
-                            <FormLabel>Work No</FormLabel>
-                            <FormControl>
-                                <Input placeholder='Enter Work No' {...field} />
-                            </FormControl>
-                           </div>
-                           
-                           
-                           </FormItem>
-                    )}
-                    />
+                    <div className='grid grid-cols-2 gap-3'>
+                      <div className=' col-span-2 pt-2 w-full'>
+                            <CustomInput
+                            name="p2_relationship"
+                            placeholder="Enter Relationship"
+                            control={form.control}
+                            label={'Relationship'}
+                            />
+                      </div>
+                      <div className='cols-span-1'>
+                        <CustomInput
+                        name="p2_firstName"
+                        placeholder="Enter Name"
+                        control={form.control}
+                        label={'Name'}
+                        />
+                      </div>
+                      <div className='cols-span-1'>
+                        <CustomInput
+                        name="p2_surname"
+                        placeholder="Enter Surname"
+                        control={form.control}
+                        label={'Surname'}
+                        />
+                      </div>
+                      <div className='cols-span-1'>
+                        <CustomInput
+                        name="p2_email"
+                        placeholder="Enter Email"
+                        control={form.control}
+                        label={'Email'}
+                        type='email'
+                        />
+                      </div>
+                      <div className='cols-span-1'>
+                        <CustomInput
+                        name="p2_phoneNumber"
+                        placeholder="Enter Phone Number"
+                        control={form.control}
+                        label={'Phone Number'}
+                        />
+                      </div>
+                      <div className='cols-span-1'>
+                        <CustomInput
+                        name="p2_occupation"
+                        placeholder="Enter Employer"
+                        control={form.control}
+                        label={'Employer'}
+                        />
+                      </div>
+                      <div className='cols-span-1'>
+                        <CustomInput
+                        name="p2_idNumber"
+                        placeholder="Enter ID Number"
+                        control={form.control}
+                        label={'ID Number'}
+                        />
+                      </div>
+                      <div></div>
+                        <div className='w-full col-span-2'>
+                        <CustomInput
+                        name="p2_address1"
+                        placeholder="Enter Address"
+                        control={form.control}
+                        label={'Address'}
+                        />
+                      </div>
+                      <div className='cols-span-1'>
+                        <CustomInput
+                        name="p2_occupation"
+                        placeholder="Enter Employer Name"
+                        control={form.control}
+                        label={'Employer'}
+                        />
+                      </div>
+                      <div className='cols-span-1'>
+                        <CustomInput
+                        name="p2_workNumber"
+                        placeholder="Enter Employer Phone Number"
+                        control={form.control}
+                        label={'Employer Phone Number'}
+                        />
+                      </div>
+
+                    </div>
                   </Form>
                 </TabsContent>
                 </Tabs>

@@ -4,19 +4,20 @@ import { Input } from "@/components/ui/input"
 
 import { Control, FieldPath } from 'react-hook-form'
 import {z} from 'zod'
-import { authFormSchema } from '@/lib/utils'
+import { newStudentFormSchema } from '@/lib/utils'
 
-const formSchema = authFormSchema('sign-up');
+const formSchema = newStudentFormSchema();
 
 interface CustomInput{
     control: Control<z.infer<typeof formSchema>>,
     name: FieldPath<z.infer<typeof formSchema>>,
     label: string,
     placeholder: string
+    type?: string
 
 }
 
-const CustomInput = ({control, placeholder, name, label}: CustomInput) => {
+const CustomInput = ({control, placeholder, name, label, type}: CustomInput) => {
   return (
     <FormField
                 control={control}
@@ -31,8 +32,8 @@ const CustomInput = ({control, placeholder, name, label}: CustomInput) => {
                         <Input 
                         className='input-class' 
                         placeholder={placeholder}
-                        type={name==='password' ? 'password' : 'text'}
-                        {...field}/>
+                        type={type!==null ? type : "text"}
+                        />
                       </FormControl>
                       <FormMessage
                       className='form-message mt-2'/>
