@@ -44,6 +44,7 @@ const Students = () => {
       p1_email: "",
       p1_workNumber: "",
     
+      p2_relationship: "",
       p2_firstName: "",
       p2_surname: "",
       p2_address1: "",
@@ -124,11 +125,16 @@ const Students = () => {
 
                 <div className='col-span-1'>
                 <CustomInput
-                name="gender"
-                placeholder="Enter Child Gender"
-                control={form.control}
-                label={'Gender'}
-                />
+                            name="gender"
+                            placeholder="Select Gender"
+                            control={form.control}
+                            label={'Gender'}
+                            select={true}
+                            options={[
+                              { label: "Male", value: 'Male' },
+                              { label: "Female", value: 'Female' }
+                            ]}
+                            />
                 </div>
 
                 <div className='cols-span-1'>
@@ -194,19 +200,26 @@ const Students = () => {
             <div className='flex flex-col col-span-1 p-6 rounded-lg bg-white shadow-lg'>
                <h1>Parent Information</h1>
                <Tabs defaultValue="parent" className='w-full'>
-                <TabsList>
+                <TabsList className=' grid w-full grid-cols-2 bg-orange-100'>
                   <TabsTrigger value="guardian1">Guardian 1</TabsTrigger>
                   <TabsTrigger value="guardian2">Guardian 2</TabsTrigger>
                 </TabsList>
                 <TabsContent value="guardian1">
                   <Form {...form}>
                     <div className='grid grid-cols-2 gap-3'>
-                      <div className=' col-span-2 pt-2 w-full'>
+                    <div className=' col-span-2 pt-2 w-full'>
                             <CustomInput
                             name="p1_relationship"
                             placeholder="Enter Relationship"
                             control={form.control}
                             label={'Relationship'}
+                            select={true}
+                            options={[
+                              { label: "Mother", value: 'Mother' },
+                              { label: "Father", value: 'Father' },
+                              { label: "Grand Mother", value: 'Grand Mother' },
+                              { label: "Grand Father", value: 'Grand Father' },
+                            ]}
                             />
                       </div>
                       <div className='cols-span-1'>
@@ -297,6 +310,13 @@ const Students = () => {
                             placeholder="Enter Relationship"
                             control={form.control}
                             label={'Relationship'}
+                            select={true}
+                            options={[
+                              { label: "Mother", value: 'Mother' },
+                              { label: "Father", value: 'Father' },
+                              { label: "Grand Mother", value: 'Grand Mother' },
+                              { label: "Grand Father", value: 'Grand Father' },
+                            ]}
                             />
                       </div>
                       <div className='cols-span-1'>
