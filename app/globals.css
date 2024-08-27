@@ -8,6 +8,14 @@
   box-sizing: border-box;
 }
 
+h1{
+  font-size: 20px;
+  font-weight: 600;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  color:#9b806e
+}
+
 /* Hide scrollbar for Chrome, Safari and Opera */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
@@ -45,7 +53,7 @@
 
 @layer utilities {
   .input-class {
-    @apply text-16 placeholder:text-16 rounded-lg border border-gray-300 text-gray-900 placeholder:text-gray-500;
+    @apply text-16 placeholder:text-16 rounded-lg border border-orange-200 text-gray-600 placeholder:text-gray-400;
   }
 
   .sheet-content button {

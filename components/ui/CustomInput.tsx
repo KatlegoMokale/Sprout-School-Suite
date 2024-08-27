@@ -15,6 +15,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+
+
+import dynamic from "next/dynamic";
+
+const SearchAddress = dynamic(() => import("@/components/ui/search-address"), {
+  ssr: false,
+});
+
+
 const formSchema = newStudentFormSchema();
 
 interface CustomInput{
@@ -38,33 +47,37 @@ const CustomInput = ({control, placeholder, name, label, type, options, select }
                 name={name}
                 render={({ field }) => (
                  <div className='form-item'>
-                    <FormLabel className='form-label'>
+                    <FormLabel className=' text-md w-full max-w-[280px] font-semibold text-gray-600 '>
                       {label}
                     </FormLabel>
                     <div className='flex w-full flex-col'>
                      
                         {
-                          select === true ?
-                          <Select onValueChange={field.onChange} defaultValue={label}>
-                            <FormControl className=' p-2'>
-                              <SelectTrigger className='w-[180px]'>
-                                 <SelectValue className='bg-slate-200' placeholder={placeholder} />
+                          select === true && options ?
+                          <Select onValueChange={field.onChange}>
+                            <FormControl className=' p-2 bg-white'>
+                              <SelectTrigger className=' bg-white w-[180px] '>
+                                 <SelectValue className='bg-white' placeholder={placeholder} />
                               </SelectTrigger>
                             </FormControl>
-                            <SelectContent className=' bg-slate-200 gap-2 rounded-lg'>
+                            <SelectContent className=' bg-white gap-2 rounded-lg'>
                             {
-                              options?.map((option) => (
-                                <SelectItem className=' hover:bg-slate-400 rounded-lg hover:animate-in p-2 cursor-pointer' key={option.value} value={option.value}>{option.label}</SelectItem>
+                              options.map((option) => (
+                                <SelectItem className=' hover:bg-orange-200 text-14 font-semibold rounded-lg hover:animate-in p-2 cursor-pointer' key={option.value} value={option.value}>{option.label}</SelectItem>
                               ))
                             }
                             </SelectContent>
                           </Select>
+                          : type === 'search' ?
+                         <div >
+                           <SearchAddress onSelectLocation={(location) => console.log(location)} />
+                         </div>
                           :
                           <FormControl>
                           <Input 
                         className='input-class' 
                         placeholder={placeholder}
-                        type={type!==null ? type : "text"}
+                        type={type !== undefined ? type : "text"}
                         />
                          </FormControl>
                       

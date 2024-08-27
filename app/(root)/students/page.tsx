@@ -10,6 +10,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import CustomInput from '@/components/ui/CustomInput'
 import { newParentFormSchema, newStudentFormSchema } from '@/lib/utils'
 
+import dynamic from "next/dynamic";
+
+const SearchAddress = dynamic(() => import("@/components/ui/search-address"), {
+  ssr: false,
+});
+
 const Students = () => {
 
   const studentFormSchema = newStudentFormSchema();
@@ -69,12 +75,12 @@ const Students = () => {
   // const form = useForm()
   return (
     <div className='flex flex-col gap-4'>
-        <div className='grid grid-cols-2 gap-6 container bg-slate-50 rounded-lg p-5'>
+        <div className='grid grid-cols-2 gap-6 container bg-orange-50 rounded-lg p-5'>
             {/* ChildInformation//////////////////////////////////////////////////// */}
             <div className='flex flex-col col-span-1 p-6'>
                <h1 className=''>Child Information</h1>
 
-               <div className='p-4 bg-slate-100 rounded-lg'>
+               <div className='p-4 bg-orange-100 rounded-lg'>
                <div className=' col-span-1'>
                <Form {...form}>
                 <div className='grid grid-cols-2 gap-5'>
@@ -143,6 +149,7 @@ const Students = () => {
                 placeholder="Enter Child Address"
                 control={form.control}
                 label={'Address'}
+                type='search'
                 />
                 </div>
 
@@ -199,8 +206,8 @@ const Students = () => {
             {/* ParentInformation//////////////////////////////////////////////////// */}
             <div className='flex flex-col col-span-1 p-6 rounded-lg bg-white shadow-lg'>
                <h1>Parent Information</h1>
-               <Tabs defaultValue="parent" className='w-full'>
-                <TabsList className=' grid w-full grid-cols-2 bg-orange-100'>
+               <Tabs defaultValue="guardian1" className='w-full'>
+                <TabsList className='grid w-full grid-cols-2 bg-orange-100' >
                   <TabsTrigger value="guardian1">Guardian 1</TabsTrigger>
                   <TabsTrigger value="guardian2">Guardian 2</TabsTrigger>
                 </TabsList>
@@ -210,7 +217,7 @@ const Students = () => {
                     <div className=' col-span-2 pt-2 w-full'>
                             <CustomInput
                             name="p1_relationship"
-                            placeholder="Enter Relationship"
+                            placeholder="Select Relationship"
                             control={form.control}
                             label={'Relationship'}
                             select={true}
@@ -273,11 +280,13 @@ const Students = () => {
                       </div>
                       <div></div>
                         <div className='w-full col-span-2'>
+                        {/* <SearchAddress onSelectLocation={(location) => console.log(location)} /> */}
                         <CustomInput
                         name="p1_address1"
                         placeholder="Enter Address"
                         control={form.control}
                         label={'Address'}
+                        type='search'
                         />
                       </div>
                       <div className='cols-span-1'>
@@ -307,7 +316,7 @@ const Students = () => {
                       <div className=' col-span-2 pt-2 w-full'>
                             <CustomInput
                             name="p2_relationship"
-                            placeholder="Enter Relationship"
+                            placeholder="Select Relationship"
                             control={form.control}
                             label={'Relationship'}
                             select={true}
@@ -375,6 +384,7 @@ const Students = () => {
                         placeholder="Enter Address"
                         control={form.control}
                         label={'Address'}
+                        type='search'
                         />
                       </div>
                       <div className='cols-span-1'>
