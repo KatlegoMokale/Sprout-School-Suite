@@ -56,8 +56,10 @@ const CustomInput = ({control, placeholder, name, label, type, options, select }
                           select === true && options ?
                           <Select onValueChange={field.onChange}>
                             <FormControl className=' p-2 bg-white'>
-                              <SelectTrigger className=' bg-white w-[180px] '>
-                                 <SelectValue className='bg-white' placeholder={placeholder} />
+                              <SelectTrigger className=' bg-white w-[180px] ' >
+                                 <SelectValue className='bg-white' defaultValue={field.value !== "" ? field.value : placeholder} placeholder={placeholder} >
+                                    {field.value}
+                                 </SelectValue>
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent className=' bg-white gap-2 rounded-lg'>
@@ -78,6 +80,8 @@ const CustomInput = ({control, placeholder, name, label, type, options, select }
                         className='input-class' 
                         placeholder={placeholder}
                         type={type !== undefined ? type : "text"}
+                        onChange={(e) => field.onChange(e.target.value)}
+                        value={field.value !== undefined ? field.value : ""}
                         />
                          </FormControl>
                       

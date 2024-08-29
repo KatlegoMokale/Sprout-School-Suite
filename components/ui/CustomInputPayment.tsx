@@ -81,6 +81,7 @@ const CustomInputPayment = ({control, placeholder, name, label, type, options, s
                         placeholder={placeholder}
                         type={type !== undefined ? type : "text"}
                         value={value!== undefined ? value : field.value}
+                        // onChange={(e) => field.onChange(e.target.value)}
                         // disabled={value !== undefined ? true : false}
                         />
                          </FormControl>

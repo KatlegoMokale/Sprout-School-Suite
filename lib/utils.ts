@@ -36,7 +36,7 @@ export const newStudentFormSchema = () => z.object({
   //new student form
 
   firstName: z.string().min(3),
-  secondName: z.string().min(3),
+  secondName: z.string().optional(),
   surname: z.string().min(3),
   address1: z.string().min(3).max(100),
   city: z.string().min(3).max(50),
@@ -66,22 +66,21 @@ export const newStudentFormSchema = () => z.object({
   p1_phoneNumber: z.string().min(10).max(10),
   p1_email: z.string().email().optional(),
   p1_workNumber: z.string().optional(),
-
-  p2_relationship: z.string().min(3),
-  p2_firstName: z.string().min(3),
-  p2_surname: z.string().min(3),
-  p2_address1: z.string().min(3).max(100),
-  p2_city: z.string().min(3).max(50),
-  p2_province: z.string().min(3).max(20),
-  p2_postalCode: z.string().min(3).max(6),
-  p2_dateOfBirth: z.string().min(3),
-  p2_gender: z.string().min(3),
-  p2_idNumber : z.string().min(13).max(13),
+ 
+  p2_relationship: z.string().optional(),
+  p2_firstName: z.string().optional(),
+  p2_surname: z.string().optional(),
+  p2_address1: z.string().optional(),
+  p2_city: z.string().optional(),
+  p2_province: z.string().optional(),
+  p2_postalCode: z.string().optional(),
+  p2_dateOfBirth: z.string().optional(),
+  p2_gender: z.string().optional(),
+  p2_idNumber : z.string().optional(),
   p2_occupation: z.string().optional(),
-  p2_phoneNumber: z.string().min(10).max(10),
+  p2_phoneNumber: z.string().optional(),
   p2_email: z.string().email().optional(),
   p2_workNumber: z.string().optional(),
-
 
 
 });
