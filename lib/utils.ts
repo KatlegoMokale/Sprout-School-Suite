@@ -76,7 +76,7 @@ export const newStudentFormSchema = () => z.object({
   p2_postalCode: z.string().optional(),
   p2_dateOfBirth: z.string().optional(),
   p2_gender: z.string().optional(),
-  p2_idNumber : z.string().optional(),
+  p2_idNumber: z.string().optional(),
   p2_occupation: z.string().optional(),
   p2_phoneNumber: z.string().optional(),
   p2_email: z.string().email().optional(),
