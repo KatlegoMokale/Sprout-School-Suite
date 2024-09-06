@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Badge, Car, Table } from 'lucide-react'
+import { TableBody, TableCell, TableHead, TableHeader, TableRow,Table } from '@/components/ui/table'
+import { Badge, Car } from 'lucide-react'
 import React from 'react'
 
 const Finances = () => {
@@ -82,19 +82,19 @@ const Finances = () => {
             <Table>
                       <TableHeader>
                         <TableRow>
-                            <TableHead>
+                          <TableHead className="">
                             Customer
                             </TableHead>
-                          <TableHead>
+                          <TableHead className="">
                             Type
                           </TableHead>
-                          <TableHead>
+                          <TableHead className="">
                             Status
                           </TableHead>
-                          <TableHead>
+                          <TableHead className="">
                             Date
                           </TableHead>
-                          <TableHead>
+                          <TableHead className="">
                             Amount
                           </TableHead>
                         </TableRow>
