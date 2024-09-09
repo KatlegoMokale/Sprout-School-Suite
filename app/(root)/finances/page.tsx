@@ -83,13 +83,10 @@ const Finances = () => {
                       <TableHeader>
                         <TableRow>
                           <TableHead className="">
-                            Customer
+                            Student
                             </TableHead>
                           <TableHead className="">
                             Type
-                          </TableHead>
-                          <TableHead className="">
-                            Status
                           </TableHead>
                           <TableHead className="">
                             Date
@@ -102,24 +99,159 @@ const Finances = () => {
                       <TableBody>
                         <TableRow>
                           <TableCell>
-                             <div className="">Olivia Smith</div>
-                            <div className="">
-                              olivia@example.com
-                            </div>
+                             <div className="">Thando Mokoena</div>
                           </TableCell>
                           <TableCell>
-                            Refund
-                          </TableCell>
-                          <TableCell>
-                            Declined
+                            EFT
                           </TableCell>
                           <TableCell>
                           2023-06-24
                           </TableCell>
                           <TableCell>
-                            $1,256.00
+                            R1,250.00
                           </TableCell>
                         </TableRow>
+                        <TableRow>
+                          <TableCell>
+                             <div className="">Boitumelo Modise</div>
+                          </TableCell>
+                          <TableCell>
+                            Card
+                          </TableCell>
+                          <TableCell>
+                          2023-06-29
+                          </TableCell>
+                          <TableCell>
+                            R1,200.00
+                          </TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell>
+                             <div className="">Boitumelo Modise</div>
+                          </TableCell>
+                          <TableCell>
+                            Card
+                          </TableCell>
+                          <TableCell>
+                          2023-06-29
+                          </TableCell>
+                          <TableCell>
+                            R1,200.00
+                          </TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell>
+                             <div className="">Boitumelo Modise</div>
+                          </TableCell>
+                          <TableCell>
+                            Card
+                          </TableCell>
+                          <TableCell>
+                          2023-06-29
+                          </TableCell>
+                          <TableCell>
+                            R1,200.00
+                          </TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell>
+                             <div className="">Boitumelo Modise</div>
+                          </TableCell>
+                          <TableCell>
+                            Card
+                          </TableCell>
+                          <TableCell>
+                          2023-06-29
+                          </TableCell>
+                          <TableCell>
+                            R1,200.00
+                          </TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell>
+                             <div className="">Boitumelo Modise</div>
+                          </TableCell>
+                          <TableCell>
+                            Card
+                          </TableCell>
+                          <TableCell>
+                          2023-06-29
+                          </TableCell>
+                          <TableCell>
+                            R1,200.00
+                          </TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell>
+                             <div className="">Boitumelo Modise</div>
+                          </TableCell>
+                          <TableCell>
+                            Card
+                          </TableCell>
+                          <TableCell>
+                          2023-06-29
+                          </TableCell>
+                          <TableCell>
+                            R1,200.00
+                          </TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell>
+                             <div className="">Boitumelo Modise</div>
+                          </TableCell>
+                          <TableCell>
+                            Card
+                          </TableCell>
+                          <TableCell>
+                          2023-06-29
+                          </TableCell>
+                          <TableCell>
+                            R1,200.00
+                          </TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell>
+                             <div className="">Boitumelo Modise</div>
+                          </TableCell>
+                          <TableCell>
+                            Card
+                          </TableCell>
+                          <TableCell>
+                          2023-06-29
+                          </TableCell>
+                          <TableCell>
+                            R1,200.00
+                          </TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell>
+                             <div className="">Boitumelo Modise</div>
+                          </TableCell>
+                          <TableCell>
+                            Card
+                          </TableCell>
+                          <TableCell>
+                          2023-06-29
+                          </TableCell>
+                          <TableCell>
+                            R1,200.00
+                          </TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell>
+                             <div className="">Boitumelo Modise</div>
+                          </TableCell>
+                          <TableCell>
+                            Card
+                          </TableCell>
+                          <TableCell>
+                          2023-06-29
+                          </TableCell>
+                          <TableCell>
+                            R1,200.00
+                          </TableCell>
+                        </TableRow>
+                      
                       </TableBody>
             </Table>
             </CardContent>
