@@ -1,4 +1,5 @@
 import FeesTableOverview from '@/components/ui/FeesTableOverview';
+import StudentTable from '@/components/ui/StudentNewTable';
 import AttendanceChart from '@/components/ui/attendanceChart';
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -82,7 +83,7 @@ const Dashboard = () => {
                 </Tabs>
                 </div>
               </div>
-                <FeesTableOverview/>  
+                <StudentTable/>
             </div>
             <div className='sm:col-span-1 rounded-lg pt-8 p-5' x-chuck="dashboard-05-chunk-0">
                 <AttendanceChart/>

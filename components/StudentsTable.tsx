@@ -1,23 +1,11 @@
-import React from 'react'
-import Image from "next/image"
-import Link from "next/link"
+"use client";
+import React, { useEffect, useState } from 'react'
 import {
   File,
-  Home,
-  LineChart,
   ListFilter,
   MoreHorizontal,
-  Package,
-  Package2,
-  PanelLeft,
   PlusCircle,
-  Search,
-  Settings,
-  ShoppingCart,
-  Users2,
 } from "lucide-react"
-
-import { Badge } from "@/components/ui/badge"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -55,7 +43,84 @@ import { Dialog } from './ui/dialog'
 import { DialogContent, DialogTrigger } from "@/components/ui/dialog"
 import NewStudentForm from './NewStudentFrom'
 
+interface IStudent {
+  $id: string;
+  firstName: string;
+  secondName: string;
+  surname: string;
+  address1:string;
+  city: string;
+  province: string;
+  postalCode: string;
+  dateOfBirth: string;
+  gender: string;
+  age: string;
+  homeLanguage: string;
+  allergies: string;
+  medicalAidNumber: string;
+  medicalAidScheme:string;
+  studentClass: string;
+
+
+  p1_relationship: string;
+  p1_firstName: string;
+  p1_surname: string;
+  p1_address1: string;
+  p1_city: string;
+  p1_province: string;
+  p1_postalCode: string;
+  p1_dateOfBirth: string;
+  p1_gender: string;
+  p1_idNumber : string;
+  p1_occupation: string;
+  p1_phoneNumber:string;
+  p1_email: string;
+  p1_workNumber: string;
+ 
+  p2_relationship: string;
+  p2_firstName: string;
+  p2_surname: string;
+  p2_address1: string;
+  p2_city: string;
+  p2_province: string;
+  p2_postalCode: string;
+  p2_dateOfBirth: string;
+  p2_gender: string;
+  p2_idNumber: string;
+  p2_occupation: string;
+  p2_phoneNumber: string;
+  p2_email: string;
+  p2_workNumber: string;
+
+}
+
 const StudentsTable = () => {
+  const [students, setStudents] = useState<IStudent[]>();
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string| null>(null);
+
+  useEffect(()=>{
+    const fetchStudents = async () => {
+      setIsLoading(true);
+      try {
+        const  response = await fetch("/api/students");
+        if (!response.ok) {
+          throw new Error("Failed to fetch students");
+        }
+        const data = await response.json();
+        setStudents(data);
+      } catch (error) {
+        console.log("Error fetching students:", error);
+        setError("Failed to fetch students, Please try reloading the page.");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchStudents();
+  }, [])
+
+
   return (
     <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
           <Tabs defaultValue="all">
@@ -125,15 +190,21 @@ const StudentsTable = () => {
                       <TableRow>
                         <TableHead></TableHead>
                         <TableHead>Name</TableHead>
-                        <TableHead>Status</TableHead>
+                        <TableHead>Surname</TableHead>
                         <TableHead className="hidden md:table-cell">
-                          Price
+                          Date of Birth
                         </TableHead>
                         <TableHead className="hidden md:table-cell">
-                          Total Sales
+                          Age
                         </TableHead>
                         <TableHead className="hidden md:table-cell">
-                          Created at
+                          Class
+                        </TableHead>
+                        <TableHead className="hidden md:table-cell">
+                          Parent
+                        </TableHead>
+                        <TableHead className="hidden md:table-cell">
+                          Contact
                         </TableHead>
                         <TableHead>
                           <span className="sr-only">Actions</span>
@@ -141,234 +212,58 @@ const StudentsTable = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      <TableRow>
-                        <TableCell className="hidden sm:table-cell">
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          Laser Lemonade Machine
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline">Draft</Badge>
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          $499.99
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          25
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          2023-07-12 10:42 AM
-                        </TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                aria-haspopup="true"
-                                size="icon"
-                                variant="ghost"
-                              >
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Toggle menu</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuItem>Edit</DropdownMenuItem>
-                              <DropdownMenuItem>Delete</DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell className="hidden sm:table-cell">
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          Hypernova Headphones
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline">Active</Badge>
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          $129.99
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          100
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          2023-10-18 03:21 PM
-                        </TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                aria-haspopup="true"
-                                size="icon"
-                                variant="ghost"
-                              >
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Toggle menu</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuItem>Edit</DropdownMenuItem>
-                              <DropdownMenuItem>Delete</DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell className="hidden sm:table-cell">
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          AeroGlow Desk Lamp
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline">Active</Badge>
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          $39.99
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          50
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          2023-11-29 08:15 AM
-                        </TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                aria-haspopup="true"
-                                size="icon"
-                                variant="ghost"
-                              >
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Toggle menu</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuItem>Edit</DropdownMenuItem>
-                              <DropdownMenuItem>Delete</DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell className="hidden sm:table-cell">
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          TechTonic Energy Drink
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="secondary">Draft</Badge>
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          $2.99
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          0
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          2023-12-25 11:59 PM
-                        </TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                aria-haspopup="true"
-                                size="icon"
-                                variant="ghost"
-                              >
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Toggle menu</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuItem>Edit</DropdownMenuItem>
-                              <DropdownMenuItem>Delete</DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell className="hidden sm:table-cell">
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          Gamer Gear Pro Controller
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline">Active</Badge>
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          $59.99
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          75
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          2024-01-01 12:00 AM
-                        </TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                aria-haspopup="true"
-                                size="icon"
-                                variant="ghost"
-                              >
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Toggle menu</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuItem>Edit</DropdownMenuItem>
-                              <DropdownMenuItem>Delete</DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell className="hidden sm:table-cell">
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          Luminous VR Headset
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline">Active</Badge>
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          $199.99
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          30
-                        </TableCell>
-                        <TableCell className="hidden md:table-cell">
-                          2024-02-14 02:14 PM
-                        </TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button
-                                aria-haspopup="true"
-                                size="icon"
-                                variant="ghost"
-                              >
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Toggle menu</span>
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuItem>Edit</DropdownMenuItem>
-                              <DropdownMenuItem>Delete</DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
+                      {error && <p className=' py-4 text-red-500'>{error}</p>}
+                      {isLoading ? (
+                        <p className='p-3 text-slate-400'>Loading...</p>
+                      ) : (
+                        students?.map((student) => (
+                          <TableRow key={student.$id}>
+                            <TableCell className="hidden sm:table-cell">
+                            </TableCell>
+                            <TableCell className="font-medium">
+                              {student.firstName} {student.secondName}
+                            </TableCell>
+                            <TableCell className="font-medium">
+                              {student.surname} 
+                            </TableCell>
+                            <TableCell>
+                              {/* <Badge variant="outline">Draft</Badge> */}
+                              {student.dateOfBirth}
+                            </TableCell>
+                            <TableCell className="hidden md:table-cell">
+                              {student.age}
+                            </TableCell>
+                            <TableCell className="hidden md:table-cell">
+                              {student.studentClass}
+                            </TableCell>
+                            <TableCell className="hidden md:table-cell">
+                              {student.p1_firstName} {student.p1_surname}
+                            </TableCell>
+                            <TableCell className="hidden md:table-cell">
+                              {student.p1_phoneNumber}
+                            </TableCell>
+                            <TableCell>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button
+                                    aria-haspopup="true"
+                                    size="icon"
+                                    variant="ghost"
+                                  >
+                                    <MoreHorizontal className="h-4 w-4" />
+                                    <span className="sr-only">Toggle menu</span>
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                  <DropdownMenuItem>Edit</DropdownMenuItem>
+                                  <DropdownMenuItem>Delete</DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
                     </TableBody>
                   </Table>
                 </CardContent>
@@ -382,7 +277,6 @@ const StudentsTable = () => {
             </TabsContent>
           </Tabs>
         </main>
-  )
-}
+  )}
 
 export default StudentsTable
