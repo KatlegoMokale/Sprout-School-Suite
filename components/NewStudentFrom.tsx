@@ -7,7 +7,7 @@ import {
   FormLabel,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -17,6 +17,7 @@ import CustomInput from "@/components/ui/CustomInput";
 import { newParentFormSchema, newStudentFormSchema } from "@/lib/utils";
 
 import dynamic from "next/dynamic";
+import { error } from "console";
 
 const SearchAddress = dynamic(() => import("@/components/ui/search-address"), {
   ssr: false,
@@ -24,6 +25,13 @@ const SearchAddress = dynamic(() => import("@/components/ui/search-address"), {
 
 const NewStudentForm = () => {
   const [currentTab, setCurrentTab] = useState("guardian1");
+  const [formData, setFormData] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    console.log("Current formData:", formData);
+  }, [formData]);
 
   const studentFormSchema = newStudentFormSchema();
   const form = useForm<z.infer<typeof studentFormSchema>>({
@@ -76,8 +84,30 @@ const NewStudentForm = () => {
   
 
   const onSubmit = (values: z.infer<typeof studentFormSchema>) => {
-    console.log(values);
+    setFormData(values);
+    console.log("Form data ready for Appwrite:", values);
+    // Here you would add your Appwrite submission logic
   };
+  
+  const handleSubmit = async (data: z.infer<typeof studentFormSchema>) => {
+    setIsLoading(true);
+    setError(null);
+
+      
+    try {
+      // Here you would add your Appwrite submission logic
+      console.log("Form data ready for Appwrite:", data);
+      // Simulate a successful submission
+      // await new Promise((resolve) => setTimeout(resolve, 1000));
+      // setIsLoading(false);
+      // setError(null);
+      // setFormData({});
+      // form.reset();
+    } catch (error) {
+      setError("An error occurred while submitting the form.");
+      setIsLoading(false);
+    }
+  }
 
   // const handleTabChange = (tab: string) => {
   //   setCurrentTab(tab);
@@ -136,7 +166,7 @@ const NewStudentForm = () => {
   return (
     <div className="flex flex-col gap-4">
       
-      <Form {...form}>
+      <Form {...form} onSubmit={handleSubmit}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
       <div className="grid grid-cols-2 gap-6 container bg-orange-50 rounded-lg p-5">
         {/* ChildInformation//////////////////////////////////////////////////// */}
@@ -206,7 +236,7 @@ const NewStudentForm = () => {
                       ]}
                     />
                   </div>
-
+{/* 
                   <div className="cols-span-1">
                     <CustomInput
                       name="address1"
@@ -214,6 +244,15 @@ const NewStudentForm = () => {
                       control={form.control}
                       label={"Address"}
                       type="search"
+                    />
+                  </div> */}
+
+                  <div className="cols-span-1">
+                    <CustomInput
+                      name="address1"
+                      placeholder="Enter Child Address"
+                      control={form.control}
+                      label={"Address"}
                     />
                   </div>
 
@@ -225,6 +264,7 @@ const NewStudentForm = () => {
                       label={"City"}
                     />
                   </div>
+
                   <div className="col-span-1">
                     <CustomInput
                       name="homeLanguage"
@@ -350,6 +390,16 @@ const NewStudentForm = () => {
                       />
                     </div>
                     <div></div>
+                    {/* <div className="w-full col-span-2"> */}
+                      {/* <SearchAddress onSelectLocation={(location) => console.log(location)} /> */}
+                      {/* <CustomInput
+                        name="p1_address1"
+                        placeholder="Enter Address"
+                        control={form.control}
+                        label={"Address"}
+                        type="search"
+                      />
+                    </div> */}
                     <div className="w-full col-span-2">
                       {/* <SearchAddress onSelectLocation={(location) => console.log(location)} /> */}
                       <CustomInput
@@ -357,7 +407,6 @@ const NewStudentForm = () => {
                         placeholder="Enter Address"
                         control={form.control}
                         label={"Address"}
-                        type="search"
                       />
                     </div>
                     <div className="cols-span-1">
@@ -451,9 +500,17 @@ const NewStudentForm = () => {
                         placeholder="Enter Address"
                         control={form.control}
                         label={"Address"}
-                        type="search"
                       />
                     </div>
+                    {/* <div className="w-full col-span-2">
+                      <CustomInput
+                        name="p2_address1"
+                        placeholder="Enter Address"
+                        control={form.control}
+                        label={"Address"}
+                        type="search"
+                      />
+                    </div> */}
                     <div className="cols-span-1">
                       <CustomInput
                         name="p2_occupation"
@@ -471,13 +528,13 @@ const NewStudentForm = () => {
                       />
                     </div>
                   </div>
-                  <Button type="submit">Submit</Button>
             </TabsContent>
           </Tabs>
         </div>
-        <Button type="submit">Submit</Button>
+        <Button type="submit" disabled={isLoading}>{isLoading ? "Adding..." : "Add Student"}</Button>
         </div>
         </form>
+        {error && <div className="text-red-500">{error}</div>}
       </Form>
       
     </div>
