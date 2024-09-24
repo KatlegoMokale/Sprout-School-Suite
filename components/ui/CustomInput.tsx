@@ -33,7 +33,6 @@ interface CustomInput{
     placeholder: string
     type?: string
     select?: boolean
-    onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void
     options?: {
         value: string
         label: string
@@ -41,7 +40,7 @@ interface CustomInput{
 
 }
 
-const CustomInput = ({control, placeholder, name, label, type, options, select, onChange }: CustomInput) => {
+const CustomInput = ({control, placeholder, name, label, type, options, select }: CustomInput) => {
   return (
     <FormField
                 control={control}
@@ -58,7 +57,7 @@ const CustomInput = ({control, placeholder, name, label, type, options, select, 
                           <Select onValueChange={field.onChange}>
                             <FormControl className=' p-2 bg-white'>
                               <SelectTrigger className=' bg-white w-[180px] ' >
-                                 <SelectValue className='bg-white' onChange={onChange} defaultValue={field.value !== "" ? field.value : placeholder} placeholder={placeholder} >
+                                 <SelectValue className='bg-white' defaultValue={field.value !== "" ? field.value : placeholder} placeholder={placeholder} >
                                     {field.value}
                                  </SelectValue>
                               </SelectTrigger>
@@ -81,8 +80,7 @@ const CustomInput = ({control, placeholder, name, label, type, options, select, 
                         className='input-class' 
                         placeholder={placeholder}
                         type={type !== undefined ? type : "text"}
-                        onChange={onChange}
-                        // onChange={(e) => field.onChange(e.target.value)}
+                        onChange={(e) => field.onChange(e.target.value)}
                         value={field.value !== undefined ? field.value : ""}
                         />
                          </FormControl>

@@ -49,7 +49,7 @@ export const newStudentFormSchema = () => z.object({
   allergies: z.string().optional(),
   medicalAidNumber: z.string().optional(),
   medicalAidScheme: z.string().optional(),
-  class: z.string().optional(),
+  studentClass: z.string().optional(),
 
 
   p1_relationship: z.string().min(3),

@@ -18,6 +18,8 @@ import { newParentFormSchema, newStudentFormSchema } from "@/lib/utils";
 
 import dynamic from "next/dynamic";
 import { error } from "console";
+import { useRouter } from "next/navigation";
+import { newStudent } from "@/lib/actions/user.actions";
 
 const SearchAddress = dynamic(() => import("@/components/ui/search-address"), {
   ssr: false,
@@ -29,9 +31,11 @@ const NewStudentForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    console.log("Current formData:", formData);
-  }, [formData]);
+  const router = useRouter();
+
+  // useEffect(() => {
+  //   console.log("Current formData:", formData);
+  // }, [formData]);
 
   const studentFormSchema = newStudentFormSchema();
   const form = useForm<z.infer<typeof studentFormSchema>>({
@@ -50,7 +54,7 @@ const NewStudentForm = () => {
       allergies: "",
       medicalAidScheme: "",
       medicalAidNumber: "",
-      class: "",
+      studentClass: "",
       p1_firstName: "",
       p1_surname: "",
       p1_address1: "",
@@ -83,42 +87,23 @@ const NewStudentForm = () => {
   });
   
 
-  const onSubmit = (values: z.infer<typeof studentFormSchema>) => {
-    setFormData(values);
-    console.log("Form data ready for Appwrite:", values);
-    // Here you would add your Appwrite submission logic
-  };
-  
-  const handleSubmit = async (data: z.infer<typeof studentFormSchema>) => {
+  const onSubmit = async (data: z.infer<typeof studentFormSchema>) => {
+    console.log("Submit");
     setIsLoading(true);
-    setError(null);
-
-      
     try {
-      // Here you would add your Appwrite submission logic
-      console.log("Form data ready for Appwrite:", data);
-      // Simulate a successful submission
-      // await new Promise((resolve) => setTimeout(resolve, 1000));
-      // setIsLoading(false);
-      // setError(null);
-      // setFormData({});
-      // form.reset();
+      const addNewStudent = await newStudent(data);
+      console.log(addNewStudent);
     } catch (error) {
+      console.error("Error submitting form:", error);
       setError("An error occurred while submitting the form.");
+    } finally {
       setIsLoading(false);
     }
-  }
+    setFormData(data);
+    console.log("Form data ready for Appwrite:", data);
+  };
+  
 
-  // const handleTabChange = (tab: string) => {
-  //   setCurrentTab(tab);
-  //   if (tab === "guardian1") {
-  //     onGuardianChange(form.getValues());
-  //     console.log(form.getValues());
-  //   } else if (tab === "guardian2") {
-  //     onGuardianChange(form.getValues());
-  //     console.log(form.getValues());
-  //   }
-  // };
   const handleTabChange = (tab: string) => {
     setCurrentTab(tab);
     console.log("Current form values:", form.getValues());
@@ -166,8 +151,8 @@ const NewStudentForm = () => {
   return (
     <div className="flex flex-col gap-4">
       
-      <Form {...form} onSubmit={handleSubmit}>
-      <form onSubmit={form.handleSubmit(onSubmit)}>
+      <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
       <div className="grid grid-cols-2 gap-6 container bg-orange-50 rounded-lg p-5">
         {/* ChildInformation//////////////////////////////////////////////////// */}
         <div className="flex flex-col col-span-1 p-6">
@@ -210,7 +195,7 @@ const NewStudentForm = () => {
                       placeholder="Enter Child Date of Birth"
                       control={form.control}
                       label={"Date of Birth"}
-                      type="date"
+                      // type="date"
                     />
                   </div>
 
@@ -229,11 +214,11 @@ const NewStudentForm = () => {
                       placeholder="Select Gender"
                       control={form.control}
                       label={"Gender"}
-                      select={true}
-                      options={[
-                        { label: "Male", value: "Male" },
-                        { label: "Female", value: "Female" },
-                      ]}
+                      // select={true}
+                      // options={[
+                      //   { label: "Male", value: "Male" },
+                      //   { label: "Female", value: "Female" },
+                      // ]}
                     />
                   </div>
 {/* 
@@ -255,6 +240,7 @@ const NewStudentForm = () => {
                       label={"Address"}
                     />
                   </div>
+                  
 
                   <div className="col-span-1">
                     <CustomInput
@@ -262,6 +248,24 @@ const NewStudentForm = () => {
                       placeholder="Enter City"
                       control={form.control}
                       label={"City"}
+                    />
+                  </div>
+
+                  <div className="cols-span-1">
+                    <CustomInput
+                      name="postalCode"
+                      placeholder="Enter Postal Code"
+                      control={form.control}
+                      label={"Postal Code"}
+                    />
+                  </div>
+
+                  <div className="cols-span-1">
+                    <CustomInput
+                      name="province"
+                      placeholder="Enter Province"
+                      control={form.control}
+                      label={"Province"}
                     />
                   </div>
 
@@ -299,8 +303,16 @@ const NewStudentForm = () => {
                       label={"Medical Aid Scheme"}
                     />
                   </div>
+
+                  <div className="col-span-1">
+                    <CustomInput
+                      name="studentClass"
+                      placeholder="Class"
+                      control={form.control}
+                      label={"Class"}
+                    />
+                  </div>
                 </div>
-                <Button type="submit">Submit</Button>
              
             </div>
           </div>
@@ -331,13 +343,13 @@ const NewStudentForm = () => {
                         placeholder="Select Relationship"
                         control={form.control}
                         label={"Relationship"}
-                        select={true}
-                        options={[
-                          { label: "Mother", value: "Mother" },
-                          { label: "Father", value: "Father" },
-                          { label: "Grand Mother", value: "Grand Mother" },
-                          { label: "Grand Father", value: "Grand Father" },
-                        ]}
+                        // select={true}
+                        // options={[
+                        //   { label: "Mother", value: "Mother" },
+                        //   { label: "Father", value: "Father" },
+                        //   { label: "Grand Mother", value: "Grand Mother" },
+                        //   { label: "Grand Father", value: "Grand Father" },
+                        // ]}
                       />
                     </div>
                     <div className="cols-span-1">
@@ -389,6 +401,22 @@ const NewStudentForm = () => {
                         label={"ID Number"}
                       />
                     </div>
+                    <div className="cols-span-1">
+                      <CustomInput
+                        name="p1_gender"
+                        placeholder="Enter gender"
+                        control={form.control}
+                        label={"Gemder"}
+                      />
+                    </div>
+                    <div className="cols-span-1">
+                      <CustomInput
+                        name="p1_dateOfBirth"
+                        placeholder="Enter Date of Birth"
+                        control={form.control}
+                        label={"Date Of Birth"}
+                      />
+                    </div>
                     <div></div>
                     {/* <div className="w-full col-span-2"> */}
                       {/* <SearchAddress onSelectLocation={(location) => console.log(location)} /> */}
@@ -409,6 +437,34 @@ const NewStudentForm = () => {
                         label={"Address"}
                       />
                     </div>
+
+                    <div className="cols-span-1">
+                    <CustomInput
+                      name="p2_city"
+                      placeholder="Enter City"
+                      control={form.control}
+                      label={"City"}
+                    />
+                  </div>
+
+                    <div className="cols-span-1">
+                    <CustomInput
+                      name="p1_postalCode"
+                      placeholder="Enter Postal Code"
+                      control={form.control}
+                      label={"Postal Code"}
+                    />
+                  </div>
+
+                  <div className="cols-span-1">
+                    <CustomInput
+                      name="p1_province"
+                      placeholder="Enter Province"
+                      control={form.control}
+                      label={"Province"}
+                    />
+                  </div>
+
                     <div className="cols-span-1">
                       <CustomInput
                         name="p1_occupation"
@@ -502,6 +558,33 @@ const NewStudentForm = () => {
                         label={"Address"}
                       />
                     </div>
+                    
+                    <div className="cols-span-1">
+                    <CustomInput
+                      name="p2_city"
+                      placeholder="Enter City"
+                      control={form.control}
+                      label={"City"}
+                    />
+                  </div>
+
+                    <div className="cols-span-1">
+                    <CustomInput
+                      name="p2_postalCode"
+                      placeholder="Enter Postal Code"
+                      control={form.control}
+                      label={"Postal Code"}
+                    />
+                  </div>
+
+                  <div className="cols-span-1">
+                    <CustomInput
+                      name="p2_province"
+                      placeholder="Enter Province"
+                      control={form.control}
+                      label={"Province"}
+                    />
+                  </div>
                     {/* <div className="w-full col-span-2">
                       <CustomInput
                         name="p2_address1"
@@ -531,10 +614,13 @@ const NewStudentForm = () => {
             </TabsContent>
           </Tabs>
         </div>
-        <Button type="submit" disabled={isLoading}>{isLoading ? "Adding..." : "Add Student"}</Button>
+        <Button type="submit" disabled={isLoading} className=" form-btn ">
+          {isLoading ? "Adding..." : "Add Student"}
+        </Button>
         </div>
-        </form>
         {error && <div className="text-red-500">{error}</div>}
+        </form>
+        
       </Form>
       
     </div>
@@ -542,3 +628,13 @@ const NewStudentForm = () => {
 };
 
 export default NewStudentForm;
+
+import { DialogContent, DialogDescription } from "@/components/ui/dialog";
+
+// ... in your component
+<DialogContent>
+  <DialogDescription>
+    This is a description of the dialog content. It provides context for screen readers.
+  </DialogDescription>
+  {/* Your existing dialog content */}
+</DialogContent>
