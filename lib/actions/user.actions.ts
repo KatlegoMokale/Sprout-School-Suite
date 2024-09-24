@@ -5,6 +5,8 @@ import { parseStringify } from "../utils";
 
 
 export const newStudent = async (studentData: NewStudentParms) =>{
+    console.log("//////////////////////");
+    console.log("studentData", studentData);
 const { firstName, secondName, surname, dateOfBirth, age, gender,
     address1, city, province, homeLanguage, allergies, medicalAidNumber, 
     medicalAidScheme, studentClass, p1_firstName, p1_surname, p1_address1, p1_city,
@@ -14,13 +16,16 @@ const { firstName, secondName, surname, dateOfBirth, age, gender,
     p2_phoneNumber, p2_email,p2_workNumber, p2_relationship} = studentData;
 
     try {
+        console.log("//////////////////////1");
         const response = await fetch("/api/students", {
             method: 'POST',
             headers: {
                 "Content-Type": "application.json",
             },
             body: JSON.stringify(studentData),
+            
         });
+        console.log("//////////////////////2");
         if (response.ok) {
             console.log("Student submitted successfully!");
             throw new Error("Student submission failed.")

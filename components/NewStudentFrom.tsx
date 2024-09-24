@@ -88,11 +88,12 @@ const NewStudentForm = () => {
   
 
   const onSubmit = async (data: z.infer<typeof studentFormSchema>) => {
+    console.log("Form data:", data);
     console.log("Submit");
     setIsLoading(true);
     try {
       const addNewStudent = await newStudent(data);
-      console.log(addNewStudent);
+      console.log("Add new Student "+ addNewStudent);
     } catch (error) {
       console.error("Error submitting form:", error);
       setError("An error occurred while submitting the form.");
@@ -440,7 +441,7 @@ const NewStudentForm = () => {
 
                     <div className="cols-span-1">
                     <CustomInput
-                      name="p2_city"
+                      name="p1_city"
                       placeholder="Enter City"
                       control={form.control}
                       label={"City"}
@@ -614,7 +615,7 @@ const NewStudentForm = () => {
             </TabsContent>
           </Tabs>
         </div>
-        <Button type="submit" disabled={isLoading} className=" form-btn ">
+        <Button type="submit" disabled={isLoading} className="form-btn">
           {isLoading ? "Adding..." : "Add Student"}
         </Button>
         </div>

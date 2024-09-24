@@ -7,10 +7,11 @@ const database = new Databases(client)
 
 ///Create Student
 
-async function createStudent(data : {firstName: string; 
+async function createStudent(data : {
+    firstName: string; 
     secondName: string; 
     surname: string; 
-    address: string; 
+    address1: string; 
     city: string; 
     province: string; 
     postalCode: string; 
@@ -77,7 +78,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
     try {
-        const {firstName, secondName, surname, address, city, 
+        const {firstName, secondName, surname, address1, city, 
             province, postalCode, dateOfBirth, 
             gender, age, homeLanguage, allergies, 
             medicalAidNumber, medicalAidScheme, studentClass, p1_relationship, p1_firstName,
@@ -88,7 +89,7 @@ export async function POST(request: Request) {
             p2_occupation, p2_phoneNumber, p2_email, p2_workNumber
       } = await request.json();
         const data = {
-            firstName, secondName, surname, address, city,
+            firstName, secondName, surname, address1, city,
             province, postalCode, dateOfBirth,
             gender, age, homeLanguage, allergies,
             medicalAidNumber, medicalAidScheme, studentClass, p1_relationship, p1_firstName, 
