@@ -105,3 +105,20 @@ export const newParentFormSchema = (type: string) => z.object({
 
 });
 
+
+export const authFormSchema = (type: string) => z.object({
+  //sign up
+
+  // firstName: type === 'sign-in' ? z.string().optional(): z.string().min(3),
+  // lastName: type === 'sign-in' ? z.string().optional(): z.string().min(3),
+  // address1: type === 'sign-in' ? z.string().optional(): z.string().min(3).max(50),
+  // city: type === 'sign-in' ? z.string().optional(): z.string().min(3).max(50),
+  // province: type === 'sign-in' ? z.string().optional(): z.string().min(3).max(20),
+  // postalCode: type === 'sign-in' ? z.string().optional(): z.string().min(3).max(6),
+  // dateOfBirth: type === 'sign-in' ? z.string().optional(): z.string().min(3),
+  // idNumber: type === 'sign-in' ? z.string().optional(): z.string().min(13).max(13),
+  /// both
+  email: z.string().email(),
+  password: z.string().min(8),
+
+});

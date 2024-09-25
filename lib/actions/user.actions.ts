@@ -17,7 +17,7 @@ const { firstName, secondName, surname, dateOfBirth, age, gender,
 
     try {
         console.log("//////////////////////1");
-        const response = await fetch("/api/students", {
+        const response = await fetch("http://localhost:3000/api/students", {
             method: 'POST',
             headers: {
                 "Content-Type": "application.json",
