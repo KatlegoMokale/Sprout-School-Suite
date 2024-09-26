@@ -99,6 +99,7 @@ const NewStudentForm = () => {
       setError("An error occurred while submitting the form.");
     } finally {
       setIsLoading(false);
+      router.push('/students')
     }
     setFormData(data);
     console.log("Form data ready for Appwrite:", data);
@@ -148,6 +149,23 @@ const NewStudentForm = () => {
     }
   };
 
+  const calculateAge = (birthDate: string): string => {
+    const today = new Date();
+    const birth = new Date(birthDate);
+    let months = (today.getFullYear() - birth.getFullYear()) * 12 + (today.getMonth() - birth.getMonth());
+    
+    if (months < 12) {
+      return `${months} month${months !== 1 ? 's' : ''}`;
+    } else {
+      let years = Math.floor(months / 12);
+      // Check if birthday is later this year
+      if (today.getMonth() < birth.getMonth() || (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate())) {
+        years += 1;
+      }
+      return `${years} year${years !== 1 ? 's' : ''}`;
+    }
+  };
+
   // const form = useForm()
   return (
     <div className="flex flex-col gap-4">
@@ -162,7 +180,7 @@ const NewStudentForm = () => {
           <div className="p-4 bg-orange-100 rounded-lg">
             <div className=" col-span-1">
               
-                <div className="grid grid-cols-2 gap-5">
+                <div className="grid grid-cols-2 gap-2">
                   <div className="cols-span-1">
                     <CustomInput
                       name="firstName"
@@ -196,16 +214,23 @@ const NewStudentForm = () => {
                       placeholder="Enter Child Date of Birth"
                       control={form.control}
                       label={"Date of Birth"}
-                      // type="date"
+                      type="date"
+                      onChange={(e) => {
+                        const newValue = e.target.value;
+                      const age = calculateAge(e.target.value);
+                      form.setValue("age", age);
+                      
+                    }}
                     />
                   </div>
 
                   <div className="col-span-1">
                     <CustomInput
-                      name="age"
-                      placeholder="Enter Child Age"
-                      control={form.control}
-                      label={"Age"}
+                     name="age"
+                     placeholder="Age will be calculated"
+                     control={form.control}
+                     label={"Age"}
+                     readonly={true}
                     />
                   </div>
 
@@ -215,11 +240,11 @@ const NewStudentForm = () => {
                       placeholder="Select Gender"
                       control={form.control}
                       label={"Gender"}
-                      // select={true}
-                      // options={[
-                      //   { label: "Male", value: "Male" },
-                      //   { label: "Female", value: "Female" },
-                      // ]}
+                      select={true}
+                      options={[
+                        { label: "Male", value: "Male" },
+                        { label: "Female", value: "Female" },
+                      ]}
                     />
                   </div>
 {/* 
@@ -337,20 +362,20 @@ const NewStudentForm = () => {
               </TabsTrigger>
             </TabsList>
             <TabsContent value="guardian1">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className=" col-span-2 pt-2 w-full">
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className=" col-span-2 pt-1 w-full">
                       <CustomInput
                         name="p1_relationship"
                         placeholder="Select Relationship"
                         control={form.control}
                         label={"Relationship"}
-                        // select={true}
-                        // options={[
-                        //   { label: "Mother", value: "Mother" },
-                        //   { label: "Father", value: "Father" },
-                        //   { label: "Grand Mother", value: "Grand Mother" },
-                        //   { label: "Grand Father", value: "Grand Father" },
-                        // ]}
+                        select={true}
+                        options={[
+                          { label: "Mother", value: "Mother" },
+                          { label: "Father", value: "Father" },
+                          { label: "Grand Mother", value: "Grand Mother" },
+                          { label: "Grand Father", value: "Grand Father" },
+                        ]}
                       />
                     </div>
                     <div className="cols-span-1">
@@ -386,14 +411,14 @@ const NewStudentForm = () => {
                         label={"Phone Number"}
                       />
                     </div>
-                    <div className="cols-span-1">
+                    {/* <div className="cols-span-1">
                       <CustomInput
                         name="p1_occupation"
                         placeholder="Enter Employer"
                         control={form.control}
                         label={"Employer"}
                       />
-                    </div>
+                    </div> */}
                     <div className="cols-span-1">
                       <CustomInput
                         name="p1_idNumber"
@@ -407,7 +432,7 @@ const NewStudentForm = () => {
                         name="p1_gender"
                         placeholder="Enter gender"
                         control={form.control}
-                        label={"Gemder"}
+                        label={"Gender"}
                       />
                     </div>
                     <div className="cols-span-1">
@@ -416,6 +441,7 @@ const NewStudentForm = () => {
                         placeholder="Enter Date of Birth"
                         control={form.control}
                         label={"Date Of Birth"}
+                        type="date"
                       />
                     </div>
                     <div></div>
@@ -485,8 +511,8 @@ const NewStudentForm = () => {
                   </div>
             </TabsContent>
             <TabsContent value="guardian2">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className=" col-span-2 pt-2 w-full">
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="col-span-2 pt-1 w-full">
                       <CustomInput
                         name="p2_relationship"
                         placeholder="Select Relationship"

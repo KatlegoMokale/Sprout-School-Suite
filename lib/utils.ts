@@ -79,7 +79,7 @@ export const newStudentFormSchema = () => z.object({
   p2_idNumber: z.string().optional(),
   p2_occupation: z.string().optional(),
   p2_phoneNumber: z.string().optional(),
-  p2_email: z.string().email().optional(),
+  p2_email: z.string().optional(),
   p2_workNumber: z.string().optional(),
 
 
@@ -105,3 +105,9 @@ export const newParentFormSchema = (type: string) => z.object({
 
 });
 
+
+export const getBaseUrl = () => {
+  if (typeof window !== 'undefined') return ''; // browser should use relative url
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`; // SSR should use vercel url
+  return `http://localhost:${process.env.PORT ?? 3000}`; // dev SSR should use localhost
+}
