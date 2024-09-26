@@ -17,14 +17,9 @@ const { firstName, secondName, surname, dateOfBirth, age, gender,
     p2_phoneNumber, p2_email,p2_workNumber, p2_relationship} = studentData;
 
     try {
-<<<<<<< HEAD
         // console.log("//////////////////////1");
             
         const response = await fetch(`${getBaseUrl()}/api/students`, {
-=======
-        console.log("//////////////////////1");
-        const response = await fetch("http://localhost:3000/api/students", {
->>>>>>> 71e0bcd114ffa74c366222c2286567dfe31fc6b7
             method: 'POST',
             headers: {
                 "Content-Type": "application.json",

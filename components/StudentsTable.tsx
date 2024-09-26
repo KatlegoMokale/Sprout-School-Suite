@@ -42,6 +42,7 @@ import {
 import { Dialog } from './ui/dialog'
 import { DialogContent, DialogTrigger } from "@/components/ui/dialog"
 import NewStudentForm from './NewStudentFrom'
+import Link from 'next/link';
 
 interface IStudent {
   $id: string;
@@ -161,7 +162,15 @@ const StudentsTable = () => {
                     Export
                   </span>
                 </Button>
-                <Dialog>
+                <Link href="/students/add-student">
+                <Button size="sm" className="h-8 gap-1">
+                    <PlusCircle className="h-3.5 w-3.5" />
+                  <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                    Add Student
+                  </span>
+                </Button>
+                </Link>
+                {/* <Dialog>
                     <DialogTrigger asChild>
                     <Button size="sm" className="h-8 gap-1">
                     <PlusCircle className="h-3.5 w-3.5" />
@@ -173,7 +182,7 @@ const StudentsTable = () => {
                 <DialogContent>
                     <NewStudentForm/>
                 </DialogContent>
-                </Dialog>
+                </Dialog> */}
               </div>
             </div>
             <TabsContent value="all">

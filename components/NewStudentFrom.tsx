@@ -169,7 +169,7 @@ const NewStudentForm = () => {
   // const form = useForm()
   return (
     <div className="flex flex-col gap-4">
-      
+     
       <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
       <div className="grid grid-cols-2 gap-6 container bg-orange-50 rounded-lg p-5">
@@ -657,6 +657,7 @@ const NewStudentForm = () => {
 export default NewStudentForm;
 
 import { DialogContent, DialogDescription } from "@/components/ui/dialog";
+import Link from "next/link";
 
 // ... in your component
 <DialogContent>
