@@ -121,6 +121,22 @@ const StudentsTable = () => {
     fetchStudents();
   }, [])
 
+  const handleDeleteStudent = async (studentId: string) => {
+    try {
+      const response = await fetch(`/api/students/${studentId}`, {
+        method: "DELETE",
+      });
+      if (!response.ok) {
+        throw new Error("Failed to delete student");
+      }  
+      setStudents((prevStudents) =>
+        prevStudents?.filter((student) => student.$id !== studentId)
+      );
+      } catch (error) {
+      console.log("Error deleting student:", error);
+      };
+    };
+
 
   return (
     <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
@@ -265,8 +281,8 @@ const StudentsTable = () => {
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                   <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                  <DropdownMenuItem>Edit</DropdownMenuItem>
-                                  <DropdownMenuItem>Delete</DropdownMenuItem>
+                                  <Link href={`/students/edit-student/${student.$id}`}><DropdownMenuItem>Edit</DropdownMenuItem></Link>
+                                  <DropdownMenuItem onClick={()=>handleDeleteStudent(student.$id)}>Delete</DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>
                             </TableCell>
