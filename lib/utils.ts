@@ -106,8 +106,27 @@ export const newParentFormSchema = (type: string) => z.object({
 });
 
 
+<<<<<<< HEAD
 export const getBaseUrl = () => {
   if (typeof window !== 'undefined') return ''; // browser should use relative url
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`; // SSR should use vercel url
   return `http://localhost:${process.env.PORT ?? 3000}`; // dev SSR should use localhost
 }
+=======
+export const authFormSchema = (type: string) => z.object({
+  //sign up
+
+  // firstName: type === 'sign-in' ? z.string().optional(): z.string().min(3),
+  // lastName: type === 'sign-in' ? z.string().optional(): z.string().min(3),
+  // address1: type === 'sign-in' ? z.string().optional(): z.string().min(3).max(50),
+  // city: type === 'sign-in' ? z.string().optional(): z.string().min(3).max(50),
+  // province: type === 'sign-in' ? z.string().optional(): z.string().min(3).max(20),
+  // postalCode: type === 'sign-in' ? z.string().optional(): z.string().min(3).max(6),
+  // dateOfBirth: type === 'sign-in' ? z.string().optional(): z.string().min(3),
+  // idNumber: type === 'sign-in' ? z.string().optional(): z.string().min(13).max(13),
+  /// both
+  email: z.string().email(),
+  password: z.string().min(8),
+
+});
+>>>>>>> 71e0bcd114ffa74c366222c2286567dfe31fc6b7
