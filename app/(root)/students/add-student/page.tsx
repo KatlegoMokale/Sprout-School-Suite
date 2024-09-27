@@ -97,6 +97,7 @@ const NewStudentForm = () => {
     } catch (error) {
       console.error("Error submitting form:", error);
       setError("An error occurred while submitting the form.");
+      router.push('/students'); 
     } finally {
       setIsLoading(false);
     }

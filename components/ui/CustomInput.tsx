@@ -113,11 +113,7 @@ const CustomInput = ({
                       onChange(e);
                     }
                   }}
-                  value={
-                    type === "date"
-                      ? field.value || ""
-                      : field.value || value || ""
-                  }
+                  value={field.value || value || ""}
                   readOnly={readonly !== undefined ? readonly : false}
                 />
               </FormControl>

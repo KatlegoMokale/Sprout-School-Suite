@@ -78,70 +78,9 @@ const NewStudentForm = ({ params }: { params: { id: string } }) => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
-  useEffect(() => {
-    const fetchStudentData = async () => {
-      try {
-        const response = await fetch(`/api/students/${params.id}`);
-        if (!response.ok) {
-          throw new Error("Failed to fetch student data");
-        }
-        const studentData = await response.json();
-        console.log("Student Data:", studentData);
-        setFormData({
-          firstName: studentData.student.firstName,
-          secondName: studentData.student.secondName,
-          surname: studentData.student.surname,
-          dateOfBirth: studentData.student.dateOfBirth,
-          age: studentData.student.age,
-          gender: studentData.student.gender,
-          address1: studentData.student.address1,
-          city: studentData.student.city,
-          postalCode: studentData.student.postalCode,
-          province: studentData.student.province,
-          homeLanguage: studentData.student.homeLanguage,
-          allergies: studentData.student.allergies,
-          medicalAidScheme: studentData.student.medicalAidScheme,
-          medicalAidNumber: studentData.student.medicalAidNumber,
-          studentClass: studentData.student.studentClass,
-          p1_firstName: studentData.student.p1_firstName,
-          p1_surname: studentData.student.p1_surname,
-          p1_address1: studentData.student.p1_address1,
-          p1_city: studentData.student.p1_city,
-          p1_province: studentData.student.p1_province,
-          p1_postalCode: studentData.student.p1_postalCode,
-          p1_dateOfBirth: studentData.student.p1_dateOfBirth,
-          p1_gender: studentData.student.p1_gender,
-          p1_idNumber: studentData.student.p1_idNumber,
-          p1_occupation: studentData.student.p1_occupation,
-          p1_phoneNumber: studentData.student.p1_phoneNumber,
-          p1_email: studentData.student.p1_email,
-          p1_workNumber: studentData.student.p1_workNumber,
-          p1_relationship: studentData.student.p1_relationship,
-          p2_firstName: studentData.student.p2_firstName,
-          p2_surname: studentData.student.p2_surname,
-          p2_address1: studentData.student.p2_address1,
-          p2_city: studentData.student.p2_city,
-          p2_province: studentData.student.p2_province,
-          p2_postalCode: studentData.student.p2_postalCode,
-          p2_dateOfBirth: studentData.student.p2_dateOfBirth,
-          p2_gender: studentData.student.p2_gender,
-          p2_idNumber: studentData.student.p2_idNumber,
-          p2_occupation: studentData.student.p2_occupation,
-          p2_phoneNumber: studentData.student.p2_phoneNumber,
-          p2_email: studentData.student.p2_email,
-          p2_workNumber: studentData.student.p2_workNumber,
-          p2_relationship: studentData.student.p2_relationship,
-        });
-        console.log("Student Data //////" + formData);
-        console.log("Student Data //////" + formData.firstName);
-        // form.reset(studentData);
-      } catch (error) {
-        console.error("Error fetching student data:", error);
-      }
-    };
-    fetchStudentData();
-  }, []);
+
 
   const router = useRouter();
 
@@ -152,67 +91,103 @@ const NewStudentForm = ({ params }: { params: { id: string } }) => {
   const studentFormSchema = newStudentFormSchema();
   const form = useForm<z.infer<typeof studentFormSchema>>({
     resolver: zodResolver(studentFormSchema),
-    defaultValues: {
-      firstName: "",
-      secondName: "",
-      surname: "",
-      dateOfBirth: "",
-      age: "",
-      gender: "",
-      address1: "",
-      city: "",
-      province: "",
-      homeLanguage: "",
-      allergies: "",
-      medicalAidScheme: "",
-      medicalAidNumber: "",
-      studentClass: "",
-      p1_firstName: "",
-      p1_surname: "",
-      p1_address1: "",
-      p1_city: "",
-      p1_province: "",
-      p1_postalCode: "",
-      p1_dateOfBirth: "",
-      p1_gender: "",
-      p1_idNumber: "",
-      p1_occupation: "",
-      p1_phoneNumber: "",
-      p1_email: "",
-      p1_workNumber: "",
-      p1_relationship: "",
-      p2_firstName: "",
-      p2_surname: "",
-      p2_address1: "",
-      p2_city: "",
-      p2_province: "",
-      p2_postalCode: "",
-      p2_dateOfBirth: "",
-      p2_gender: "",
-      p2_idNumber: "",
-      p2_occupation: "",
-      p2_phoneNumber: "",
-      p2_email: "",
-      p2_workNumber: "",
-      p2_relationship: "",
-    },
+    // defaultValues: {
+    //   firstName: formData?.firstName,
+    //   secondName: formData?.secondName,
+    //   surname: formData?.surname,
+    //   dateOfBirth: formData?.dateOfBirth,
+    //   age: formData?.age,
+    //   gender: formData?.gender,
+    //   address1: formData?.address1,
+    //   city: formData?.city,
+    //   province: formData?.province,
+    //   homeLanguage: formData?.homeLanguage,
+    //   allergies: formData?.allergies,
+    //   medicalAidScheme: formData?.medicalAidScheme,
+    //   medicalAidNumber: formData?.medicalAidNumber,
+    //   studentClass: formData?.studentClass,
+    //   p1_firstName: formData?.p1_firstName,
+    //   p1_surname: formData?.p1_surname,
+    //   p1_address1: formData?.p1_address1,
+    //   p1_city: formData?.p1_city,
+    //   p1_province: formData?.p1_province,
+    //   p1_postalCode: formData?.p1_postalCode,
+    //   p1_dateOfBirth: formData?.p1_dateOfBirth,
+    //   p1_gender: formData?.p1_gender,
+    //   p1_idNumber: formData?.p1_idNumber,
+    //   p1_occupation: formData?.p1_occupation,
+    //   p1_phoneNumber: formData?.p1_phoneNumber,
+    //   p1_email: formData?.p1_email,
+    //   p1_workNumber: formData?.p1_workNumber,
+    //   p1_relationship: formData?.p1_relationship,
+    //   p2_firstName: formData?.p2_firstName,
+    //   p2_surname: formData?.p2_surname,
+    //   p2_address1: formData?.p2_address1,
+    //   p2_city:  formData?.p2_city,
+    //   p2_province: formData?.p2_province,
+    //   p2_postalCode: formData?.p2_postalCode,
+    //   p2_dateOfBirth: formData?.p2_dateOfBirth,
+    //   p2_gender: formData?.p2_gender,
+    //   p2_idNumber: formData?.p2_idNumber,
+    //   p2_occupation: formData?.p2_occupation,
+    //   p2_phoneNumber: formData?.p2_phoneNumber,
+    //   p2_email: formData?.p2_email,
+    //   p2_workNumber: formData?.p2_workNumber,
+    //   p2_relationship: formData?.p2_relationship,
+    // },
   });
 
+  useEffect(() => {
+    const fetchStudentData = async () => {
+      try {
+        const response = await fetch(`/api/students/${params.id}`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch student data");
+        }
+        const studentData = await response.json();
+        console.log("Student Data:", studentData);
+
+        // Update formData state
+        setFormData(studentData.student); 
+
+        // Update form values using form.setValue
+        Object.keys(studentData.student).forEach((key) => {
+          form.setValue(key, studentData.student[key]);
+        });
+
+      } catch (error) {
+        console.error("Error fetching student data:", error);
+      }
+    };
+    fetchStudentData();
+  }, []);
+
   const onSubmit = async (data: z.infer<typeof studentFormSchema>) => {
-    console.log("Form data:", data);
-    console.log("Submit");
+    // Set confirmation dialog open
+    setIsConfirmOpen(true);
+
+    // Store form data for later use in handleConfirmUpdate
+    setFormData(data);
+  };
+
+  const handleConfirmUpdate = async () => {
+    // Close the dialog
+    setIsConfirmOpen(false);
+
     setIsLoading(true);
     try {
-      const addNewStudent = await updateStudent(data, params.id);
+      // Use formData from state, NOT the data from onSubmit
+      const addNewStudent = await updateStudent(formData, params.id);
       console.log("Update Student " + addNewStudent);
+
+      // Redirect to students page after successful update
+      router.push('/students'); 
     } catch (error) {
       console.error("Error submitting form:", error);
       setError("An error occurred while submitting the form.");
     } finally {
       setIsLoading(false);
     }
-    // setFormData(data);
-    console.log("Form data ready for Appwrite:", data);
   };
 
   const handleTabChange = (tab: string) => {
@@ -284,6 +259,27 @@ const NewStudentForm = ({ params }: { params: { id: string } }) => {
   // const form = useForm()
   return (
     <div className="flex flex-col gap-4">
+      <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
+      <AlertDialogTrigger asChild>
+        {/* <Button type="submit" disabled={isLoading} className="form-btn">
+          {isLoading ? "Updating..." : "Update"}
+        </Button> */}
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>Confirm Update</AlertDialogHeader>
+        <AlertDialogDescription>
+          Are you sure you want to update this students information?
+        </AlertDialogDescription>
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={() => setIsConfirmOpen(false)}>
+            Cancel
+          </AlertDialogCancel>
+          <AlertDialogAction className="bg-orange-200" onClick={handleConfirmUpdate}>
+            Confirm
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <div className="grid grid-cols-2 gap-6 bg-orange-50 rounded-lg p-5">
@@ -804,9 +800,7 @@ const NewStudentForm = ({ params }: { params: { id: string } }) => {
                 </TabsContent>
               </Tabs>
             </div>
-            <Button type="submit" disabled={isLoading} className="form-btn">
-              {isLoading ? "Updating..." : "Update"}
-            </Button>
+            
           </div>
           {error && <div className="text-red-500">{error}</div>}
         </form>
@@ -820,6 +814,7 @@ export default NewStudentForm;
 import { DialogContent, DialogDescription } from "@/components/ui/dialog";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 // ... in your component
 <DialogContent>
