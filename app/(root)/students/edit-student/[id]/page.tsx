@@ -66,8 +66,6 @@ const NewStudentForm = ({params}: {params: {id: string}}) => {
       age: "",
       gender: "",
       address1: "",
-      city: "",
-      province: "",
       homeLanguage: "",
       allergies: "",
       medicalAidScheme: "",
@@ -76,9 +74,6 @@ const NewStudentForm = ({params}: {params: {id: string}}) => {
       p1_firstName: "",
       p1_surname: "",
       p1_address1: "",
-      p1_city: "",
-      p1_province: "",
-      p1_postalCode: "",
       p1_dateOfBirth: "",
       p1_gender: "",
       p1_idNumber: "",
@@ -90,9 +85,6 @@ const NewStudentForm = ({params}: {params: {id: string}}) => {
       p2_firstName: "",
       p2_surname: "",
       p2_address1: "",
-      p2_city: "",
-      p2_province: "",
-      p2_postalCode: "",
       p2_dateOfBirth: "",
       p2_gender: "",
       p2_idNumber: "",
@@ -138,9 +130,6 @@ const NewStudentForm = ({params}: {params: {id: string}}) => {
       form.setValue("p1_firstName", values.p1_firstName);
       form.setValue("p1_surname", values.p1_surname);
       form.setValue("p1_address1", values.p1_address1);
-      form.setValue("p1_city", values.p1_city);
-      form.setValue("p1_province", values.p1_province);
-      form.setValue("p1_postalCode", values.p1_postalCode);
       form.setValue("p1_dateOfBirth", values.p1_dateOfBirth);
       form.setValue("p1_gender", values.p1_gender);
       form.setValue("p1_idNumber", values.p1_idNumber);
@@ -156,9 +145,6 @@ const NewStudentForm = ({params}: {params: {id: string}}) => {
       form.setValue("p2_firstName", values.p2_firstName);
       form.setValue("p2_surname", values.p2_surname);
       form.setValue("p2_address1", values.p2_address1);
-      form.setValue("p2_city", values.p2_city);
-      form.setValue("p2_province", values.p2_province);
-      form.setValue("p2_postalCode", values.p2_postalCode);
       form.setValue("p2_dateOfBirth", values.p2_dateOfBirth);
       form.setValue("p2_gender", values.p2_gender);
       form.setValue("p2_idNumber", values.p2_idNumber);
@@ -230,7 +216,6 @@ const NewStudentForm = ({params}: {params: {id: string}}) => {
                       placeholder="Enter Child Surname"
                       control={form.control}
                       label={"Surname"}
-                      value={}
                     />
                   </div>
 
@@ -289,34 +274,6 @@ const NewStudentForm = ({params}: {params: {id: string}}) => {
                       placeholder="Enter Child Address"
                       control={form.control}
                       label={"Address"}
-                    />
-                  </div>
-                  
-
-                  <div className="col-span-1">
-                    <CustomInput
-                      name="city"
-                      placeholder="Enter City"
-                      control={form.control}
-                      label={"City"}
-                    />
-                  </div>
-
-                  <div className="cols-span-1">
-                    <CustomInput
-                      name="postalCode"
-                      placeholder="Enter Postal Code"
-                      control={form.control}
-                      label={"Postal Code"}
-                    />
-                  </div>
-
-                  <div className="cols-span-1">
-                    <CustomInput
-                      name="province"
-                      placeholder="Enter Province"
-                      control={form.control}
-                      label={"Province"}
                     />
                   </div>
 
@@ -494,34 +451,6 @@ const NewStudentForm = ({params}: {params: {id: string}}) => {
                         label={"Address"}
                       />
                     </div>
-
-                    <div className="cols-span-1">
-                    <CustomInput
-                      name="p1_city"
-                      placeholder="Enter City"
-                      control={form.control}
-                      label={"City"}
-                    />
-                  </div>
-
-                    <div className="cols-span-1">
-                    <CustomInput
-                      name="p1_postalCode"
-                      placeholder="Enter Postal Code"
-                      control={form.control}
-                      label={"Postal Code"}
-                    />
-                  </div>
-
-                  <div className="cols-span-1">
-                    <CustomInput
-                      name="p1_province"
-                      placeholder="Enter Province"
-                      control={form.control}
-                      label={"Province"}
-                    />
-                  </div>
-
                     <div className="cols-span-1">
                       <CustomInput
                         name="p1_occupation"
@@ -615,33 +544,6 @@ const NewStudentForm = ({params}: {params: {id: string}}) => {
                         label={"Address"}
                       />
                     </div>
-                    
-                    <div className="cols-span-1">
-                    <CustomInput
-                      name="p2_city"
-                      placeholder="Enter City"
-                      control={form.control}
-                      label={"City"}
-                    />
-                  </div>
-
-                    <div className="cols-span-1">
-                    <CustomInput
-                      name="p2_postalCode"
-                      placeholder="Enter Postal Code"
-                      control={form.control}
-                      label={"Postal Code"}
-                    />
-                  </div>
-
-                  <div className="cols-span-1">
-                    <CustomInput
-                      name="p2_province"
-                      placeholder="Enter Province"
-                      control={form.control}
-                      label={"Province"}
-                    />
-                  </div>
                     {/* <div className="w-full col-span-2">
                       <CustomInput
                         name="p2_address1"
