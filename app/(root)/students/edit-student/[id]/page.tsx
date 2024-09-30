@@ -14,22 +14,133 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CustomInput from "@/components/ui/CustomInput";
-import { newParentFormSchema, newStudentFormSchema, parseStringify } from "@/lib/utils";
+import {
+  newParentFormSchema,
+  newStudentFormSchema,
+  parseStringify,
+} from "@/lib/utils";
 
 import dynamic from "next/dynamic";
 import { error } from "console";
 import { useRouter } from "next/navigation";
-import { newStudent } from "@/lib/actions/user.actions";
+import { newStudent, updateStudent } from "@/lib/actions/user.actions";
+import { DialogContent, DialogDescription } from "@/components/ui/dialog";
+import Link from "next/link";
+import { ChevronLeft } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+
 
 const SearchAddress = dynamic(() => import("@/components/ui/search-address"), {
   ssr: false,
 });
 
-const NewStudentForm = ({params}: {params: {id: string}}) => {
+const NewStudentForm = ({ params }: { params: { id: string } }) => {
   const [currentTab, setCurrentTab] = useState("guardian1");
-  const [formData, setFormData] = useState({});
+  const [formData, setFormData] = useState({
+    firstName: "",
+    secondName: "",
+    surname: "",
+    dateOfBirth: "",
+    age: "",
+    gender: "",
+    address1: "",
+    city: "",
+    postalCode: "",
+    province: "",
+    homeLanguage: "",
+    allergies: "",
+    medicalAidScheme: "",
+    medicalAidNumber: "",
+    studentClass: "",
+    p1_firstName: "",
+    p1_surname: "",
+    p1_address1: "",
+    p1_city: "",
+    p1_province: "",
+    p1_postalCode: "",
+    p1_dateOfBirth: "",
+    p1_gender: "",
+    p1_idNumber: "",
+    p1_occupation: "",
+    p1_phoneNumber: "",
+    p1_email: "",
+    p1_workNumber: "",
+    p1_relationship: "",
+    p2_firstName: "",
+    p2_surname: "",
+    p2_address1: "",
+    p2_city: "",
+    p2_province: "",
+    p2_postalCode: "",
+    p2_dateOfBirth: "",
+    p2_gender: "",
+    p2_idNumber: "",
+    p2_occupation: "",
+    p2_phoneNumber: "",
+    p2_email: "",
+    p2_workNumber: "",
+    p2_relationship: "",
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+
+
+
+  const router = useRouter();
+
+  // useEffect(() => {
+  //   console.log("Current formData:", formData);
+  // }, [formData]);
+
+  const studentFormSchema = newStudentFormSchema();
+  const form = useForm<z.infer<typeof studentFormSchema>>({
+    resolver: zodResolver(studentFormSchema),
+    // defaultValues: {
+    //   firstName: formData?.firstName,
+    //   secondName: formData?.secondName,
+    //   surname: formData?.surname,
+    //   dateOfBirth: formData?.dateOfBirth,
+    //   age: formData?.age,
+    //   gender: formData?.gender,
+    //   address1: formData?.address1,
+    //   city: formData?.city,
+    //   province: formData?.province,
+    //   homeLanguage: formData?.homeLanguage,
+    //   allergies: formData?.allergies,
+    //   medicalAidScheme: formData?.medicalAidScheme,
+    //   medicalAidNumber: formData?.medicalAidNumber,
+    //   studentClass: formData?.studentClass,
+    //   p1_firstName: formData?.p1_firstName,
+    //   p1_surname: formData?.p1_surname,
+    //   p1_address1: formData?.p1_address1,
+    //   p1_city: formData?.p1_city,
+    //   p1_province: formData?.p1_province,
+    //   p1_postalCode: formData?.p1_postalCode,
+    //   p1_dateOfBirth: formData?.p1_dateOfBirth,
+    //   p1_gender: formData?.p1_gender,
+    //   p1_idNumber: formData?.p1_idNumber,
+    //   p1_occupation: formData?.p1_occupation,
+    //   p1_phoneNumber: formData?.p1_phoneNumber,
+    //   p1_email: formData?.p1_email,
+    //   p1_workNumber: formData?.p1_workNumber,
+    //   p1_relationship: formData?.p1_relationship,
+    //   p2_firstName: formData?.p2_firstName,
+    //   p2_surname: formData?.p2_surname,
+    //   p2_address1: formData?.p2_address1,
+    //   p2_city:  formData?.p2_city,
+    //   p2_province: formData?.p2_province,
+    //   p2_postalCode: formData?.p2_postalCode,
+    //   p2_dateOfBirth: formData?.p2_dateOfBirth,
+    //   p2_gender: formData?.p2_gender,
+    //   p2_idNumber: formData?.p2_idNumber,
+    //   p2_occupation: formData?.p2_occupation,
+    //   p2_phoneNumber: formData?.p2_phoneNumber,
+    //   p2_email: formData?.p2_email,
+    //   p2_workNumber: formData?.p2_workNumber,
+    //   p2_relationship: formData?.p2_relationship,
+    // },
+  });
 
   useEffect(() => {
     const fetchStudentData = async () => {
@@ -40,8 +151,15 @@ const NewStudentForm = ({params}: {params: {id: string}}) => {
         }
         const studentData = await response.json();
         console.log("Student Data:", studentData);
-        setFormData([studentData]);
-        form.reset(studentData);
+
+        // Update formData state
+        setFormData(studentData.student); 
+
+        // Update form values using form.setValue
+        Object.keys(studentData.student).forEach((key) => {
+          form.setValue(key, studentData.student[key]);
+        });
+
       } catch (error) {
         console.error("Error fetching student data:", error);
       }
@@ -49,11 +167,13 @@ const NewStudentForm = ({params}: {params: {id: string}}) => {
     fetchStudentData();
   }, []);
 
-  const router = useRouter();
+  const onSubmit = async (data: z.infer<typeof studentFormSchema>) => {
+    // Set confirmation dialog open
+    setIsConfirmOpen(true);
 
-  // useEffect(() => {
-  //   console.log("Current formData:", formData);
-  // }, [formData]);
+    // Store form data for later use in handleConfirmUpdate
+    setFormData(data);
+  };
 
   const studentFormSchema = newStudentFormSchema();
   const form = useForm<z.infer<typeof studentFormSchema>>({
@@ -97,23 +217,21 @@ const NewStudentForm = ({params}: {params: {id: string}}) => {
   });
   
 
-  const onSubmit = async (data: z.infer<typeof studentFormSchema>) => {
-    console.log("Form data:", data);
-    console.log("Submit");
     setIsLoading(true);
     try {
-      const addNewStudent = await newStudent(data);
-      console.log("Add new Student "+ addNewStudent);
+      // Use formData from state, NOT the data from onSubmit
+      const addNewStudent = await updateStudent(formData, params.id);
+      console.log("Update Student " + addNewStudent);
+
+      // Redirect to students page after successful update
+      router.push('/students'); 
     } catch (error) {
       console.error("Error submitting form:", error);
       setError("An error occurred while submitting the form.");
     } finally {
       setIsLoading(false);
     }
-    setFormData(data);
-    console.log("Form data ready for Appwrite:", data);
   };
-  
 
   const handleTabChange = (tab: string) => {
     setCurrentTab(tab);
@@ -155,61 +273,88 @@ const NewStudentForm = ({params}: {params: {id: string}}) => {
   const calculateAge = (birthDate: string): string => {
     const today = new Date();
     const birth = new Date(birthDate);
-    let months = (today.getFullYear() - birth.getFullYear()) * 12 + (today.getMonth() - birth.getMonth());
-    
+    let months =
+      (today.getFullYear() - birth.getFullYear()) * 12 +
+      (today.getMonth() - birth.getMonth());
+
     if (months < 12) {
-      return `${months} month${months !== 1 ? 's' : ''}`;
+      return `${months} month${months !== 1 ? "s" : ""}`;
     } else {
       let years = Math.floor(months / 12);
       // Check if birthday is later this year
-      if (today.getMonth() < birth.getMonth() || (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate())) {
+      if (
+        today.getMonth() < birth.getMonth() ||
+        (today.getMonth() === birth.getMonth() &&
+          today.getDate() < birth.getDate())
+      ) {
         years += 1;
       }
-      return parseStringify(`${years} year${years !== 1 ? 's' : ''}`);
+      return parseStringify(`${years} year${years !== 1 ? "s" : ""}`);
     }
   };
 
   // const form = useForm()
   return (
     <div className="flex flex-col gap-4">
-       
+      <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
+      <AlertDialogTrigger asChild>
+        {/* <Button type="submit" disabled={isLoading} className="form-btn">
+          {isLoading ? "Updating..." : "Update"}
+        </Button> */}
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>Confirm Update</AlertDialogHeader>
+        <AlertDialogDescription>
+          Are you sure you want to update this students information?
+        </AlertDialogDescription>
+        <AlertDialogFooter>
+          <AlertDialogCancel className=" hover:bg-slate-200" onClick={() => setIsConfirmOpen(false)}>
+            Cancel
+          </AlertDialogCancel>
+          <AlertDialogAction className="bg-orange-200 hover:bg-orange-300 " onClick={handleConfirmUpdate}>
+            Confirm
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
       <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        
-      <div className="grid grid-cols-2 gap-6 bg-orange-50 rounded-lg p-5">
-        {/* ChildInformation//////////////////////////////////////////////////// */}
-        
-        <div className="flex flex-col col-span-1 p-6 pl-6 pr-6 pb-4">
-        <Link href="/students" className=" w-min">
-       <span className=" -mt-6 -ml-4 flex items-center gap-2 hover:text-orange-300">
-      <ChevronLeft className="h-5 w-5  hover:text-orange-300" />
-      Back
-       </span>
-      </Link>
-          <h1 className="pt-5">Edit Child Information</h1>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <div className="grid grid-cols-2 gap-6 bg-orange-50 rounded-lg p-5">
+            {/* ChildInformation//////////////////////////////////////////////////// */}
 
-          <div className="p-4 bg-orange-100 rounded-lg">
-            <div className=" col-span-1">
-              
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="cols-span-1">
-                    <CustomInput
-                      name="firstName"
-                      placeholder="Enter Child Name"
-                      control={form.control}
-                      label={"Name"}
-                    />
-                  </div>
+            <div className="flex flex-col col-span-1 p-6 pl-6 pr-6 pb-4">
+              <Link href="/students" className=" w-min">
+                <span className=" -mt-6 -ml-4 flex items-center gap-2 hover:text-orange-300">
+                  <ChevronLeft className="h-5 w-5  hover:text-orange-300" />
+                  Back
+                </span>
+              </Link>
+              <h1 className="pt-5">Edit Child Information</h1>
 
-                  <div>
-                    <CustomInput
-                      name="secondName"
-                      placeholder="Enter Child Second Name"
-                      control={form.control}
-                      label={"Second Name"}
-                    />
-                  </div>
+              <div className="p-4 bg-orange-100 rounded-lg">
+                <div className=" col-span-1">
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="cols-span-1">
+                      <CustomInput
+                        name="firstName"
+                        placeholder="Enter Child Name"
+                        control={form.control}
+                        label={"Name"}
+                        value={formData.firstName}
+                      />
+                    </div>
 
+                    <div>
+                      <CustomInput
+                        name="secondName"
+                        placeholder="Enter Child Second Name"
+                        control={form.control}
+                        label={"Second Name"}
+                        value={formData.secondName}
+                      />
+                    </div>
+
+<<<<<<< HEAD
                   <div className="col-span-1">
                     <CustomInput
                       name="surname"
@@ -218,46 +363,59 @@ const NewStudentForm = ({params}: {params: {id: string}}) => {
                       label={"Surname"}
                     />
                   </div>
+=======
+                    <div className="col-span-1">
+                      <CustomInput
+                        name="surname"
+                        placeholder="Enter Child Surname"
+                        control={form.control}
+                        label={"Surname"}
+                        value={formData.surname}
+                      />
+                    </div>
+>>>>>>> 14f7fb6445b8c39c863ab31091330c9f4de7cd37
 
-                  <div className="cols-span-1">
-                    <CustomInput
-                      name="dateOfBirth"
-                      placeholder="Enter Child Date of Birth"
-                      control={form.control}
-                      label={"Date of Birth"}
-                      type="date"
-                      onChange={(e) => {
-                        const newValue = e.target.value;
-                      const age = calculateAge(e.target.value);
-                      form.setValue("age", age);
-                    }}
-                    />
-                  </div>
+                    <div className="cols-span-1">
+                      <CustomInput
+                        name="dateOfBirth"
+                        placeholder="Enter Child Date of Birth"
+                        control={form.control}
+                        label={"Date of Birth"}
+                        type="date"
+                        value={formData.dateOfBirth}
+                        onChange={(e) => {
+                          const newValue = e.target.value;
+                          const age = calculateAge(e.target.value);
+                          form.setValue("age", age);
+                        }}
+                      />
+                    </div>
 
-                  <div className="col-span-1">
-                    <CustomInput
-                     name="age"
-                     placeholder="Age will be calculated"
-                     control={form.control}
-                     label={"Age"}
-                     readonly={true}
-                    />
-                  </div>
+                    <div className="col-span-1">
+                      <CustomInput
+                        name="age"
+                        placeholder="Age will be calculated"
+                        control={form.control}
+                        label={"Age"}
+                        readonly={true}
+                      />
+                    </div>
 
-                  <div className="col-span-1">
-                    <CustomInput
-                      name="gender"
-                      placeholder="Select Gender"
-                      control={form.control}
-                      label={"Gender"}
-                      select={true}
-                      options={[
-                        { label: "Male", value: "Male" },
-                        { label: "Female", value: "Female" },
-                      ]}
-                    />
-                  </div>
-{/* 
+                    <div className="col-span-1">
+                      <CustomInput
+                        name="gender"
+                        placeholder="Select Gender"
+                        control={form.control}
+                        label={"Gender"}
+                        value={formData.gender}
+                        select={true}
+                        options={[
+                          { label: "Male", value: "Male" },
+                          { label: "Female", value: "Female" },
+                        ]}
+                      />
+                    </div>
+                    {/* 
                   <div className="cols-span-1">
                     <CustomInput
                       name="address1"
@@ -268,6 +426,7 @@ const NewStudentForm = ({params}: {params: {id: string}}) => {
                     />
                   </div> */}
 
+<<<<<<< HEAD
                   <div className="cols-span-1">
                     <CustomInput
                       name="address1"
@@ -276,74 +435,120 @@ const NewStudentForm = ({params}: {params: {id: string}}) => {
                       label={"Address"}
                     />
                   </div>
+=======
+                    <div className="cols-span-1">
+                      <CustomInput
+                        name="address1"
+                        placeholder="Enter Child Address"
+                        control={form.control}
+                        label={"Address"}
+                        value={formData.address1}
+                      />
+                    </div>
 
-                  <div className="col-span-1">
-                    <CustomInput
-                      name="homeLanguage"
-                      placeholder="Home Language"
-                      control={form.control}
-                      label={"Home Language"}
-                    />
-                  </div>
-                  <div className="col-span-1">
-                    <CustomInput
-                      name="allergies"
-                      placeholder="Allergies"
-                      control={form.control}
-                      label={"Allergies"}
-                    />
-                  </div>
+                    <div className="col-span-1">
+                      <CustomInput
+                        name="city"
+                        placeholder="Enter City"
+                        control={form.control}
+                        label={"City"}
+                        value={formData.city}
+                      />
+                    </div>
 
-                  <div className="col-span-1">
-                    <CustomInput
-                      name="medicalAidNumber"
-                      placeholder="Medical Aid Number"
-                      control={form.control}
-                      label={"Medical Aid Number"}
-                    />
-                  </div>
+                    <div className="cols-span-1">
+                      <CustomInput
+                        name="postalCode"
+                        placeholder="Enter Postal Code"
+                        control={form.control}
+                        label={"Postal Code"}
+                        value={formData.postalCode}
+                      />
+                    </div>
 
-                  <div className="col-span-1">
-                    <CustomInput
-                      name="medicalAidScheme"
-                      placeholder="Medical Aid Scheme"
-                      control={form.control}
-                      label={"Medical Aid Scheme"}
-                    />
-                  </div>
+                    <div className="cols-span-1">
+                      <CustomInput
+                        name="province"
+                        placeholder="Enter Province"
+                        control={form.control}
+                        label={"Province"}
+                        value={formData.province}
+                      />
+                    </div>
+>>>>>>> 14f7fb6445b8c39c863ab31091330c9f4de7cd37
 
-                  <div className="col-span-1">
-                    <CustomInput
-                      name="studentClass"
-                      placeholder="Class"
-                      control={form.control}
-                      label={"Class"}
-                    />
+                    <div className="col-span-1">
+                      <CustomInput
+                        name="homeLanguage"
+                        placeholder="Home Language"
+                        control={form.control}
+                        label={"Home Language"}
+                        value={formData.homeLanguage}
+                      />
+                    </div>
+                    <div className="col-span-1">
+                      <CustomInput
+                        name="allergies"
+                        placeholder="Allergies"
+                        control={form.control}
+                        label={"Allergies"}
+                        value={formData.allergies}
+                      />
+                    </div>
+
+                    <div className="col-span-1">
+                      <CustomInput
+                        name="medicalAidNumber"
+                        placeholder="Medical Aid Number"
+                        control={form.control}
+                        label={"Medical Aid Number"}
+                        value={formData.medicalAidNumber}
+                      />
+                    </div>
+
+                    <div className="col-span-1">
+                      <CustomInput
+                        name="medicalAidScheme"
+                        placeholder="Medical Aid Scheme"
+                        control={form.control}
+                        label={"Medical Aid Scheme"}
+                        value={formData.medicalAidScheme}
+                      />
+                    </div>
+
+                    <div className="col-span-1">
+                      <CustomInput
+                        name="studentClass"
+                        placeholder="Class"
+                        control={form.control}
+                        label={"Class"}
+                        value={formData.studentClass}
+                      />
+                    </div>
                   </div>
+                  
                 </div>
-             
+              </div>
             </div>
-          </div>
-        </div>
-        {/* ParentInformation//////////////////////////////////////////////////// */}
-        <div className="flex flex-col col-span-1 p-6 rounded-lg bg-white shadow-lg">
-          <h1>Parent Information</h1>
-          <Tabs defaultValue="guardian1" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 bg-orange-100">
-              <TabsTrigger
-                value="guardian1"
-                onClick={() => handleTabChange("guardian1")}
-              >
-                Guardian 1
-              </TabsTrigger>
-              <TabsTrigger
-                value="guardian2"
-                onClick={() => handleTabChange("guardian2")}
-              >
-                Guardian 2
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent value="guardian1">
+            {/* ParentInformation//////////////////////////////////////////////////// */}
+            <div className="flex flex-col col-span-1 p-6 rounded-lg bg-white shadow-lg">
+              <h1>Parent Information</h1>
+              <Tabs defaultValue="guardian1" className="w-full">
+                <TabsList className="grid w-full grid-cols-2 bg-orange-100">
+                  <TabsTrigger
+                    value="guardian1"
+                    onClick={() => handleTabChange("guardian1")}
+                  >
+                    Guardian 1
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="guardian2"
+                    onClick={() => handleTabChange("guardian2")}
+                  >
+                    Guardian 2
+                  </TabsTrigger>
+                </TabsList>
+                <TabsContent value="guardian1">
                   <div className="grid grid-cols-2 gap-2">
                     <div className=" col-span-2 pt-1 w-full">
                       <CustomInput
@@ -351,6 +556,7 @@ const NewStudentForm = ({params}: {params: {id: string}}) => {
                         placeholder="Select Relationship"
                         control={form.control}
                         label={"Relationship"}
+                        value={formData.p1_relationship}
                         select={true}
                         options={[
                           { label: "Mother", value: "Mother" },
@@ -366,6 +572,7 @@ const NewStudentForm = ({params}: {params: {id: string}}) => {
                         placeholder="Enter Name"
                         control={form.control}
                         label={"Name"}
+                        value={formData.p1_firstName}
                       />
                     </div>
                     <div className="cols-span-1">
@@ -374,6 +581,7 @@ const NewStudentForm = ({params}: {params: {id: string}}) => {
                         placeholder="Enter Surname"
                         control={form.control}
                         label={"Surname"}
+                        value={formData.p1_surname}
                       />
                     </div>
                     <div className="cols-span-1">
@@ -383,6 +591,7 @@ const NewStudentForm = ({params}: {params: {id: string}}) => {
                         control={form.control}
                         label={"Email"}
                         type="email"
+                        value={formData.p1_email}
                       />
                     </div>
                     <div className="cols-span-1">
@@ -391,6 +600,7 @@ const NewStudentForm = ({params}: {params: {id: string}}) => {
                         placeholder="Enter Phone Number"
                         control={form.control}
                         label={"Phone Number"}
+                        value={formData.p1_phoneNumber}
                       />
                     </div>
                     {/* <div className="cols-span-1">
@@ -407,6 +617,7 @@ const NewStudentForm = ({params}: {params: {id: string}}) => {
                         placeholder="Enter ID Number"
                         control={form.control}
                         label={"ID Number"}
+                        value={formData.p1_idNumber}
                       />
                     </div>
                     <div className="cols-span-1">
@@ -415,11 +626,12 @@ const NewStudentForm = ({params}: {params: {id: string}}) => {
                         placeholder="Enter gender"
                         control={form.control}
                         label={"Gender"}
-                      select={true}
-                      options={[
-                        { label: "Male", value: "Male" },
-                        { label: "Female", value: "Female" },
-                      ]}
+                        value={formData.p1_gender}
+                        select={true}
+                        options={[
+                          { label: "Male", value: "Male" },
+                          { label: "Female", value: "Female" },
+                        ]}
                       />
                     </div>
                     <div className="cols-span-1">
@@ -429,12 +641,13 @@ const NewStudentForm = ({params}: {params: {id: string}}) => {
                         control={form.control}
                         label={"Date Of Birth"}
                         type="date"
+                        value={formData.p1_dateOfBirth}
                       />
                     </div>
                     <div></div>
                     {/* <div className="w-full col-span-2"> */}
-                      {/* <SearchAddress onSelectLocation={(location) => console.log(location)} /> */}
-                      {/* <CustomInput
+                    {/* <SearchAddress onSelectLocation={(location) => console.log(location)} /> */}
+                    {/* <CustomInput
                         name="p1_address1"
                         placeholder="Enter Address"
                         control={form.control}
@@ -449,14 +662,50 @@ const NewStudentForm = ({params}: {params: {id: string}}) => {
                         placeholder="Enter Address"
                         control={form.control}
                         label={"Address"}
+                        value={formData.p1_address1}
                       />
                     </div>
+<<<<<<< HEAD
+=======
+
+                    <div className="cols-span-1">
+                      <CustomInput
+                        name="p1_city"
+                        placeholder="Enter City"
+                        control={form.control}
+                        label={"City"}
+                        value={formData.p1_city}
+                      />
+                    </div>
+
+                    <div className="cols-span-1">
+                      <CustomInput
+                        name="p1_postalCode"
+                        placeholder="Enter Postal Code"
+                        control={form.control}
+                        label={"Postal Code"}
+                        value={formData.p1_postalCode}
+                      />
+                    </div>
+
+                    <div className="cols-span-1">
+                      <CustomInput
+                        name="p1_province"
+                        placeholder="Enter Province"
+                        control={form.control}
+                        label={"Province"}
+                        value={formData.p1_province}
+                      />
+                    </div>
+
+>>>>>>> 14f7fb6445b8c39c863ab31091330c9f4de7cd37
                     <div className="cols-span-1">
                       <CustomInput
                         name="p1_occupation"
                         placeholder="Enter Employer Name"
                         control={form.control}
                         label={"Employer"}
+                        value={formData.p1_occupation}
                       />
                     </div>
                     <div className="cols-span-1">
@@ -465,11 +714,12 @@ const NewStudentForm = ({params}: {params: {id: string}}) => {
                         placeholder="Enter Employer Phone Number"
                         control={form.control}
                         label={"Employer Phone Number"}
+                        value={formData.p1_workNumber}
                       />
                     </div>
                   </div>
-            </TabsContent>
-            <TabsContent value="guardian2">
+                </TabsContent>
+                <TabsContent value="guardian2">
                   <div className="grid grid-cols-2 gap-2">
                     <div className="col-span-2 pt-1 w-full">
                       <CustomInput
@@ -477,6 +727,7 @@ const NewStudentForm = ({params}: {params: {id: string}}) => {
                         placeholder="Select Relationship"
                         control={form.control}
                         label={"Relationship"}
+                        value={formData.p2_relationship}
                         select={true}
                         options={[
                           { label: "Mother", value: "Mother" },
@@ -492,6 +743,7 @@ const NewStudentForm = ({params}: {params: {id: string}}) => {
                         placeholder="Enter Name"
                         control={form.control}
                         label={"Name"}
+                        value={formData.p2_firstName}
                       />
                     </div>
                     <div className="cols-span-1">
@@ -500,6 +752,7 @@ const NewStudentForm = ({params}: {params: {id: string}}) => {
                         placeholder="Enter Surname"
                         control={form.control}
                         label={"Surname"}
+                        value={formData.p2_surname}
                       />
                     </div>
                     <div className="cols-span-1">
@@ -509,6 +762,7 @@ const NewStudentForm = ({params}: {params: {id: string}}) => {
                         control={form.control}
                         label={"Email"}
                         type="email"
+                        value={formData.p2_email}
                       />
                     </div>
                     <div className="cols-span-1">
@@ -517,6 +771,7 @@ const NewStudentForm = ({params}: {params: {id: string}}) => {
                         placeholder="Enter Phone Number"
                         control={form.control}
                         label={"Phone Number"}
+                        value={formData.p2_phoneNumber}
                       />
                     </div>
                     <div className="cols-span-1">
@@ -525,6 +780,7 @@ const NewStudentForm = ({params}: {params: {id: string}}) => {
                         placeholder="Enter Employer"
                         control={form.control}
                         label={"Employer"}
+                        value={formData.p2_occupation}
                       />
                     </div>
                     <div className="cols-span-1">
@@ -533,6 +789,7 @@ const NewStudentForm = ({params}: {params: {id: string}}) => {
                         placeholder="Enter ID Number"
                         control={form.control}
                         label={"ID Number"}
+                        value={formData.p2_idNumber}
                       />
                     </div>
                     <div></div>
@@ -542,8 +799,42 @@ const NewStudentForm = ({params}: {params: {id: string}}) => {
                         placeholder="Enter Address"
                         control={form.control}
                         label={"Address"}
+                        value={formData.p2_address1}
                       />
                     </div>
+<<<<<<< HEAD
+=======
+
+                    <div className="cols-span-1">
+                      <CustomInput
+                        name="p2_city"
+                        placeholder="Enter City"
+                        control={form.control}
+                        label={"City"}
+                        value={formData.p2_city}
+                      />
+                    </div>
+
+                    <div className="cols-span-1">
+                      <CustomInput
+                        name="p2_postalCode"
+                        placeholder="Enter Postal Code"
+                        control={form.control}
+                        label={"Postal Code"}
+                        value={formData.p2_postalCode}
+                      />
+                    </div>
+
+                    <div className="cols-span-1">
+                      <CustomInput
+                        name="p2_province"
+                        placeholder="Enter Province"
+                        control={form.control}
+                        label={"Province"}
+                        value={formData.p2_province}
+                      />
+                    </div>
+>>>>>>> 14f7fb6445b8c39c863ab31091330c9f4de7cd37
                     {/* <div className="w-full col-span-2">
                       <CustomInput
                         name="p2_address1"
@@ -559,6 +850,7 @@ const NewStudentForm = ({params}: {params: {id: string}}) => {
                         placeholder="Enter Employer Name"
                         control={form.control}
                         label={"Employer"}
+                        value={formData.p2_occupation}
                       />
                     </div>
                     <div className="cols-span-1">
@@ -567,35 +859,33 @@ const NewStudentForm = ({params}: {params: {id: string}}) => {
                         placeholder="Enter Employer Phone Number"
                         control={form.control}
                         label={"Employer Phone Number"}
+                        value={formData.p2_workNumber}
                       />
                     </div>
                   </div>
-            </TabsContent>
-          </Tabs>
-        </div>
-        <Button type="submit" disabled={isLoading} className="form-btn">
-          {isLoading ? "Adding..." : "Add Student"}
-        </Button>
-        </div>
-        {error && <div className="text-red-500">{error}</div>}
+                </TabsContent>
+              </Tabs>
+            </div>
+            <Button type="submit" disabled={isLoading} className="form-btn">
+                    {isLoading ? "Updating..." : "Update"}
+                  </Button>
+            
+          </div>
+          {error && <div className="text-red-500">{error}</div>}
         </form>
-        
       </Form>
-      
     </div>
   );
 };
 
 export default NewStudentForm;
 
-import { DialogContent, DialogDescription } from "@/components/ui/dialog";
-import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
 
 // ... in your component
 <DialogContent>
   <DialogDescription>
-    This is a description of the dialog content. It provides context for screen readers.
+    This is a description of the dialog content. It provides context for screen
+    readers.
   </DialogDescription>
   {/* Your existing dialog content */}
-</DialogContent>
+</DialogContent>;
