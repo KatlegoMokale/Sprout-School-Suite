@@ -338,6 +338,7 @@ const NewStudentForm = () => {
                       label={"Class"}
                     />
                   </div>
+                  
                 </div>
              
             </div>

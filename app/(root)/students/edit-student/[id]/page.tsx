@@ -24,6 +24,11 @@ import dynamic from "next/dynamic";
 import { error } from "console";
 import { useRouter } from "next/navigation";
 import { newStudent, updateStudent } from "@/lib/actions/user.actions";
+import { DialogContent, DialogDescription } from "@/components/ui/dialog";
+import Link from "next/link";
+import { ChevronLeft } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+
 
 const SearchAddress = dynamic(() => import("@/components/ui/search-address"), {
   ssr: false,
@@ -271,10 +276,10 @@ const NewStudentForm = ({ params }: { params: { id: string } }) => {
           Are you sure you want to update this students information?
         </AlertDialogDescription>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={() => setIsConfirmOpen(false)}>
+          <AlertDialogCancel className=" hover:bg-slate-200" onClick={() => setIsConfirmOpen(false)}>
             Cancel
           </AlertDialogCancel>
-          <AlertDialogAction className="bg-orange-200" onClick={handleConfirmUpdate}>
+          <AlertDialogAction className="bg-orange-200 hover:bg-orange-300 " onClick={handleConfirmUpdate}>
             Confirm
           </AlertDialogAction>
         </AlertDialogFooter>
@@ -467,6 +472,7 @@ const NewStudentForm = ({ params }: { params: { id: string } }) => {
                       />
                     </div>
                   </div>
+                  
                 </div>
               </div>
             </div>
@@ -800,6 +806,9 @@ const NewStudentForm = ({ params }: { params: { id: string } }) => {
                 </TabsContent>
               </Tabs>
             </div>
+            <Button type="submit" disabled={isLoading} className="form-btn">
+                    {isLoading ? "Updating..." : "Update"}
+                  </Button>
             
           </div>
           {error && <div className="text-red-500">{error}</div>}
@@ -811,10 +820,6 @@ const NewStudentForm = ({ params }: { params: { id: string } }) => {
 
 export default NewStudentForm;
 
-import { DialogContent, DialogDescription } from "@/components/ui/dialog";
-import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 // ... in your component
 <DialogContent>
