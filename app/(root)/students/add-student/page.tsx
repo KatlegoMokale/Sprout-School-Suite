@@ -138,10 +138,11 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
     try {
       const addNewStudent = await newStudent(data);
       console.log("Add new Student "+ addNewStudent);
+      router.push('/students');
     } catch (error) {
       console.error("Error submitting form:", error);
       setError("An error occurred while submitting the form.");
-      router.push('/students'); 
+       
     } finally {
       setIsLoading(false);
     }

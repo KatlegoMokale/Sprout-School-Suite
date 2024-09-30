@@ -85,61 +85,12 @@ const NewStudentForm = ({ params }: { params: { id: string } }) => {
   const [error, setError] = useState<string | null>(null);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
-
-
   const router = useRouter();
-
-  // useEffect(() => {
-  //   console.log("Current formData:", formData);
-  // }, [formData]);
 
   const studentFormSchema = newStudentFormSchema();
   const form = useForm<z.infer<typeof studentFormSchema>>({
     resolver: zodResolver(studentFormSchema),
-    // defaultValues: {
-    //   firstName: formData?.firstName,
-    //   secondName: formData?.secondName,
-    //   surname: formData?.surname,
-    //   dateOfBirth: formData?.dateOfBirth,
-    //   age: formData?.age,
-    //   gender: formData?.gender,
-    //   address1: formData?.address1,
-    //   city: formData?.city,
-    //   province: formData?.province,
-    //   homeLanguage: formData?.homeLanguage,
-    //   allergies: formData?.allergies,
-    //   medicalAidScheme: formData?.medicalAidScheme,
-    //   medicalAidNumber: formData?.medicalAidNumber,
-    //   studentClass: formData?.studentClass,
-    //   p1_firstName: formData?.p1_firstName,
-    //   p1_surname: formData?.p1_surname,
-    //   p1_address1: formData?.p1_address1,
-    //   p1_city: formData?.p1_city,
-    //   p1_province: formData?.p1_province,
-    //   p1_postalCode: formData?.p1_postalCode,
-    //   p1_dateOfBirth: formData?.p1_dateOfBirth,
-    //   p1_gender: formData?.p1_gender,
-    //   p1_idNumber: formData?.p1_idNumber,
-    //   p1_occupation: formData?.p1_occupation,
-    //   p1_phoneNumber: formData?.p1_phoneNumber,
-    //   p1_email: formData?.p1_email,
-    //   p1_workNumber: formData?.p1_workNumber,
-    //   p1_relationship: formData?.p1_relationship,
-    //   p2_firstName: formData?.p2_firstName,
-    //   p2_surname: formData?.p2_surname,
-    //   p2_address1: formData?.p2_address1,
-    //   p2_city:  formData?.p2_city,
-    //   p2_province: formData?.p2_province,
-    //   p2_postalCode: formData?.p2_postalCode,
-    //   p2_dateOfBirth: formData?.p2_dateOfBirth,
-    //   p2_gender: formData?.p2_gender,
-    //   p2_idNumber: formData?.p2_idNumber,
-    //   p2_occupation: formData?.p2_occupation,
-    //   p2_phoneNumber: formData?.p2_phoneNumber,
-    //   p2_email: formData?.p2_email,
-    //   p2_workNumber: formData?.p2_workNumber,
-    //   p2_relationship: formData?.p2_relationship,
-    // },
+  
   });
 
   useEffect(() => {
@@ -175,48 +126,8 @@ const NewStudentForm = ({ params }: { params: { id: string } }) => {
     setFormData(data);
   };
 
-  const studentFormSchema = newStudentFormSchema();
-  const form = useForm<z.infer<typeof studentFormSchema>>({
-    resolver: zodResolver(studentFormSchema),
-    defaultValues: {
-      firstName: "",
-      secondName: "",
-      surname: "",
-      dateOfBirth: "",
-      age: "",
-      gender: "",
-      address1: "",
-      homeLanguage: "",
-      allergies: "",
-      medicalAidScheme: "",
-      medicalAidNumber: "",
-      studentClass: "",
-      p1_firstName: "",
-      p1_surname: "",
-      p1_address1: "",
-      p1_dateOfBirth: "",
-      p1_gender: "",
-      p1_idNumber: "",
-      p1_occupation: "",
-      p1_phoneNumber: "",
-      p1_email: "",
-      p1_workNumber: "",
-      p1_relationship: "",
-      p2_firstName: "",
-      p2_surname: "",
-      p2_address1: "",
-      p2_dateOfBirth: "",
-      p2_gender: "",
-      p2_idNumber: "",
-      p2_occupation: "",
-      p2_phoneNumber: "",
-      p2_email: "",
-      p2_workNumber: "",
-      p2_relationship: "",
-    },
-  });
-  
-
+  const handleConfirmUpdate = async () => {
+    // Close Dialog
     setIsLoading(true);
     try {
       // Use formData from state, NOT the data from onSubmit
@@ -354,7 +265,6 @@ const NewStudentForm = ({ params }: { params: { id: string } }) => {
                       />
                     </div>
 
-<<<<<<< HEAD
                   <div className="col-span-1">
                     <CustomInput
                       name="surname"
@@ -363,17 +273,6 @@ const NewStudentForm = ({ params }: { params: { id: string } }) => {
                       label={"Surname"}
                     />
                   </div>
-=======
-                    <div className="col-span-1">
-                      <CustomInput
-                        name="surname"
-                        placeholder="Enter Child Surname"
-                        control={form.control}
-                        label={"Surname"}
-                        value={formData.surname}
-                      />
-                    </div>
->>>>>>> 14f7fb6445b8c39c863ab31091330c9f4de7cd37
 
                     <div className="cols-span-1">
                       <CustomInput
@@ -426,56 +325,14 @@ const NewStudentForm = ({ params }: { params: { id: string } }) => {
                     />
                   </div> */}
 
-<<<<<<< HEAD
                   <div className="cols-span-1">
                     <CustomInput
                       name="address1"
                       placeholder="Enter Child Address"
                       control={form.control}
-                      label={"Address"}
+                      label={formData.address1}
                     />
                   </div>
-=======
-                    <div className="cols-span-1">
-                      <CustomInput
-                        name="address1"
-                        placeholder="Enter Child Address"
-                        control={form.control}
-                        label={"Address"}
-                        value={formData.address1}
-                      />
-                    </div>
-
-                    <div className="col-span-1">
-                      <CustomInput
-                        name="city"
-                        placeholder="Enter City"
-                        control={form.control}
-                        label={"City"}
-                        value={formData.city}
-                      />
-                    </div>
-
-                    <div className="cols-span-1">
-                      <CustomInput
-                        name="postalCode"
-                        placeholder="Enter Postal Code"
-                        control={form.control}
-                        label={"Postal Code"}
-                        value={formData.postalCode}
-                      />
-                    </div>
-
-                    <div className="cols-span-1">
-                      <CustomInput
-                        name="province"
-                        placeholder="Enter Province"
-                        control={form.control}
-                        label={"Province"}
-                        value={formData.province}
-                      />
-                    </div>
->>>>>>> 14f7fb6445b8c39c863ab31091330c9f4de7cd37
 
                     <div className="col-span-1">
                       <CustomInput
@@ -665,40 +522,6 @@ const NewStudentForm = ({ params }: { params: { id: string } }) => {
                         value={formData.p1_address1}
                       />
                     </div>
-<<<<<<< HEAD
-=======
-
-                    <div className="cols-span-1">
-                      <CustomInput
-                        name="p1_city"
-                        placeholder="Enter City"
-                        control={form.control}
-                        label={"City"}
-                        value={formData.p1_city}
-                      />
-                    </div>
-
-                    <div className="cols-span-1">
-                      <CustomInput
-                        name="p1_postalCode"
-                        placeholder="Enter Postal Code"
-                        control={form.control}
-                        label={"Postal Code"}
-                        value={formData.p1_postalCode}
-                      />
-                    </div>
-
-                    <div className="cols-span-1">
-                      <CustomInput
-                        name="p1_province"
-                        placeholder="Enter Province"
-                        control={form.control}
-                        label={"Province"}
-                        value={formData.p1_province}
-                      />
-                    </div>
-
->>>>>>> 14f7fb6445b8c39c863ab31091330c9f4de7cd37
                     <div className="cols-span-1">
                       <CustomInput
                         name="p1_occupation"
@@ -802,39 +625,6 @@ const NewStudentForm = ({ params }: { params: { id: string } }) => {
                         value={formData.p2_address1}
                       />
                     </div>
-<<<<<<< HEAD
-=======
-
-                    <div className="cols-span-1">
-                      <CustomInput
-                        name="p2_city"
-                        placeholder="Enter City"
-                        control={form.control}
-                        label={"City"}
-                        value={formData.p2_city}
-                      />
-                    </div>
-
-                    <div className="cols-span-1">
-                      <CustomInput
-                        name="p2_postalCode"
-                        placeholder="Enter Postal Code"
-                        control={form.control}
-                        label={"Postal Code"}
-                        value={formData.p2_postalCode}
-                      />
-                    </div>
-
-                    <div className="cols-span-1">
-                      <CustomInput
-                        name="p2_province"
-                        placeholder="Enter Province"
-                        control={form.control}
-                        label={"Province"}
-                        value={formData.p2_province}
-                      />
-                    </div>
->>>>>>> 14f7fb6445b8c39c863ab31091330c9f4de7cd37
                     {/* <div className="w-full col-span-2">
                       <CustomInput
                         name="p2_address1"
