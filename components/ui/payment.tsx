@@ -1,5 +1,5 @@
 "use client"
-import React from 'react'
+import React, { useState } from 'react'
 import { Button } from "@/components/ui/button"
 
 import { Input } from "@/components/ui/input"
@@ -12,6 +12,8 @@ import { useForm } from 'react-hook-form'
 import CustomInput from '@/components/ui/CustomInput'
 import CustomInputPayment from './CustomInputPayment'
 import { Search } from 'lucide-react'
+import { newPayment } from '@/lib/actions/user.actions'
+import { useRouter } from 'next/navigation'
 
 interface PaymentProps {
   student: IStudent | null;
@@ -19,29 +21,51 @@ interface PaymentProps {
 
 const Payment: React.FC<PaymentProps> = ({ student }) => {
 
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string| null>(null);
+  const [formData, setFormData] = useState({});
+  const router = useRouter();
+
+
   const newPayemntFormSchema = paymentFormSchema();
   const form = useForm<z.infer<typeof newPayemntFormSchema>>({
     resolver: zodResolver(newPayemntFormSchema),
     defaultValues: {
       firstName:student?.firstName,
       surname: student?.surname,
-      amount: 0,
+      amount: 11,
       paymentMethod: "",
       paymentDate: "",
-      studentId: student?.studentId,
-      datecreated: "",
+      studentId: student?.$id,
     },
   });
 
-  const onSubmit = (values: z.infer<typeof newPayemntFormSchema>) => {
-    console.log(values);
-  }
+  const onSubmit = async (data: z.infer<typeof newPayemntFormSchema>) => {
+    console.log("Form data:", data);
+    console.log("Submit");
+    setIsLoading(true);
+    try {
+      const addNewPayment = await newPayment(data);
+      console.log("Add new Payment "+ addNewPayment);
+      // router.push('/transactions');
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      setError("An error occurred while submitting the form.");
+       
+    } finally {
+      setIsLoading(false);
+    }
+    setFormData(data);
+    console.log("Form data ready for Appwrite:", data);
+  };
+
 
 
   return (
         <div className=" ">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-2 gap-4 py-4">
+
             <CustomInputPayment
               name="firstName"
               control={form.control}
@@ -59,6 +83,7 @@ const Payment: React.FC<PaymentProps> = ({ student }) => {
             control={form.control}
             placeholder="Amount"
             label={'Amount'}
+            type="number"
             />
               <CustomInputPayment
                   name="paymentMethod"
@@ -79,9 +104,13 @@ const Payment: React.FC<PaymentProps> = ({ student }) => {
             placeholder="Payment Date"
             type='date'
             />
+            <Button type="submit" disabled={isLoading} className="form-btn">
+              {isLoading ? "Adding..." : "Add Payment"}
+            </Button>
             </form>
-          </Form>
 
+            
+          </Form>
           
         </div>
   )

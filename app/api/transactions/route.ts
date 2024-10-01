@@ -37,7 +37,7 @@ async function createTransaction(data : {StudentId: string, Type: string; Studen
                 return response.documents;
             } catch (error) {
                 console.error("Error fetching transactions", error);
-                throw new Error("Failed to fetch students");
+                throw new Error("Failed to fetch transactions");
             }
         
         }
@@ -54,25 +54,12 @@ export async function GET() {
 
 export async function POST(request: Request) {
     try {
-        const {
-            StudentId,
-            StudentName,
-            StudentSurname,
-            Amount,
-            DatePaid,
-            Type
-      } = await request.json();
-        const data = {
-            StudentId,
-            StudentName,
-            StudentSurname,
-            Amount,
-            DatePaid,
-            Type
-        }
+        const data = await request.json();
+        console.log("Received data:", data); 
         const response = await createTransaction(data);
         return NextResponse.json({message: "Transaction created successfully"}, {status: 201})
     } catch (error) {
-        return NextResponse.json({message: "Failed to create transaction"}, {status: 500})
+        console.error("Error parsing request body:", error);
+        return NextResponse.json({ message: "Invalid request body" }, { status: 400 });
     }
 }

@@ -63,13 +63,13 @@ declare type NewStudentParms = {
     workNo?:string;
   };
 
-  declare type Transaction = {
-    $id: string;
+  declare type NewPaymentParms = {
     studentId: string;
-    studentName: string;
-    transactionType: "Cash" | "EFT" | "Speed Point";
+    firstName: string;
+    surname: string;
+    paymentMethod: string;
     amount: number;
-    date: string;
+    paymentDate: string;
   }
 
   declare type SchoolFees = {

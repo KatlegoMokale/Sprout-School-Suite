@@ -19,6 +19,8 @@ export function formatAmount(amount: number): string {
 
 export const parseStringify = (value: any) => JSON.parse(JSON.stringify(value));
 
+
+
 export const paymentFormSchema = () => z.object({
   //new payment Form
   studentId: z.string().min(3),
@@ -27,7 +29,6 @@ export const paymentFormSchema = () => z.object({
   amount: z.number().min(1),
   paymentMethod: z.string().min(3),
   paymentDate: z.string().min(3),
-  datecreated: z.string().min(3),
 
 });
 

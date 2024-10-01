@@ -98,9 +98,10 @@ const CustomInputPayment = ({
                  <Input
                   className="input-class"
                   placeholder={placeholder}
-                  type={type !== undefined ? type : "text"}
+                  type={type !== undefined ? type : "text" }
+                  inputMode={type === "number" ? "numeric" : "text"}
                   onChange={(e) => {
-                    const newValue = e.target.value;
+                 const newValue = type === "number" ? parseFloat(e.target.value) : e.target.value;
                     field.onChange(newValue);
                     if (onChange) {
                       onChange(e);
