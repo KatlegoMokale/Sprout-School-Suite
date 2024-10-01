@@ -32,7 +32,8 @@ async function createStudent(data : {
      p1_email: string; p1_workNumber: string; p2_relationship: string; p2_firstName: string; 
      p2_surname: string; p2_address1: string; p2_city: string; p2_province: string; 
      p2_postalCode: string; p2_dateOfBirth: string; p2_gender: string; p2_idNumber: string; 
-     p2_occupation: string; p2_phoneNumber: string; p2_email: string; p2_workNumber: string;}) {
+     p2_occupation: string; p2_phoneNumber: string; p2_email: string; p2_workNumber: string;
+    balance: number, lastPaid: string, studentStatus: string }) {
     
         try {
             const response = await database.createDocument(
@@ -86,7 +87,7 @@ export async function POST(request: Request) {
             p1_gender, p1_idNumber, p1_occupation, p1_phoneNumber, p1_email,
             p1_workNumber, p2_relationship, p2_firstName, p2_surname, p2_address1,
             p2_city, p2_province, p2_postalCode, p2_dateOfBirth, p2_gender, p2_idNumber,
-            p2_occupation, p2_phoneNumber, p2_email, p2_workNumber
+            p2_occupation, p2_phoneNumber, p2_email, p2_workNumber, balance,lastPaid, studentStatus
       } = await request.json();
         const data = {
             firstName, secondName, surname, address1, city,
@@ -97,7 +98,7 @@ export async function POST(request: Request) {
             p1_gender, p1_idNumber, p1_occupation, p1_phoneNumber, p1_email, 
             p1_workNumber, p2_relationship, p2_firstName, p2_surname, p2_address1,
             p2_city, p2_province, p2_postalCode, p2_dateOfBirth, p2_gender, p2_idNumber,
-            p2_occupation, p2_phoneNumber, p2_email, p2_workNumber
+            p2_occupation, p2_phoneNumber, p2_email, p2_workNumber, balance, lastPaid, studentStatus
         }
         const response = await createStudent(data);
         return NextResponse.json({message: "Student created successfully"}, {status: 201})

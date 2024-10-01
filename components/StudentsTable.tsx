@@ -39,8 +39,15 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs"
-import { Dialog } from './ui/dialog'
-import { DialogContent, DialogTrigger } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import NewStudentForm from './NewStudentFrom'
 import Link from 'next/link';
 import {
@@ -52,57 +59,10 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination"
-
-interface IStudent {
-  $id: string;
-  firstName: string;
-  secondName: string;
-  surname: string;
-  address1:string;
-  city: string;
-  province: string;
-  postalCode: string;
-  dateOfBirth: string;
-  gender: string;
-  age: string;
-  homeLanguage: string;
-  allergies: string;
-  medicalAidNumber: string;
-  medicalAidScheme:string;
-  studentClass: string;
+import { IStudent } from '@/lib/utils';
+import Payment from './ui/payment';
 
 
-  p1_relationship: string;
-  p1_firstName: string;
-  p1_surname: string;
-  p1_address1: string;
-  p1_city: string;
-  p1_province: string;
-  p1_postalCode: string;
-  p1_dateOfBirth: string;
-  p1_gender: string;
-  p1_idNumber : string;
-  p1_occupation: string;
-  p1_phoneNumber:string;
-  p1_email: string;
-  p1_workNumber: string;
- 
-  p2_relationship: string;
-  p2_firstName: string;
-  p2_surname: string;
-  p2_address1: string;
-  p2_city: string;
-  p2_province: string;
-  p2_postalCode: string;
-  p2_dateOfBirth: string;
-  p2_gender: string;
-  p2_idNumber: string;
-  p2_occupation: string;
-  p2_phoneNumber: string;
-  p2_email: string;
-  p2_workNumber: string;
-
-}
 
 const StudentsTable = () => {
   const [students, setStudents] = useState<IStudent[]>();
@@ -111,7 +71,8 @@ const StudentsTable = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const recordsPerPage = 8;
 
-
+  const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState<IStudent | null>(null);
 
   useEffect(()=>{
     const fetchStudents = async () => {
@@ -200,6 +161,15 @@ const StudentsTable = () => {
       );
     };
 
+    const handleOpenPaymentDialog = (student: IStudent) => {
+      setSelectedStudent(student);
+      setIsPaymentDialogOpen(true);
+    };
+
+    const handleClosePaymentDialog = () => {
+      setIsPaymentDialogOpen(false);
+      setSelectedStudent(null);
+    };
 
 
   return (
@@ -348,6 +318,11 @@ const StudentsTable = () => {
                               >
                                 Delete
                               </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => handleOpenPaymentDialog(student)}
+                              >
+                                Add Payment
+                              </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
                         </TableCell>
@@ -376,6 +351,21 @@ const StudentsTable = () => {
           </Card>
         </TabsContent>
       </Tabs>
+      <Dialog open={isPaymentDialogOpen} onOpenChange={handleClosePaymentDialog}>
+      <DialogContent>
+      <DialogHeader>
+          <DialogTitle>Add Payment</DialogTitle>
+          <DialogDescription>
+            {/* Make changes to your profile here. Click save when you're done. */}
+          </DialogDescription>
+      </DialogHeader>
+        <Payment student={selectedStudent} /> {/* Pass selected student data */}
+        <DialogFooter>
+          <Button type="submit">Submit</Button>
+      </DialogFooter>
+      </DialogContent>
+     
+    </Dialog>
     </main>
   );}
 

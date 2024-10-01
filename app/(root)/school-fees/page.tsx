@@ -7,7 +7,7 @@ const SchoolFess = () => {
   return (
     <div>
       School Fees
-      <Payment/>
+      {/* <Payment/> */}
       <FeesTableOverview/>
     </div>
   )

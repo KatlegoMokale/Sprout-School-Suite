@@ -127,6 +127,10 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
       p2_email: "",
       p2_workNumber: "",
       p2_relationship: "",
+
+      balance: 0,
+      lastPaid: "",
+      studentStatus: "",
     },
   });
   
@@ -159,8 +163,8 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
 
   const onGuardianChange = (values: z.infer<typeof studentFormSchema>) => {
     if (currentTab === "guardian1") {
-      console.log("Guardian 1 values:", values);
-      console.log("Guardian 1");
+      // console.log("Guardian 1 values:", values);
+      // console.log("Guardian 1");
       // Store guardian1 values
       form.setValue("p1_relationship", values.p1_relationship);
       form.setValue("p1_firstName", values.p1_firstName);
@@ -175,8 +179,8 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
       // ... (other p1 fields)
     } else if (currentTab === "guardian2") {
       // Store guardian2 values
-      console.log("Guardian 2 values:", values);
-      console.log("Guardian 2");
+      // console.log("Guardian 2 values:", values);
+      // console.log("Guardian 2");
       form.setValue("p2_relationship", values.p2_relationship);
       form.setValue("p2_firstName", values.p2_firstName);
       form.setValue("p2_surname", values.p2_surname);
@@ -326,9 +330,9 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
                               <CommandItem
                                 key={prediction.place_id}
                                 onSelect={(currentValue) => {
-                                  form.setValue("city", currentValue);
-                                  console.log(currentValue);
-                                  console.log(prediction);
+                                  // form.setValue("address1", currentValue);
+                                  // console.log(currentValue);
+                                  // console.log(prediction);
                                   handlePredictionSelect(prediction);
                                   setOnSelectedAddress(true);
                                 }}

@@ -1,8 +1,10 @@
 import StudentsTable from '@/components/StudentsTable'
 import StudentTable from '@/components/ui/StudentTable'
-import React from 'react'
+import { IStudent } from '@/lib/utils';
+import React, { useEffect, useState } from 'react'
 
 const StudentsPage = () => {
+  
   return (
     <div>
       <StudentsTable/>

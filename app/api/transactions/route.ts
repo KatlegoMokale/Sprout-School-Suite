@@ -7,7 +7,7 @@ const database = new Databases(client)
 
 ///Create Transaction
 
-async function createTransaction(data : {Type: string; StudentName: string; StudentSurname: string;
+async function createTransaction(data : {StudentId: string, Type: string; StudentName: string; StudentSurname: string;
      Amount: number; DatePaid: string;}) {
     
         try {
@@ -55,6 +55,7 @@ export async function GET() {
 export async function POST(request: Request) {
     try {
         const {
+            StudentId,
             StudentName,
             StudentSurname,
             Amount,
@@ -62,6 +63,7 @@ export async function POST(request: Request) {
             Type
       } = await request.json();
         const data = {
+            StudentId,
             StudentName,
             StudentSurname,
             Amount,

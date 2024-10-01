@@ -1,15 +1,7 @@
 "use client"
 import React from 'react'
 import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
+
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { paymentFormSchema } from '@/lib/utils'
@@ -21,18 +13,22 @@ import CustomInput from '@/components/ui/CustomInput'
 import CustomInputPayment from './CustomInputPayment'
 import { Search } from 'lucide-react'
 
-const Payment = () => {
+interface PaymentProps {
+  student: IStudent | null;
+}
+
+const Payment: React.FC<PaymentProps> = ({ student }) => {
 
   const newPayemntFormSchema = paymentFormSchema();
   const form = useForm<z.infer<typeof newPayemntFormSchema>>({
     resolver: zodResolver(newPayemntFormSchema),
     defaultValues: {
-      firstName:"",
-      surname: "",
-      amount: "",
+      firstName:student?.firstName,
+      surname: student?.surname,
+      amount: 0,
       paymentMethod: "",
       paymentDate: "",
-      studentId: "",
+      studentId: student?.studentId,
       datecreated: "",
     },
   });
@@ -43,25 +39,9 @@ const Payment = () => {
 
 
   return (
-     <Dialog>
-      <DialogTrigger asChild>
-        <Button variant="outline">Make Payment</Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[825px] w-[500px] container bg-white">
-        <DialogHeader>
-          <DialogTitle>Add Payment</DialogTitle>
-          <DialogDescription>
-            {/* Make changes to your profile here. Click save when you're done. */}
-          </DialogDescription>
-        </DialogHeader>
-        <div className='container'>
-        <div className='relative flex-1 md:grow-0'>
-                <Search className='absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground' />
-                <Input type='search' placeholder='Search...' className='w-full rounded-lg pl-8 md:w-[240px] lg:w-[336px]' />
-          </div>
-        </div>
-        <div className="grid grid-cols-2 gap-4 py-4 ">
+        <div className=" ">
           <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-2 gap-4 py-4">
             <CustomInputPayment
               name="firstName"
               control={form.control}
@@ -99,15 +79,11 @@ const Payment = () => {
             placeholder="Payment Date"
             type='date'
             />
+            </form>
           </Form>
 
           
         </div>
-        <DialogFooter>
-          <Button type="submit">Save changes</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
   )
 }
 
