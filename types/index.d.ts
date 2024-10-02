@@ -63,6 +63,23 @@ declare type NewStudentParms = {
     workNo?:string;
   };
 
+  declare type NewClassParms = {
+    name: string;
+    age: string;
+    teacherId: string;
+    teacherName: string;
+  }
+
+  declare type NewStuffParams = {
+    firstName: string;
+    secondName: string;
+    surname: string;
+    dateOfBirth: string;
+    idNumber: string;
+    contact: string;
+    address1: string;
+  }
+
   declare type NewPaymentParms = {
     studentId: string;
     firstName: string;

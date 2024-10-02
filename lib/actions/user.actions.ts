@@ -1,7 +1,47 @@
 "use server";
+import { getBaseUrl } from "../utils";
 
-import { cookies } from "next/headers";
-import { parseStringify, getBaseUrl } from "../utils";
+export const newClass = async (classData: NewClassParms) => {
+  console.log("class", classData);
+  try {
+      const response = await fetch(`${getBaseUrl()}/api/class`, {
+          method: "POST",
+          headers: {
+              "Content-Type": "application.json",
+          },
+          body: JSON.stringify(classData),
+      });
+      if (response.ok) {
+          console.log("Class added successfully!");
+        } else {
+          console.error("Class submission failed.");
+          throw new Error("Class submission failed.");
+        }
+  } catch (error) {
+     
+  }
+}
+
+export const newStuff = async (stuffData: NewStuffParams) => {
+  console.log("class", stuffData);
+  try {
+      const response = await fetch(`${getBaseUrl()}/api/class`, {
+          method: "POST",
+          headers: {
+              "Content-Type": "application.json",
+          },
+          body: JSON.stringify(stuffData),
+      });
+      if (response.ok) {
+          console.log("Class added successfully!");
+        } else {
+          console.error("Class submission failed.");
+          throw new Error("Class submission failed.");
+        }
+  } catch (error) {
+    console.log(error);
+  }
+}
 
 export const newPayment = async (paymentData: NewPaymentParms) => {
     console.log("//////////////////////");
@@ -23,7 +63,7 @@ export const newPayment = async (paymentData: NewPaymentParms) => {
             throw new Error("Payment submission failed.");
           }
     } catch (error) {
-       
+      console.log(error);
     }
 }
 
@@ -155,6 +195,70 @@ export const updateStudent = async (
       console.log("Student updated successfully!");
     } else {
       throw new Error("Student update failed.");
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+
+export const updateClass = async (
+  classData: NewClassParms,
+  id: string
+) => {
+  const {
+    name,
+    age,
+    teacherId,
+    teacherName
+  } = classData;
+
+  try {
+    const response = await fetch(`${getBaseUrl()}/api/class/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application.json",
+      },
+      body: JSON.stringify(classData),
+    });
+    console.log("//////////////////////2" + response.body);
+    if (response.ok) {
+      console.log("Class updated successfully!");
+    } else {
+      throw new Error("Class update failed.");
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const updateStuff = async (
+  stuffData: NewStuffParams,
+  id: string
+) => {
+  const {
+    firstName,
+    secondName,
+    surname,
+    dateOfBirth,
+    idNumber,
+    address1,
+    contact
+  } = stuffData;
+
+  try {
+    const response = await fetch(`${getBaseUrl()}/api/stuff/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application.json",
+      },
+      body: JSON.stringify(stuffData),
+    });
+    console.log("//////////////////////2" + response.body);
+    if (response.ok) {
+      console.log("Stuff updated successfully!");
+    } else {
+      throw new Error("Stuff update failed.");
     }
   } catch (error) {
     console.log(error);
