@@ -29,9 +29,9 @@ const SearchAddress = dynamic(() => import("@/components/ui/search-address"), {
 
 const formSchema = newStudentFormSchema();
 
-interface CustomInput {
-  control: Control<z.infer<typeof formSchema>>;
-  name: FieldPath<z.infer<typeof formSchema>>;
+interface CustomInput<T extends Record<string, any>> {
+  control: Control<T>;
+  name: FieldPath<T>;
   label: string;
   placeholder: string;
   type?: string;
@@ -45,7 +45,7 @@ interface CustomInput {
   }[];
 }
 
-const CustomInput = ({
+const CustomInput = <T extends Record<string, any>>({
   control,
   placeholder,
   name,
@@ -56,7 +56,7 @@ const CustomInput = ({
   value,
   onChange,
   readonly,
-}: CustomInput) => {
+}: CustomInput<T>) => {
   return (
     <FormField
       control={control}

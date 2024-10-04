@@ -78,6 +78,9 @@ declare type NewStudentParms = {
     idNumber: string;
     contact: string;
     address1: string;
+    gender: string;
+    position: string;
+    startDate: string;
   }
 
   declare type NewPaymentParms = {

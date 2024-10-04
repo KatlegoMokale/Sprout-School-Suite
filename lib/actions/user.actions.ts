@@ -23,9 +23,9 @@ export const newClass = async (classData: NewClassParms) => {
 }
 
 export const newStuff = async (stuffData: NewStuffParams) => {
-  console.log("class", stuffData);
+  console.log("stuff", stuffData);
   try {
-      const response = await fetch(`${getBaseUrl()}/api/class`, {
+      const response = await fetch(`${getBaseUrl()}/api/stuff`, {
           method: "POST",
           headers: {
               "Content-Type": "application.json",
@@ -33,10 +33,10 @@ export const newStuff = async (stuffData: NewStuffParams) => {
           body: JSON.stringify(stuffData),
       });
       if (response.ok) {
-          console.log("Class added successfully!");
+          console.log("Stuff added successfully!");
         } else {
-          console.error("Class submission failed.");
-          throw new Error("Class submission failed.");
+          console.error("Stuff submission failed.");
+          throw new Error("Stuff submission failed.");
         }
   } catch (error) {
     console.log(error);
@@ -243,7 +243,10 @@ export const updateStuff = async (
     dateOfBirth,
     idNumber,
     address1,
-    contact
+    contact,
+    gender,
+    position,
+    startDate
   } = stuffData;
 
   try {

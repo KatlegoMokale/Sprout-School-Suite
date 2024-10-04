@@ -25,7 +25,7 @@ async function createStuff(data: {
         return response;
     } catch (error) {
         console.error("Error creating stuff:", error);
-        throw new Error("Failed to create student");
+        throw new Error("Failed to create stuff");
     }
 }
 

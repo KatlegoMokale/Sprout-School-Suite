@@ -27,8 +27,8 @@ export const sidebarLinks = [
     },
     {
       imgURL: "/icons/transaction.svg",
-      route: "/teachers",
-      label: "Teachers",
+      route: "/manage-school",
+      label: "Manage School",
       icon: Clipboard
     },
     {
@@ -57,7 +57,7 @@ export const sidebarLinks = [
     allergies: string;
   };
 
-  declare type Teacher = {
+  declare type Stuff = {
     $id: string;
     userId: string;
     firstName: string;
@@ -117,8 +117,7 @@ export const sidebarLinks = [
 
   declare type Paymentypes =
   | "Cash"
-  | "EFT"
-  | "Speed point ";
+  | "EFT";
 
   declare interface SiderbarProps {
     user: User;

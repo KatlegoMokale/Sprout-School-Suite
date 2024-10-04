@@ -82,6 +82,25 @@ export const newStudentFormSchema = () => z.object({
 
 });
 
+export const newStuffFormSchema = () => z.object({
+  //new student form
+
+  firstName: z.string().min(3),
+  secondName: z.string().optional(),
+  surname: z.string().min(3),
+  address1: z.string().min(3).max(150),
+  dateOfBirth: z.string().min(3),
+  idNumber: z.string().min(13).max(13),
+  gender: z.string().min(3),
+  contact: z.string().min(10).max(10),
+  position: z.string().min(3),
+  startDate: z.string().min(3),
+
+
+
+
+});
+
 export const newParentFormSchema = (type: string) => z.object({
   //new student form
 
@@ -103,6 +122,19 @@ export const getBaseUrl = () => {
   if (typeof window !== 'undefined') return ''; // browser should use relative url
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`; // SSR should use vercel url
   return `http://localhost:${process.env.PORT ?? 3000}`; // dev SSR should use localhost
+}
+
+export interface IStuff {
+  $id: string;
+  firstName: string;
+  secondName: string;
+  surname: string;
+  dateOfBirth: string;
+  idNumber: string;
+  contact: string;
+  address1: string;
+  gender: string;
+  position: string;
 }
 
 export interface IStudent {

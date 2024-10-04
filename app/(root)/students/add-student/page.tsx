@@ -1,26 +1,22 @@
 "use client";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
+  Form
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import React, { use, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CustomInput from "@/components/ui/CustomInput";
-import { newParentFormSchema, newStudentFormSchema, parseStringify } from "@/lib/utils";
+import { newStudentFormSchema, parseStringify } from "@/lib/utils";
 import { DialogContent, DialogDescription } from "@/components/ui/dialog";
 import Link from "next/link";
 import { Check, ChevronLeft } from "lucide-react";
 import { autocomplete } from "@/lib/google";
 import { PlaceAutocompleteResult } from "@googlemaps/google-maps-services-js";
-import { Command, CommandEmpty, CommandInput, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
+import { Command, CommandInput, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
 
 import dynamic from "next/dynamic";
 import { error } from "console";
@@ -30,6 +26,8 @@ import { newStudent } from "@/lib/actions/user.actions";
 const SearchAddress = dynamic(() => import("@/components/ui/search-address"), {
   ssr: false,
 });
+
+const formSchema = newStudentFormSchema();
 
 const NewStudentForm = () => {
   const [currentTab, setCurrentTab] = useState("guardian1");
@@ -238,7 +236,7 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
                 <div className=" col-span-1">
                   <div className="grid grid-cols-2 gap-2">
                     <div className="cols-span-1">
-                      <CustomInput
+                      <CustomInput<z.infer<typeof formSchema>>
                         name="firstName"
                         placeholder="Enter Child Name"
                         control={form.control}
@@ -247,7 +245,7 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
                     </div>
 
                     <div>
-                      <CustomInput
+                      <CustomInput<z.infer<typeof formSchema>>
                         name="secondName"
                         placeholder="Enter Child Second Name"
                         control={form.control}
@@ -256,7 +254,7 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
                     </div>
 
                     <div className="col-span-1">
-                      <CustomInput
+                      <CustomInput<z.infer<typeof formSchema>>
                         name="surname"
                         placeholder="Enter Child Surname"
                         control={form.control}
@@ -265,7 +263,7 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
                     </div>
 
                     <div className="cols-span-1">
-                      <CustomInput
+                      <CustomInput<z.infer<typeof formSchema>>
                         name="dateOfBirth"
                         placeholder="Enter Child Date of Birth"
                         control={form.control}
@@ -280,7 +278,7 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
                     </div>
 
                     <div className="col-span-1">
-                      <CustomInput
+                      <CustomInput<z.infer<typeof formSchema>>
                         name="age"
                         placeholder="Age will be calculated"
                         control={form.control}
@@ -290,7 +288,7 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
                     </div>
 
                     <div className="col-span-1">
-                      <CustomInput
+                      <CustomInput<z.infer<typeof formSchema>>
                         name="gender"
                         placeholder="Select Gender"
                         control={form.control}
@@ -356,7 +354,7 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
                       </Command>
                     </div>
                     <div className="col-span-2">
-                      <CustomInput
+                      <CustomInput<z.infer<typeof formSchema>>
                         name="address1"
                         placeholder="Enter Child Address"
                         control={form.control}
@@ -365,7 +363,7 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
                     </div>
 
                     <div className="col-span-1">
-                      <CustomInput
+                      <CustomInput<z.infer<typeof formSchema>>
                         name="homeLanguage"
                         placeholder="Home Language"
                         control={form.control}
@@ -373,7 +371,7 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
                       />
                     </div>
                     <div className="col-span-1">
-                      <CustomInput
+                      <CustomInput<z.infer<typeof formSchema>>
                         name="allergies"
                         placeholder="Allergies"
                         control={form.control}
@@ -382,7 +380,7 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
                     </div>
 
                     <div className="col-span-1">
-                      <CustomInput
+                      <CustomInput<z.infer<typeof formSchema>>
                         name="medicalAidNumber"
                         placeholder="Medical Aid Number"
                         control={form.control}
@@ -391,7 +389,7 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
                     </div>
 
                     <div className="col-span-1">
-                      <CustomInput
+                      <CustomInput<z.infer<typeof formSchema>>
                         name="medicalAidScheme"
                         placeholder="Medical Aid Scheme"
                         control={form.control}
@@ -400,7 +398,7 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
                     </div>
 
                     <div className="col-span-1">
-                      <CustomInput
+                      <CustomInput<z.infer<typeof formSchema>>
                         name="studentClass"
                         placeholder="Class"
                         control={form.control}
@@ -432,7 +430,7 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
                 <TabsContent value="guardian1">
                   <div className="grid grid-cols-2 gap-2">
                     <div className=" col-span-2 pt-1 w-full">
-                      <CustomInput
+                      <CustomInput<z.infer<typeof formSchema>>
                         name="p1_relationship"
                         placeholder="Select Relationship"
                         control={form.control}
@@ -447,7 +445,7 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
                       />
                     </div>
                     <div className="cols-span-1">
-                      <CustomInput
+                      <CustomInput<z.infer<typeof formSchema>>
                         name="p1_firstName"
                         placeholder="Enter Name"
                         control={form.control}
@@ -455,7 +453,7 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
                       />
                     </div>
                     <div className="cols-span-1">
-                      <CustomInput
+                      <CustomInput<z.infer<typeof formSchema>>
                         name="p1_surname"
                         placeholder="Enter Surname"
                         control={form.control}
@@ -463,7 +461,7 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
                       />
                     </div>
                     <div className="cols-span-1">
-                      <CustomInput
+                      <CustomInput<z.infer<typeof formSchema>>
                         name="p1_email"
                         placeholder="Enter Email"
                         control={form.control}
@@ -472,7 +470,7 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
                       />
                     </div>
                     <div className="cols-span-1">
-                      <CustomInput
+                      <CustomInput<z.infer<typeof formSchema>>
                         name="p1_phoneNumber"
                         placeholder="Enter Phone Number"
                         control={form.control}
@@ -480,7 +478,7 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
                       />
                     </div>
                     <div className="cols-span-1">
-                      <CustomInput
+                      <CustomInput<z.infer<typeof formSchema>>
                         name="p1_idNumber"
                         placeholder="Enter ID Number"
                         control={form.control}
@@ -488,7 +486,7 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
                       />
                     </div>
                     <div className="cols-span-1">
-                      <CustomInput
+                      <CustomInput<z.infer<typeof formSchema>>
                         name="p1_gender"
                         placeholder="Enter gender"
                         control={form.control}
@@ -501,7 +499,7 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
                       />
                     </div>
                     <div className="cols-span-1">
-                      <CustomInput
+                      <CustomInput<z.infer<typeof formSchema>>
                         name="p1_dateOfBirth"
                         placeholder="Enter Date of Birth"
                         control={form.control}
@@ -511,7 +509,7 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
                     </div>
                     <div></div>
                     <div className="w-full col-span-2">
-                      <CustomInput
+                      <CustomInput<z.infer<typeof formSchema>>
                         name="p1_address1"
                         placeholder="Enter Address"
                         control={form.control}
@@ -520,7 +518,7 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
                     </div>
 
                     <div className="cols-span-1">
-                      <CustomInput
+                      <CustomInput<z.infer<typeof formSchema>>
                         name="p1_occupation"
                         placeholder="Enter Employer Name"
                         control={form.control}
@@ -528,7 +526,7 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
                       />
                     </div>
                     <div className="cols-span-1">
-                      <CustomInput
+                      <CustomInput<z.infer<typeof formSchema>>
                         name="p1_workNumber"
                         placeholder="Enter Employer Phone Number"
                         control={form.control}
@@ -540,7 +538,7 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
                 <TabsContent value="guardian2">
                   <div className="grid grid-cols-2 gap-2">
                     <div className="col-span-2 pt-1 w-full">
-                      <CustomInput
+                      <CustomInput<z.infer<typeof formSchema>>
                         name="p2_relationship"
                         placeholder="Select Relationship"
                         control={form.control}
@@ -555,7 +553,7 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
                       />
                     </div>
                     <div className="cols-span-1">
-                      <CustomInput
+                      <CustomInput<z.infer<typeof formSchema>>
                         name="p2_firstName"
                         placeholder="Enter Name"
                         control={form.control}
@@ -563,7 +561,7 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
                       />
                     </div>
                     <div className="cols-span-1">
-                      <CustomInput
+                      <CustomInput<z.infer<typeof formSchema>>
                         name="p2_surname"
                         placeholder="Enter Surname"
                         control={form.control}
@@ -571,7 +569,7 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
                       />
                     </div>
                     <div className="cols-span-1">
-                      <CustomInput
+                      <CustomInput<z.infer<typeof formSchema>>
                         name="p2_email"
                         placeholder="Enter Email"
                         control={form.control}
@@ -580,7 +578,7 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
                       />
                     </div>
                     <div className="cols-span-1">
-                      <CustomInput
+                      <CustomInput<z.infer<typeof formSchema>>
                         name="p2_phoneNumber"
                         placeholder="Enter Phone Number"
                         control={form.control}
@@ -588,7 +586,7 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
                       />
                     </div>
                     <div className="cols-span-1">
-                      <CustomInput
+                      <CustomInput<z.infer<typeof formSchema>>
                         name="p2_idNumber"
                         placeholder="Enter ID Number"
                         control={form.control}
@@ -596,7 +594,7 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
                       />
                     </div>
                     <div className="cols-span-1">
-                      <CustomInput
+                      <CustomInput<z.infer<typeof formSchema>>
                         name="p2_gender"
                         placeholder="Enter gender"
                         control={form.control}
@@ -609,7 +607,7 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
                       />
                     </div>
                     <div className="cols-span-1">
-                      <CustomInput
+                      <CustomInput<z.infer<typeof formSchema>>
                         name="p2_dateOfBirth"
                         placeholder="Enter Date of Birth"
                         control={form.control}
@@ -630,7 +628,7 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
                           Copy from student address
                         </label>
                       </div>
-                      <CustomInput
+                      <CustomInput<z.infer<typeof formSchema>>
                         name="p2_address1"
                         placeholder="Enter Address"
                         control={form.control}
@@ -638,7 +636,7 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
                       />
                     </div>
                     <div className="cols-span-1">
-                      <CustomInput
+                      <CustomInput<z.infer<typeof formSchema>>
                         name="p2_occupation"
                         placeholder="Enter Employer Name"
                         control={form.control}
@@ -646,7 +644,7 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
                       />
                     </div>
                     <div className="cols-span-1">
-                      <CustomInput
+                      <CustomInput<z.infer<typeof formSchema>>
                         name="p2_workNumber"
                         placeholder="Enter Employer Phone Number"
                         control={form.control}
