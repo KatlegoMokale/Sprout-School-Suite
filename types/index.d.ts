@@ -1,3 +1,24 @@
+declare type SearchParamProps = {
+  params: { [key: string]: string };
+  searchParams: { [key: string]: string | string[] | undefined };
+};
+
+declare type SignUpParams = {
+  firstName: string;
+  secondName?: string;
+  surname: string;
+  dateOfBirth: string;
+  idNumber: string;
+  address1: string;
+  contact: string;
+  email: string;
+  password: string;
+};
+
+declare type LoginUser = {
+  email: string;
+  password: string;
+};
 
 declare type NewStudentParms = {
     firstName: string;

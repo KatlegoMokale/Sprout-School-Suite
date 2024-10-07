@@ -75,11 +75,11 @@ const Teachers = () => {
               <CardHeader className="flex flex-row items-center justify-between p-6">
                 <div className="flex items-center gap-4 2xl:gap-2">
                 <Avatar className="w-10 h-10">
-                    <AvatarImage src="/components/assests/placeholderprofile.svg?height=96&width=96" alt="Profile picture"/>
+                    <AvatarImage src="/assets/placeholderprofile.svg" alt="Profile picture"/>
                     <AvatarFallback>CN</AvatarFallback>
                   </Avatar>
                   <div className="flex flex-col">
-                  <h2 className="text-lg font-bold">
+                  <h2 className="text-md font-bold">
                   {stuff.firstName} {stuff.surname}
                   </h2>
                   <p> 
@@ -100,7 +100,7 @@ const Teachers = () => {
                             <DropdownMenuContent align="end">
                               <DropdownMenuLabel>Actions</DropdownMenuLabel>
                               <Link
-                                href={`/manage-school/edit-stuff/${stuff.$id}`}
+                                href={`/manage-school/stuff/${stuff.$id}`}
                               >
                                 <DropdownMenuItem>Edit</DropdownMenuItem>
                               </Link>

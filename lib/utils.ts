@@ -32,6 +32,23 @@ export const paymentFormSchema = () => z.object({
 
 });
 
+export const authformSchemaLogin = () => z.object({
+  email: z.string().email(),
+  password: z.string().min(3),
+});
+
+export const authFormSchema = (type: string) => z.object({
+  firstName : z.string().min(3),
+  secondName: z.string().optional(),
+  surname: z.string().min(3),
+  dateOfBirth: z.string().min(3),
+  idNumber: z.string().min(3),
+  address1: z.string().min(3).max(150),
+  contact: z.string().min(10).max(10),
+  email: z.string().email(),
+  password: z.string().min(3),
+});
+
 
 export const newStudentFormSchema = () => z.object({
   //new student form
