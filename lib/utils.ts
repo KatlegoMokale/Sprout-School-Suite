@@ -154,6 +154,23 @@ export interface IStuff {
   position: string;
 }
 
+export  interface IClass {
+  $id: string;
+  name : string;
+  teacherId: string;
+  teacherName: string;
+}
+
+export interface ITransactions {
+  $id: string;
+  studentId: string;
+  firstName: string;
+  surname: string;
+  amount: number;
+  paymentMethod: string;
+  paymentDate: string;
+}
+
 export interface IStudent {
   $id: string;
   firstName: string;

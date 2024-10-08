@@ -80,6 +80,9 @@ const NewStudentForm = ({ params }: { params: { id: string } }) => {
     p2_email: "",
     p2_workNumber: "",
     p2_relationship: "",
+    balance: 0,
+    lastPaid: "",
+    studentStatus: "",
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -102,6 +105,19 @@ const NewStudentForm = ({ params }: { params: { id: string } }) => {
         }
         const studentData = await response.json();
         console.log("Student Data:", studentData);
+
+        if (studentData.student.balance === null) {
+          studentData.student.balance = 0;
+          
+        }
+
+        if (studentData.student.lastPaid === null) {
+          studentData.student.lastPaid = "";
+        }
+
+        if (studentData.student.studentStatus === null) {
+          studentData.student.studentStatus = "";
+        }
 
         // Update formData state
         setFormData(studentData.student); 
@@ -330,7 +346,8 @@ const NewStudentForm = ({ params }: { params: { id: string } }) => {
                       name="address1"
                       placeholder="Enter Child Address"
                       control={form.control}
-                      label={formData.address1}
+                      label={"Address"}
+                      value={formData.address1}
                     />
                   </div>
 
@@ -380,6 +397,49 @@ const NewStudentForm = ({ params }: { params: { id: string } }) => {
                         control={form.control}
                         label={"Class"}
                         value={formData.studentClass}
+                      />
+                    </div>
+                    <div className="col-span-1">
+                      <CustomInput
+                        name="studentClass"
+                        placeholder="Class"
+                        control={form.control}
+                        label={"Class"}
+                        value={formData.studentClass}
+                      />
+                    </div>
+                    <div className="col-span-1 hidden">
+                      <CustomInput
+                        name="balance"
+                        placeholder="Balance"
+                        control={form.control}
+                        label={"Balance"}
+                        type="number"
+                        value={formData.balance.toString()}
+                      />
+                    </div>
+                    <div className="col-span-1 hidden">
+                      <CustomInput
+                        name="lastPaid"
+                        placeholder="Last Paid"
+                        control={form.control}
+                        label={"Last Paid"}
+                        type="date"
+                        value={formData.studentClass}
+                      />
+                    </div>                    
+                    <div className="col-span-1">
+                      <CustomInput
+                        name="studentStatus"
+                        placeholder="Student Status"
+                        control={form.control}
+                        label={"Student Status"}
+                        value={formData.studentStatus}
+                        select={true}
+                        options={[
+                          { label: "Active", value: "active" },
+                          { label: "Non-Active", value: "non-active" },
+                        ]}
                       />
                     </div>
                   </div>

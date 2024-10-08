@@ -1,9 +1,117 @@
+"use client"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { TableBody, TableCell, TableHead, TableHeader, TableRow,Table } from '@/components/ui/table'
+import { IStudent, ITransactions } from '@/lib/utils'
 import { Badge, Car } from 'lucide-react'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination"
 
 const Finances = () => {
+    const [transactions, setTransactions] = useState<ITransactions[]>([]);
+    const [students, setStudents] = useState<IStudent[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const recordsPerPage = 8;
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                setIsLoading(true);
+                const response = await fetch(`/api/transactions`);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch transactions');
+                }
+                const data = await response.json();
+                console.log(data)
+                setTransactions(data)
+            } catch (error) {
+                console.log('Error fetching transactions:', error);
+                setError("Failed to fetch transactions. Please try again later.");
+            } finally{
+              setIsLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
+    
+    useEffect(() => {
+        const fetchStudents = async () => {
+            try {
+                const response = await fetch(`/api/students`);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch students');
+                }
+                const data = await response.json();
+                setStudents(data);
+            } catch (error) {
+                console.log('Error fetching students:', error);
+                setError("Failed to fetch students. Please try again later.");
+            }
+        };
+        fetchStudents();
+    }, []);
+
+    const indexOfLastRecord = currentPage * recordsPerPage;
+    const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
+    const currentRecords = transactions.slice(indexOfFirstRecord, indexOfLastRecord);
+
+    const PaginationComponent = ({ nPages, currentPage, setCurrentPage }) => {
+      const pageNumbers = [...Array(nPages + 1).keys()].slice(1);
+
+
+      return (
+      <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious 
+                href="#" 
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (currentPage > 1) setCurrentPage(currentPage - 1);
+                }}
+              />
+            </PaginationItem>
+            {pageNumbers.map(pgNumber => (
+              <PaginationItem key={pgNumber}>
+                <PaginationLink 
+                  href="#" 
+                  isActive={currentPage === pgNumber}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setCurrentPage(pgNumber);
+                  }}
+                >
+                  {pgNumber}
+                </PaginationLink>
+              </PaginationItem>
+            ))}
+            {nPages > 5 && <PaginationItem>
+              <PaginationEllipsis />
+            </PaginationItem>}
+            <PaginationItem>
+              <PaginationNext 
+                href="#" 
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (currentPage < nPages) setCurrentPage(currentPage + 1);
+                }}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      );
+    };
+
+
   return (
     <div className="flex min-h-screen w-full flex-col">
       Finances Page
@@ -85,6 +193,9 @@ const Finances = () => {
                           <TableHead className="">
                             Student
                             </TableHead>
+                            <TableHead className="">
+                              Age
+                            </TableHead>
                           <TableHead className="">
                             Type
                           </TableHead>
@@ -97,160 +208,38 @@ const Finances = () => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        <TableRow>
-                          <TableCell>
-                             <div className="">Thando Mokoena</div>
-                          </TableCell>
-                          <TableCell>
-                            EFT
-                          </TableCell>
-                          <TableCell>
-                          2023-06-24
-                          </TableCell>
-                          <TableCell>
-                            R1,250.00
-                          </TableCell>
-                        </TableRow>
-                        <TableRow>
-                          <TableCell>
-                             <div className="">Boitumelo Modise</div>
-                          </TableCell>
-                          <TableCell>
-                            Card
-                          </TableCell>
-                          <TableCell>
-                          2023-06-29
-                          </TableCell>
-                          <TableCell>
-                            R1,200.00
-                          </TableCell>
-                        </TableRow>
-                        <TableRow>
-                          <TableCell>
-                             <div className="">Boitumelo Modise</div>
-                          </TableCell>
-                          <TableCell>
-                            Card
-                          </TableCell>
-                          <TableCell>
-                          2023-06-29
-                          </TableCell>
-                          <TableCell>
-                            R1,200.00
-                          </TableCell>
-                        </TableRow>
-                        <TableRow>
-                          <TableCell>
-                             <div className="">Boitumelo Modise</div>
-                          </TableCell>
-                          <TableCell>
-                            Card
-                          </TableCell>
-                          <TableCell>
-                          2023-06-29
-                          </TableCell>
-                          <TableCell>
-                            R1,200.00
-                          </TableCell>
-                        </TableRow>
-                        <TableRow>
-                          <TableCell>
-                             <div className="">Boitumelo Modise</div>
-                          </TableCell>
-                          <TableCell>
-                            Card
-                          </TableCell>
-                          <TableCell>
-                          2023-06-29
-                          </TableCell>
-                          <TableCell>
-                            R1,200.00
-                          </TableCell>
-                        </TableRow>
-                        <TableRow>
-                          <TableCell>
-                             <div className="">Boitumelo Modise</div>
-                          </TableCell>
-                          <TableCell>
-                            Card
-                          </TableCell>
-                          <TableCell>
-                          2023-06-29
-                          </TableCell>
-                          <TableCell>
-                            R1,200.00
-                          </TableCell>
-                        </TableRow>
-                        <TableRow>
-                          <TableCell>
-                             <div className="">Boitumelo Modise</div>
-                          </TableCell>
-                          <TableCell>
-                            Card
-                          </TableCell>
-                          <TableCell>
-                          2023-06-29
-                          </TableCell>
-                          <TableCell>
-                            R1,200.00
-                          </TableCell>
-                        </TableRow>
-                        <TableRow>
-                          <TableCell>
-                             <div className="">Boitumelo Modise</div>
-                          </TableCell>
-                          <TableCell>
-                            Card
-                          </TableCell>
-                          <TableCell>
-                          2023-06-29
-                          </TableCell>
-                          <TableCell>
-                            R1,200.00
-                          </TableCell>
-                        </TableRow>
-                        <TableRow>
-                          <TableCell>
-                             <div className="">Boitumelo Modise</div>
-                          </TableCell>
-                          <TableCell>
-                            Card
-                          </TableCell>
-                          <TableCell>
-                          2023-06-29
-                          </TableCell>
-                          <TableCell>
-                            R1,200.00
-                          </TableCell>
-                        </TableRow>
-                        <TableRow>
-                          <TableCell>
-                             <div className="">Boitumelo Modise</div>
-                          </TableCell>
-                          <TableCell>
-                            Card
-                          </TableCell>
-                          <TableCell>
-                          2023-06-29
-                          </TableCell>
-                          <TableCell>
-                            R1,200.00
-                          </TableCell>
-                        </TableRow>
-                        <TableRow>
-                          <TableCell>
-                             <div className="">Boitumelo Modise</div>
-                          </TableCell>
-                          <TableCell>
-                            Card
-                          </TableCell>
-                          <TableCell>
-                          2023-06-29
-                          </TableCell>
-                          <TableCell>
-                            R1,200.00
-                          </TableCell>
-                        </TableRow>
+                        {error && <p className='py-4 text-red-500'>{error}</p>}
+                        {
+                          isLoading ? (<p className='p-3 text-slate-400'>Loading...</p>) : (
+                              currentRecords.map((transaction) => (
+                              <TableRow key={transaction.$id}>
+                                <TableCell>
+                                  <div className="">{transaction.firstName} {transaction.surname}</div>
+                                </TableCell>
+                                <TableCell>
+                                  {
+                                    students.map((student) => (
+                                      student.$id === transaction.studentId ? (
+                                        <div key={student.$id}>
+                                          {student.age}
+                                        </div>
+                                      ) : null
+                                    ))  
+                                  }
+                                </TableCell>
+                                <TableCell>
+                                  {transaction.paymentMethod}
+                                </TableCell>
+                                <TableCell>
+                                  {transaction.paymentDate}
+                                </TableCell>
+                                <TableCell>
+                                  R {transaction.amount}
+                                </TableCell>
+                              </TableRow>
+                            ))
+                          )
+                        }
                       
                       </TableBody>
             </Table>
@@ -263,4 +252,4 @@ const Finances = () => {
   )
 }
 
-export default Finances
+export default Finances;
