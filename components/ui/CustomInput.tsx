@@ -12,13 +12,13 @@ import { Control, FieldPath } from "react-hook-form";
 import { z } from "zod";
 import { newStudentFormSchema } from "@/lib/utils";
 import {
-  Select,
+  Select1,
   SelectContent,
   SelectGroup,
   SelectItem,
   SelectLabel,
   SelectTrigger,
-  SelectValue,
+  SelectValue1,
 } from "@/components/ui/select";
 
 import dynamic from "next/dynamic";
@@ -62,38 +62,32 @@ const CustomInput = <T extends Record<string, any>>({
       control={control}
       name={name}
       render={({ field }) => (
-        <div className="form-item">
-          <FormLabel className=" text-md w-full max-w-[280px] font-semibold text-gray-600 ">
+        <div className="form-item ">
+          <FormLabel className=" text-md  font-semibold text-gray-600 ">
             {label}
           </FormLabel>
           <div className="flex w-full flex-col">
             {select === true && options ? (
-              <Select onValueChange={field.onChange}>
-                <FormControl className=" p-2 bg-white text-gray-600">
-                  <SelectTrigger className=" bg-white w-[180px] ">
-                    <SelectValue
-                      className="bg-white"
-                      defaultValue={
-                        field.value !== "" ? field.value : placeholder
-                      }
-                      placeholder={placeholder}
-                    >
-                      {field.value}
-                    </SelectValue>
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent className=" bg-white gap-2 rounded-lg">
-                  {options.map((option) => (
-                    <SelectItem
-                      className=" hover:bg-orange-200 text-14 font-semibold rounded-lg hover:animate-in p-2 cursor-pointer"
-                      key={option.value}
-                      value={option.value}
-                    >
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Select1 onValueChange={field.onChange} value={field.value}>
+              <FormControl className="p-2 bg-white text-gray-600">
+                <SelectTrigger className="bg-white w-full">
+                  <SelectValue1 placeholder={placeholder}>
+                    {field.value || placeholder}
+                  </SelectValue1>
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent className="bg-white gap-2 rounded-lg">
+                {options.map((option) => (
+                  <SelectItem
+                    className="hover:bg-orange-200 text-14 font-semibold rounded-lg hover:animate-in p-2 cursor-pointer"
+                    key={option.value}
+                    value={option.value}
+                  >
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select1>
             ) : type === "search" ? (
               <div>
                 <SearchAddress

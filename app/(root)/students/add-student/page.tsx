@@ -10,7 +10,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CustomInput from "@/components/ui/CustomInput";
-import { newStudentFormSchema, parseStringify } from "@/lib/utils";
+import { IClass, newStudentFormSchema, parseStringify } from "@/lib/utils";
 import { DialogContent, DialogDescription } from "@/components/ui/dialog";
 import Link from "next/link";
 import { Check, ChevronLeft } from "lucide-react";
@@ -22,6 +22,15 @@ import dynamic from "next/dynamic";
 import { error } from "console";
 import { useRouter } from "next/navigation";
 import { newStudent } from "@/lib/actions/user.actions";
+import {
+  Select1,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue1,
+} from "@/components/ui/select";
 
 const SearchAddress = dynamic(() => import("@/components/ui/search-address"), {
   ssr: false,
@@ -31,6 +40,7 @@ const formSchema = newStudentFormSchema();
 
 const NewStudentForm = () => {
   const [currentTab, setCurrentTab] = useState("guardian1");
+  const [classData, setClassData] = useState<IClass[] | null>(null);
   const [formData, setFormData] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -49,6 +59,26 @@ const NewStudentForm = () => {
     }
     fetchPredictions();
   }, [input]);
+
+  useEffect(() => {
+    const fetchClasses = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch("/api/class");
+        if (!response.ok) {
+          throw new Error("Failed to fetch classes");
+        }
+        const data = await response.json();
+        setClassData(data);
+      } catch (error) {
+        console.log("Error fetching classes:", error);
+        setError("Failed to fetch classes, Please try reloading the page.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchClasses();
+}, []);
 
  // Handle prediction selection
 const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
@@ -212,6 +242,10 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
       const studentAddress = form.getValues("address1");
       form.setValue("p2_address1", studentAddress);
     }
+  };
+
+  const handleClassChange = (value: string) => {
+    form.setValue("studentClass", value);
   };
   
 
@@ -397,14 +431,43 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
                       />
                     </div>
 
-                    <div className="col-span-1">
+                    <div className="col-span-1 hidden">
                       <CustomInput<z.infer<typeof formSchema>>
                         name="studentClass"
                         placeholder="Class"
                         control={form.control}
                         label={"Class"}
+                        
                       />
-                    </div>
+                      </div>
+
+                      <div className="col-span-1">
+                        <div className="form-item">
+                          <div className=" text-md  font-semibold text-gray-600 ">
+                            Class
+                          </div>
+                          <Select1 onValueChange={handleClassChange}>
+                          <SelectTrigger className="w-full">
+                            <SelectValue1 placeholder="Select Class 1" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-white gap-2 rounded-lg">
+                            {
+                              classData?.map((classItem) => (
+                                <SelectItem
+                                className="hover:bg-orange-200 text-14 font-semibold rounded-lg hover:animate-in p-2 cursor-pointer"
+                                  key={classItem.$id}
+                                  value={classItem.$id}
+                                >
+                                  {classItem.name}
+                                </SelectItem>
+                              ))
+                            }
+                          </SelectContent>
+                        </Select1>
+                        </div>
+                        
+                      </div>
+                    
                   </div>
                 </div>
               </div>
@@ -677,4 +740,5 @@ export default NewStudentForm;
   {/* Your existing dialog content */}
 </DialogContent>
 
-import { Checkbox } from "@/components/ui/checkbox";
+import { Checkbox } from "@/components/ui/checkbox";import { Select, SelectValue } from "@radix-ui/react-select";
+

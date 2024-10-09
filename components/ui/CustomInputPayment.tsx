@@ -12,13 +12,13 @@ import { Control, FieldPath } from "react-hook-form";
 import { z } from "zod";
 import { paymentFormSchema } from "@/lib/utils";
 import {
-  Select,
+  Select1,
   SelectContent,
   SelectGroup,
   SelectItem,
   SelectLabel,
   SelectTrigger,
-  SelectValue,
+  SelectValue1,
 } from "@/components/ui/select";
 
 import dynamic from "next/dynamic";
@@ -66,10 +66,10 @@ const CustomInputPayment = ({
           </FormLabel>
           <div className="flex w-full flex-col">
             {select === true && options ? (
-              <Select onValueChange={field.onChange}>
+              <Select1 onValueChange={field.onChange}>
                 <FormControl className=" p-2 bg-white">
                   <SelectTrigger className=" bg-white w-[180px] ">
-                    <SelectValue
+                    <SelectValue1
                       className="bg-white"
                       placeholder={placeholder}
                     />
@@ -86,7 +86,7 @@ const CustomInputPayment = ({
                     </SelectItem>
                   ))}
                 </SelectContent>
-              </Select>
+              </Select1>
             ) : type === "search" ? (
               <div>
                 <SearchAddress

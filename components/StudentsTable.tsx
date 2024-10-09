@@ -59,13 +59,14 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination"
-import { IStudent } from '@/lib/utils';
+import { IStudent, IClass } from '@/lib/utils';
 import Payment from './ui/payment';
 
 
 
 const StudentsTable = () => {
   const [students, setStudents] = useState<IStudent[]>();
+  const [classes, setClasses] = useState<IClass[]>();
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string| null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -74,6 +75,27 @@ const StudentsTable = () => {
 
   const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<IStudent | null>(null);
+
+  useEffect(()=>{
+
+    const fetchClasses = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch("/api/class");
+        if (!response.ok) {
+          throw new Error("Failed to fetch classes");
+        }
+        const data = await response.json();
+        setClasses(data);
+      } catch (error) {
+        console.log("Error fetching classes:", error);
+        setError("Failed to fetch classes, Please try reloading the page.");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchClasses();
+  }, [])
 
   useEffect(()=>{
     const fetchStudents = async () => {
@@ -174,7 +196,7 @@ const StudentsTable = () => {
 
 
   return (
-    <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
+    <main className="grid  gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 lg:grid-cols-1">
       <Tabs defaultValue="all">
         <div className="flex items-center">
           <TabsList>
@@ -287,7 +309,11 @@ const StudentsTable = () => {
                           {student.age}
                         </TableCell>
                         <TableCell className="hidden md:table-cell">
-                          {student.studentClass}
+                          {
+                            classes?.find(
+                              (classData) => classData.$id === student.studentClass
+                            )?.name
+                          }
                         </TableCell>
                         <TableCell className="hidden md:table-cell">
                           {student.p1_firstName} {student.p1_surname}

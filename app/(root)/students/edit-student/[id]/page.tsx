@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CustomInput from "@/components/ui/CustomInput";
 import {
+  IClass,
   newParentFormSchema,
   newStudentFormSchema,
   parseStringify,
@@ -28,6 +29,15 @@ import { DialogContent, DialogDescription } from "@/components/ui/dialog";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import {
+  Select1,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue1,
+} from "@/components/ui/select";
 
 
 const SearchAddress = dynamic(() => import("@/components/ui/search-address"), {
@@ -35,6 +45,7 @@ const SearchAddress = dynamic(() => import("@/components/ui/search-address"), {
 });
 
 const NewStudentForm = ({ params }: { params: { id: string } }) => {
+  const [classData, setClassData] = useState<IClass[] | null>(null);
   const [currentTab, setCurrentTab] = useState("guardian1");
   const [formData, setFormData] = useState({
     firstName: "",
@@ -95,6 +106,26 @@ const NewStudentForm = ({ params }: { params: { id: string } }) => {
     resolver: zodResolver(studentFormSchema),
   
   });
+
+  useEffect(() => {
+    const fetchClasses = async () => {
+      setIsLoading(true);
+      try {
+        const response = await fetch("/api/class");
+        if (!response.ok) {
+          throw new Error("Failed to fetch classes");
+        }
+        const data = await response.json();
+        setClassData(data);
+      } catch (error) {
+        console.log("Error fetching classes:", error);
+        setError("Failed to fetch classes, Please try reloading the page.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchClasses();
+}, []);
 
   useEffect(() => {
     const fetchStudentData = async () => {
@@ -219,6 +250,31 @@ const NewStudentForm = ({ params }: { params: { id: string } }) => {
       return parseStringify(`${years} year${years !== 1 ? "s" : ""}`);
     }
   };
+
+
+  const handleClassChange = (value: string) => {
+    form.setValue("studentClass", value);
+  };
+
+  useEffect(() => {
+    // This effect will run whenever the value of "studentClass" in the form changes
+    const subscription = form.watch((state) => {
+      if (state.studentClass) {
+        // Force a re-render by updating the formData
+        setFormData({ ...formData, studentClass: state.studentClass });
+      }
+    });
+
+    // Clean up the subscription when the component unmounts
+    return () => subscription.unsubscribe();
+  }, [form]); 
+
+  // useEffect(() => {
+  //   if (formData.studentClass) {
+  //     form.setValue("studentClass", formData.studentClass);
+  //   }
+  // }, [formData.studentClass]);
+  
 
   // const form = useForm()
   return (
@@ -390,8 +446,8 @@ const NewStudentForm = ({ params }: { params: { id: string } }) => {
                       />
                     </div>
 
-                    <div className="col-span-1">
-                      <CustomInput
+                    <div className="col-span-1 hidden">
+                    <CustomInput
                         name="studentClass"
                         placeholder="Class"
                         control={form.control}
@@ -399,7 +455,38 @@ const NewStudentForm = ({ params }: { params: { id: string } }) => {
                         value={formData.studentClass}
                       />
                     </div>
+
                     <div className="col-span-1">
+                        <div className="form-item">
+                          <div className=" text-md  font-semibold text-gray-600 ">
+                            Class
+                          </div>
+                          <Select1 onValueChange={handleClassChange} value={formData.studentClass}> 
+                          <FormControl>
+                          <SelectTrigger className="w-full">
+                            <SelectValue1 placeholder="Select Class" id="classSelect">
+                              {classData?.find(c => c.$id === form.getValues("studentClass"))?.name || 'Select Class'} 
+                            </SelectValue1>
+                          </SelectTrigger>
+                          </FormControl>
+                          
+                          <SelectContent className="bg-white gap-2 rounded-lg">
+                            {
+                              classData?.map((classItem) => (
+                                <SelectItem
+                                className="hover:bg-orange-200 text-14 font-semibold rounded-lg hover:animate-in p-2 cursor-pointer"
+                                  key={classItem.$id}
+                                  value={classItem.$id}
+                                >
+                                  {classItem.name}
+                                </SelectItem>
+                              ))
+                            }
+                          </SelectContent>
+                        </Select1>
+                        </div>
+                      </div>
+                    {/* <div className="col-span-1">
                       <CustomInput
                         name="studentClass"
                         placeholder="Class"
@@ -407,7 +494,7 @@ const NewStudentForm = ({ params }: { params: { id: string } }) => {
                         label={"Class"}
                         value={formData.studentClass}
                       />
-                    </div>
+                    </div> */}
                     <div className="col-span-1 hidden">
                       <CustomInput
                         name="balance"
@@ -657,22 +744,37 @@ const NewStudentForm = ({ params }: { params: { id: string } }) => {
                         value={formData.p2_phoneNumber}
                       />
                     </div>
-                    <div className="cols-span-1">
+                    <div>
                       <CustomInput
-                        name="p2_occupation"
-                        placeholder="Enter Employer"
-                        control={form.control}
-                        label={"Employer"}
-                        value={formData.p2_occupation}
+                      name="p2_idNumber"
+                      placeholder="Enter ID Number"
+                      control={form.control}
+                      label={"ID Number"}
+                      value={formData.p2_idNumber}
                       />
                     </div>
                     <div className="cols-span-1">
                       <CustomInput
-                        name="p2_idNumber"
-                        placeholder="Enter ID Number"
+                        name="p2_gender"
+                        placeholder="Select Gender"
                         control={form.control}
-                        label={"ID Number"}
-                        value={formData.p2_idNumber}
+                        label={"Gender"}
+                        value={formData.p2_gender}
+                        select={true}
+                        options={[
+                          { label: "Male", value: "Male" },
+                          { label: "Female", value: "Female" },
+                        ]}
+                      />
+                    </div>
+                    <div className="cols-span-1">
+                      <CustomInput
+                      name="p2_dateOfBirth"
+                      placeholder="Enter Date of Birth"
+                      control={form.control}
+                      label={"Date Of Birth"}
+                      type="date"
+                      value={formData.p2_dateOfBirth}
                       />
                     </div>
                     <div></div>

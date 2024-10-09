@@ -19,6 +19,14 @@ export function formatAmount(amount: number): string {
 
 export const parseStringify = (value: any) => JSON.parse(JSON.stringify(value));
 
+export const classFormSchema = () => z.object({
+  //new class form
+  name: z.string().min(3),
+  age: z.string().min(3),
+  teacherId: z.string().min(3),
+  teacherName: z.string().min(3),
+});
+
 
 
 export const paymentFormSchema = () => z.object({

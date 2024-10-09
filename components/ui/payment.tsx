@@ -33,7 +33,7 @@ const Payment: React.FC<PaymentProps> = ({ student }) => {
     defaultValues: {
       firstName:student?.firstName,
       surname: student?.surname,
-      amount: 11,
+      amount: 0,
       paymentMethod: "",
       paymentDate: "",
       studentId: student?.$id,
