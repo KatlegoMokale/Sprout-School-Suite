@@ -4,13 +4,13 @@ declare type SearchParamProps = {
 };
 
 declare type SignUpParams = {
-  firstName: string;
+  firstName?: string;
   secondName?: string;
-  surname: string;
-  dateOfBirth: string;
-  idNumber: string;
-  address1: string;
-  contact: string;
+  surname?: string;
+  dateOfBirth?: string;
+  idNumber?: string;
+  address1?: string;
+  contact?: string;
   email: string;
   password: string;
 };
@@ -154,15 +154,23 @@ declare type NewStudentParms = {
 
   declare type NewUserParams = {
     userId: string;
+    firstName: string;
+    secondName?: string;
+    surname: string;
+    dateOfBirth: string;
     email: string;
-    name: string;
-    password: string;
+    contact: string;
   };
 
   declare type LoginUser = {
     email: string;
     password: string;
   };
+
+  declare interface signInProps {
+    email: string;
+    password: string;
+  }
 
   declare type SearchParamProps = {
     params: { [key: string]: string };

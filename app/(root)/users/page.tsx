@@ -1,8 +1,9 @@
+import CreateUser from '@/components/ui/createUser'
 import React from 'react'
 
 const Users = () => {
   return (
-    <div>Users</div>
+    <div><CreateUser/></div>
   )
 }
 

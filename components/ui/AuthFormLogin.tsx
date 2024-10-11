@@ -22,17 +22,19 @@ import CustomInput from "./CustomInput";
 import { Loader2 } from "lucide-react";
 import { getLoggedInUser, signIn, signUp } from "@/lib/actions/user.actions";
 import { useRouter } from "next/navigation";
-import { authformSchemaLogin } from "@/lib/utils";
+import { authFormSchema } from "@/lib/utils";
 
-const formSchema = authformSchemaLogin();
+const formSchema = z.object({
+  email: z.string().email(),
+});
 
-const AuthForm = () => {
+const AuthForm = ( {type }: {type: string}) => {
  const router = useRouter();
   const [user, setUser] = useState(null);
   const [isLoading, setisLoading] = useState(false);
  
 
-  const formSchema = authformSchemaLogin();
+  const formSchema = authFormSchema(type);
 
   // 1. Define your form.
   const form = useForm<z.infer<typeof formSchema>>({
@@ -47,13 +49,23 @@ const AuthForm = () => {
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     setisLoading(true);
     try {
-      // Sign In
+      // Sign Up with appwrite & create plain link token
+      
+      if(type === 'sign-up'){
+         const newUser = await signUp(data);
+         console.log(newUser);
+         setUser(newUser);
+        
+      }
+
+      if(type === 'sign-in'){
           const response = await signIn({
               email: data.email,
               password: data.password,
           })
 
           if(response) router.push('/')
+      }
     } catch (error) {
       console.log(error);
     }finally{
@@ -72,16 +84,16 @@ const AuthForm = () => {
             alt="Horizon logo"
           />
           <h1 className="text-26 font-ibm-plex-serif font-bold text-black-1">
-            Horizon
+            School Management
           </h1>
         </Link>
         <div className=" flex flex-col gap-1 md:gap-3">
           <h1 className=" text-24 lg:text-36 font-semibold text-gray-900">
-            sign-in
+          {user ? "Link Account" : type === "sign-in" ? "Sign In" : "Sign Up"}
             <p className="text-16 font-normal text-gray-600">
-              {/* {user
+              {user
                 ? "Link your account to get started"
-                : "Please enter your details"} */}
+                : "Please enter your details"}
             </p>
           </h1>
         </div>
@@ -91,6 +103,75 @@ const AuthForm = () => {
 
             <form onSubmit={form.handleSubmit(onSubmit)} 
             className="space-y-8">
+              {type ==='sign-up' && (
+              <>
+
+              <div className=" flex gap-4">
+
+               <CustomInput
+                name="firstName"
+                placeholder="First Name"
+                label="First Name"
+                control={form.control}
+              />
+
+              <CustomInput
+                name="secondName"
+                placeholder="Second Name"
+                label="Second Name"
+                control={form.control}
+              />
+
+              <CustomInput
+                name="surname"
+                placeholder="Surname"
+                label="Surname"
+                control={form.control}
+              />
+
+              </div>
+
+
+
+
+              <CustomInput
+                name="dateOfBirth"
+                placeholder="Enter your date of birth"
+                label="Date of Birth"
+                type="date"
+                control={form.control}
+              />
+
+              <div className="flex gap-4">
+
+              <CustomInput
+                name="idNumber"
+                placeholder="Please enter your ID number"
+                label="Id Number"
+                control={form.control}
+              />
+
+              <CustomInput
+                name="address1"
+                placeholder="Enter your specific address"
+                label="Address"
+                control={form.control}
+              />
+
+              </div>
+
+              <div className="flex gap-4">
+              <CustomInput
+                name="contact"
+                placeholder="Please enter your contact number"
+                label="Contact"
+                control={form.control}
+              />
+
+              </div>
+
+              </>
+            )}
       
               <div className=" flex gap-4">
               <CustomInput<z.infer<typeof formSchema>>
@@ -107,7 +188,7 @@ const AuthForm = () => {
                 control={form.control}
               />
               
-              
+      
               <div className="flex flex-col gap-4">
                 <Button type="submit" className="form-btn" disabled={isLoading}>
                   {isLoading ? (
@@ -127,7 +208,7 @@ const AuthForm = () => {
           </Form>
 
           <footer className=" flex justify-center gap-1">
-            {/* <p className="text-14 font-normal text-gray-600">
+            <p className="text-14 font-normal text-gray-600">
               {type === "sign-in"
                 ? "Don't have an account?"
                 : "Already have an account?"}
@@ -137,7 +218,7 @@ const AuthForm = () => {
               href={type === "sign-in" ? "/sign-up" : "/sign-in"}
             >
               {type === "sign-in" ? "Sign up" : "Sign in"}
-            </Link> */}
+            </Link>
           </footer>
       {/* )} */}
     </section>

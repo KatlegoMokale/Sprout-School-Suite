@@ -20,7 +20,7 @@ export const signIn = async ({email, password}: signInProps) => {
 }
 
 export const signUp = async (userData: SignUpParams) => {
-    const {email, password, firstName, lastName} = userData;
+    const {email, password, firstName, surname} = userData;
     try{
         const { account } = await createAdminClient();
 
@@ -28,7 +28,7 @@ export const signUp = async (userData: SignUpParams) => {
             ID.unique(), 
             email, 
             password, 
-            `${firstName} ${lastName}`
+            `${firstName} ${surname}`
         );
         const session = await account.createEmailPasswordSession(email, password);
       
@@ -39,6 +39,7 @@ export const signUp = async (userData: SignUpParams) => {
           secure: true,
         });
       
+        console.log("Session created:", session);
         return parseStringify(newUserAccount)
     } catch (error){
         console.error('Error', error);
