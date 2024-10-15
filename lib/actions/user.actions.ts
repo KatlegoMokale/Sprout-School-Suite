@@ -7,15 +7,24 @@ import { parseStringify } from "../utils";
 
 
 export const signIn = async ({email, password}: signInProps) => {
+  console.log("//////////////////////");
     try{
         const { account } = await createAdminClient();
         
         const response = await account.createEmailPasswordSession(email, password);
+      //   cookies().set("appwrite-session", response.secret, {
+      //     path: "/",
+      //     httpOnly: true,
+      //     sameSite: "strict",
+      //     secure: true,
+      // });
 
+        console.log("Creating Email Password Session :"+ response.$createdAt);
         return parseStringify(response);
 
     } catch (error){
-        console.error('Error', error);
+      console.error('Error during sign-in:', error);
+      return { success: false, message: error }; // Return error details
     }
 }
 

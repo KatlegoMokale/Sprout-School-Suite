@@ -6,8 +6,18 @@ import Link from 'next/link'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@radix-ui/react-dropdown-menu'
 import Image from 'next/image'
 import { Input } from '@/components/ui/input'
+import { getLoggedInUser } from '@/lib/actions/user.actions'
 
-const HeaderNav = () => {
+const HeaderNav = async () => {
+  const loggedIn = await getLoggedInUser()
+
+  const getInitials = (name: string) => {
+    if (!name) return '';
+    const names = name.split(' ');
+    return names.length > 1
+      ? names[0][0].toUpperCase() + names[1][0].toUpperCase()
+      : names[0][0].toUpperCase();
+  };
     return (
         <header className='sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto 
             sm:border-0 sm:bg-transparent sm:px-6'>
@@ -56,7 +66,7 @@ const HeaderNav = () => {
                 </nav>
               </SheetContent>
               </Sheet>
-              <h1>Dashboard</h1>
+              <h1 className=' text-green-700 font-bold text-2xl'>Sprout School Suite</h1>
               <div className='relative ml-auto flex-1 md:grow-0'>
                 <Search className='absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground' />
                 <Input type='search' placeholder='Search...' className='w-full rounded-lg pl-8 md:w-[240px] lg:w-[336px]' />
@@ -64,7 +74,10 @@ const HeaderNav = () => {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="icon" className=' rounded-full'>
-                    <CircleUser/>
+                    {/* <CircleUser/> */}
+                    <div className='text-base justify-center items-center flex'>
+                    {getInitials(loggedIn?.name || '')}
+                    </div>
                     {/* <Image src="/placeholder-user.jpg" width={36} height={36} alt='Avatar' className='rounded-full' /> */}
                     </Button>
                     </DropdownMenuTrigger>

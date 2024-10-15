@@ -4,6 +4,7 @@ import { Client, Account, Databases, Users } from "node-appwrite";
 import { cookies } from "next/headers";
 
 export async function createSessionClient() {
+  console.log("Creating session client");
   const client = new Client()
     .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT!)
     .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT!);
@@ -24,6 +25,7 @@ export async function createSessionClient() {
 }
 
 export async function createAdminClient() {
+  console.log("Creating admin client");
   const client = new Client()
     .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT!)
     .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT!)

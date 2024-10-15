@@ -3,10 +3,12 @@ import StudentTable from '@/components/ui/StudentNewTable';
 import AttendanceChart from '@/components/ui/attendanceChart';
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { getLoggedInUser } from '@/lib/actions/user.actions';
 import { CirclePlus } from 'lucide-react';
 import React from 'react'
 
-const Dashboard = () => {
+const Dashboard = async () => {
+  const loggedIn = await getLoggedInUser()
   return (
     <div className='grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8 lg:grid-cols-3 xl:grid-cols-3 '>
         <div className='grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-3 '>
@@ -68,7 +70,7 @@ const Dashboard = () => {
             <div className='sm:col-span-2 md:col-span-3 lg:col-span-3 xl:col-span-3 ' x-chuck="dashboard-05-chunk-0">
               <div className='pt-5 pl-6 grid grid-cols-2'>
                 <div className=' col-span-1'>
-                  <h1 className='text-lg '>Student Fees overview</h1>
+                  <h1 className='text-lg text-green-950 '>Student Fees overview</h1>
                   <p className='text-sm text-gray-500'>Updated 30min ago</p>
                 </div>
                 

@@ -112,7 +112,7 @@ const Teachers = () => {
               </Link>
             </div>
             {stuff?.map((stuff) => (
-              <Card key={stuff.$id} className="w-full max-w-md mx-auto">
+              <Card key={stuff.$id} className="w-full max-w-md mx-auto bg-gradient-to-br border transition duration-500 scale-95 hover:scale-100 border-green-50 from-white via-white to-green-50">
                 <CardHeader className="flex flex-row items-center justify-between p-6">
                   <div className="flex items-center gap-4 2xl:gap-2">
                     <Avatar className="w-10 h-10">
@@ -123,11 +123,13 @@ const Teachers = () => {
                       <AvatarFallback>CN</AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col">
-                      <h2 className="text-md font-bold">
+                      <h2 className="text-md font-bold text-gray-500">
                         {stuff.firstName} {stuff.surname}
                       </h2>
-                      <p>{stuff.position}</p>
-                    </div>
+                      <p className={`font-semibold ${stuff.position.toLowerCase() === 'teacher'
+                         ? 'text-green-500' : stuff.position.toLowerCase() === 'cleaner' ?
+                          'text-orange-400' : 'text-cyan-500' }`}>{stuff.position}</p>
+                      </div>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button
@@ -155,7 +157,7 @@ const Teachers = () => {
                 </CardHeader>
                 <CardContent className="p-6 pt-0 space-y-4">
                   <div className="flex items-center gap-2">
-                    <MapPin className="w-5 h-5 text-muted-foreground" />
+                    <MapPin className="w-5 h-5 text-red-500" />
                     <p className="text-sm">{stuff.address1}</p>
                   </div>
                   <div className="flex items-center gap-2">

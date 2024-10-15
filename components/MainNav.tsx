@@ -8,9 +8,10 @@ import React from 'react'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { Home, Package2, PanelLeft, ShoppingCart, Archive, Users, Landmark, Clipboard, User, Settings} from 'lucide-react'
 import * as LucideIcons from 'lucide-react';
+import Footer from './ui/Footer'
 
 
-const MainNav = () => {
+const MainNav = ({user}: {user: SiderbarProps}) => {
     const pathname = usePathname();
     return (
         <section className=''>
@@ -19,9 +20,12 @@ const MainNav = () => {
     
               <Link href='#' className='group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold 
               text-primary-foreground md:h-8 md:text-base'>
-    
-                <Package2 className='h-4 w-4 transition-all group-hover:scale-110' />
-                <span className='sr-only'>Acme Inc</span>
+           <Image
+            src="/assets/logoSSS.png"
+            width={41}
+            height={41}
+            alt="SSS Logo"
+          />
                 </Link>
 
                 {sidebarLinks.map((item) => {
@@ -31,7 +35,7 @@ const MainNav = () => {
                     <TooltipProvider key={item.label}>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                      <Link href={item.route} className='flex hover:bg-blue-400 h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground 
+                      <Link href={item.route} className='flex hover:bg-green-300 h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground 
                       transition-colors hover:text-foreground md:h-8 md:w-8 '>
                      <IconComponent 
                         className={cn('h-5 w-5', isActive ? 'text-foreground' : 'text-foreground/60')} />
@@ -59,6 +63,7 @@ const MainNav = () => {
               </Tooltip>
               </TooltipProvider>  
               </nav>
+              <Footer user={user} className='flex flex-col items-center gap-4 px-2 sm:py-5'/>
     
           </aside>
         </section>

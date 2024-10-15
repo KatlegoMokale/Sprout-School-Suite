@@ -4,7 +4,7 @@ import AuthForm from './AuthFormLogin'
 const CreateUser = () => {
   return (
     <div>
-      <AuthForm type="sign-in"/>
+      <AuthForm type="sign-up"/>
     </div>
   )
 }

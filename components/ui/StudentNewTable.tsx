@@ -41,11 +41,11 @@ const students = [
 
 export default function StudentTable() {
   return (
-    <div className="p-8 bg-orange-50">
-      <h2 className="text-2xl font-bold mb-4 text-orange-800">Student Payment Information</h2>
-      <div className="rounded-lg overflow-hidden border border-orange-200 shadow-lg">
+    <div className="p-8 bg-green-50">
+      <h2 className="text-2xl font-bold mb-4 text-green-800">Student Payment Information</h2>
+      <div className="rounded-lg overflow-hidden border border-green-200 shadow-lg">
         <Table>
-          <TableHeader className="bg-orange-500">
+          <TableHeader className="bg-green-500">
             <TableRow>
               <TableHead className="text-white font-semibold">Student ID</TableHead>
               <TableHead className="text-white font-semibold">Student Name</TableHead>
@@ -58,8 +58,8 @@ export default function StudentTable() {
           </TableHeader>
           <TableBody>
             {students.map((student, index) => (
-              <TableRow key={student.id} className={index % 2 === 0 ? "bg-orange-100" : "bg-white"}>
-                <TableCell className="font-medium text-orange-900">{student.id}</TableCell>
+              <TableRow key={student.id} className={index % 2 === 0 ? "bg-green-100" : "bg-white"}>
+                <TableCell className="font-medium text-green-900">{student.id}</TableCell>
                 <TableCell>{student.name}</TableCell>
                 <TableCell>{student.class}</TableCell>
                 <TableCell>{student.lastPaidDate}</TableCell>

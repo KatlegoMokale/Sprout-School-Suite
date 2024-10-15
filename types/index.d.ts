@@ -20,6 +20,28 @@ declare type LoginUser = {
   password: string;
 };
 
+declare interface SiderbarProps {
+  user: User;
+}
+
+declare type User = {
+  $id: string;
+  firstName: string;
+  secondName?: string;
+  surname: string;
+  dateOfBirth: string;
+  idNumber: string;
+  address1: string;
+  contact: string; 
+  email: string;
+};
+
+declare interface FooterProps {
+  user: User;
+  type?: 'mobile' | 'desktop'
+}
+
+
 declare type NewStudentParms = {
     firstName: string;
     secondName?: string;

@@ -269,17 +269,9 @@ h1{
     @apply text-16 rounded-lg border border-bankGradient bg-bank-gradient font-semibold text-white shadow-form;
   }
 
-  .plaidlink-ghost {
-    @apply flex cursor-pointer items-center justify-center gap-3 rounded-lg px-3 py-7 hover:bg-white lg:justify-start;
-  }
-
-  .plaidlink-default {
-    @apply flex !justify-start cursor-pointer gap-3 rounded-lg !bg-transparent flex-row;
-  }
-
   /* Auth */
   .auth-asset {
-    @apply flex h-screen w-full sticky top-0 items-center justify-end bg-sky-1 max-lg:hidden;
+    @apply flex h-screen w-full sticky top-0 items-center justify-center bg-green-50 max-lg:hidden;
   }
 
   /* Auth Form */
@@ -300,7 +292,7 @@ h1{
   }
 
   .form-btn {
-    @apply text-16 rounded-lg border border-orange-100 hover:bg-orange-300 bg-orange-400 font-semibold text-white shadow-form;
+    @apply text-16 rounded-lg border border-orange-100 hover:bg-green-300 bg-green-400 font-semibold text-white shadow-form;
   }
 
   .form-link {

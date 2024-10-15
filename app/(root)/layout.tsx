@@ -4,24 +4,26 @@ import MobileNav from "@/components/ui/MobileNav";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import { getLoggedInUser } from "@/lib/actions/user.actions";
+
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
 
-  // const loggedIn = await getLoggedInUser();
+  const loggedIn = await getLoggedInUser();
 
-  // if (!loggedIn) {
-  //   redirect("/sign-in");
-  // }
+
+  if (!loggedIn) {
+    redirect("/sign-in");
+  }
 
   return (
     <main className="flex min-h-screen w-full flex-col">
-        <MainNav/>
+        <MainNav user={loggedIn}/>
         
         <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
-          <HeaderNav/>
+          <HeaderNav user={loggedIn}/>
           {children}
         </div>
         
