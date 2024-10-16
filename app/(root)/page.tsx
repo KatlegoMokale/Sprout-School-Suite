@@ -1,6 +1,6 @@
 import FeesTableOverview from '@/components/ui/FeesTableOverview';
 import StudentTable from '@/components/ui/StudentNewTable';
-import AttendanceChart from '@/components/ui/attendanceChart';
+import AttendanceChart from '@/components/ui/AttendanceChart';
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getLoggedInUser } from '@/lib/actions/user.actions';

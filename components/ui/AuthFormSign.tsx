@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React, { useState } from 'react'
 import AuthFormLogin from '@/components/ui/AuthFormLogin'
 import { Form } from '@/components/ui/form'
@@ -8,13 +8,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import CustomInput from '@/components/ui/CustomInput';
 import { useRouter } from 'next/navigation';
-import { getLoggedInUser, signIn } from '@/lib/actions/user.actions';
+import { signIn } from '@/lib/actions/user.actions';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 
-const formSchema = z.object({
-  email: z.string().email(),
-});
+// const formSchema = z.object({
+//   email: z.string().email(),
+// });
 
 
 const SignInAuth = () => {

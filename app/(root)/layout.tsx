@@ -14,7 +14,7 @@ export default async function RootLayout({
   const loggedIn = await getLoggedInUser();
 
 
-  if (!loggedIn) {
+  if (loggedIn) {
     redirect("/sign-in");
   }
 
@@ -23,7 +23,7 @@ export default async function RootLayout({
         <MainNav user={loggedIn}/>
         
         <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
-          <HeaderNav user={loggedIn}/>
+          <HeaderNav/>
           {children}
         </div>
         

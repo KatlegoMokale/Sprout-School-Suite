@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   title: "Daycare Dashboard",
   description: "Daycare Dashboard is a modern school management system.",
   icons : {
-    icon: '/asssets/sssLogo.svg'
+    icon: '/icons/logo.svg'
   }
 };
 
