@@ -3,7 +3,7 @@ import HeaderNav from "@/components/page-header";
 import MobileNav from "@/components/ui/MobileNav";
 import Image from "next/image";
 import { redirect } from "next/navigation";
-import { getLoggedInUser } from "@/lib/actions/user.actions";
+import { getLoggedInUser, logoutAccount } from "@/lib/actions/user.actions";
 
 export default async function RootLayout({
   children,
@@ -11,10 +11,15 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
 
+  // const loggedIn = await getLoggedInUser();
+
+  // if(!loggedIn) redirect('/sign-in');
+
+
   const loggedIn = await getLoggedInUser();
+  console.log("loggedIn", loggedIn);
 
-
-  if (loggedIn) {
+  if (!loggedIn) {
     redirect("/sign-in");
   }
 

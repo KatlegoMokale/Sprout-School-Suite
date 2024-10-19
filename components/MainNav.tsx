@@ -11,7 +11,8 @@ import * as LucideIcons from 'lucide-react';
 import Footer from './ui/Footer'
 
 
-const MainNav = ({user}: {user: SiderbarProps}) => {
+// const MainNav = () => {
+  const MainNav = ({user}: {user: SiderbarProps}) => {
     const pathname = usePathname();
     return (
         <section className=''>
@@ -63,7 +64,7 @@ const MainNav = ({user}: {user: SiderbarProps}) => {
               </Tooltip>
               </TooltipProvider>  
               </nav>
-              <Footer user={user} className='flex flex-col items-center gap-4 px-2 sm:py-5'/>
+              <Footer className='flex flex-col items-center gap-4 px-2 sm:py-5'/>
     
           </aside>
         </section>
