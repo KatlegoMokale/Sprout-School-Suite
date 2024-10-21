@@ -27,6 +27,41 @@ export const classFormSchema = () => z.object({
   teacherName: z.string().min(3),
 });
 
+export const fundRaisingEventSchema = () => z.object({
+  //new fund rasising form
+  eventName: z.string().min(3),
+  amount: z.number().min(1),
+  description: z.string().min(3),
+  date: z.string().min(3),
+});
+
+export const eventTransactionSchema = () => z.object({
+  //new event transaction form
+  eventId: z.string().min(3),
+  eventName: z.string().min(3),
+  childId: z.string().min(3),
+  childName: z.string().min(3),
+  amount: z.number().min(1),
+  datePaid: z.string().min(3),
+  quantity: z.number().min(1),
+});
+
+export const pettyCashSchema = () => z.object({
+  //new petty cash form
+  itemName: z.string().min(3),
+  quantity: z.number().min(1),
+  price: z.number().min(1),
+  store: z.string().min(3),
+  category: z.string().min(3),
+});
+
+export const grocerySchema = () => z.object({
+  //new grocery form
+  summery: z.string().min(3),
+  totalPaid: z.number().min(1),
+  store: z.string().min(3),
+});
+
 
 
 export const paymentFormSchema = () => z.object({
