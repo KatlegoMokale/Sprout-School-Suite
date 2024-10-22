@@ -113,6 +113,37 @@ declare type NewStudentParms = {
     teacherName: string;
   }
 
+  declare type NewPettyCashParms = {
+    itemName: string;
+    quantity: number;
+    price: number;
+    store: string;
+    category: string;
+    date: string;
+  }
+
+  declare type NewEventParms = {
+    name: string;
+    date: string;
+    price: number;
+  }
+
+  declare type NewEventTransactionParms = {
+    eventId: string;
+    childId: string;
+    amount: number;
+    quantity: number;
+    datePaid: string;
+  }
+
+  declare type NewGroceryParms = {
+    summery: string;
+    totalPaid: number;
+    store: string;
+    date: string;
+  }
+
+
   declare type NewStuffParams = {
     firstName: string;
     secondName: string;

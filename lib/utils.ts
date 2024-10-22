@@ -53,6 +53,7 @@ export const pettyCashSchema = () => z.object({
   price: z.number().min(1),
   store: z.string().min(3),
   category: z.string().min(3),
+  date: z.string().min(3),
 });
 
 export const grocerySchema = () => z.object({
@@ -60,6 +61,7 @@ export const grocerySchema = () => z.object({
   summery: z.string().min(3),
   totalPaid: z.number().min(1),
   store: z.string().min(3),
+  date: z.string().min(3),
 });
 
 

@@ -218,6 +218,93 @@ export const newStudent = async (studentData: NewStudentParms) => {
   }
 };
 
+export const newPettyCash = async (data: NewPettyCashParms) => {
+  console.log("Petty Cash", data);
+  try {
+      const response = await fetch(`${getBaseUrl()}/api/pettycash`, {
+          method: "POST",
+          headers: {
+              "Content-Type": "application.json",
+          },
+          body: JSON.stringify(data),
+      });
+      if (response.ok) {
+          console.log("Petty Cash added successfully!");
+        } else {
+          console.error("Petty Cash submission failed.");
+          throw new Error("Petty Cash submission failed.");
+        }
+  } catch (error) {
+     
+  }
+}
+
+
+export const newEvent = async (data: NewEventParms) => {
+  console.log("Event data: ", data);
+  try {
+      const response = await fetch(`${getBaseUrl()}/api/event`, {
+          method: "POST",
+          headers: {
+              "Content-Type": "application.json",
+          },
+          body: JSON.stringify(data),
+      });
+      if (response.ok) {
+          console.log("Event added successfully!");
+        } else {
+          console.error("Event submission failed.");
+          throw new Error("Event submission failed.");
+        }
+  } catch (error) {
+     console.log("Event error: "+ error);
+  }
+}
+
+export const newEventTranaction = async (data: NewEventTransactionParms) => {
+  console.log("Event Transaction data: ", data);
+  try {
+      const response = await fetch(`${getBaseUrl()}/api/event-transaction`, {
+          method: "POST",
+          headers: {
+              "Content-Type": "application.json",
+          },
+          body: JSON.stringify(data),
+      });
+      if (response.ok) {
+          console.log("Event Transaction added successfully!");
+        } else {
+          console.error("Event Transaction submission failed.");
+          throw new Error("Event Transaction submission failed.");
+        }
+  } catch (error) {
+     console.log("Event Transaction error: "+ error);
+  }
+}
+
+export const newGrocery = async (data: NewGroceryParms) => {
+  console.log("Grocery data: ", data);
+  try {
+      const response = await fetch(`${getBaseUrl()}/api/grocery`, {
+          method: "POST",
+          headers: {
+              "Content-Type": "application.json",
+          },
+          body: JSON.stringify(data),
+      });
+      if (response.ok) {
+          console.log("Grocery added successfully!");
+        } else {
+          console.error("Grocery submission failed.");
+          throw new Error("Grocery submission failed.");
+        }
+  } catch (error) {
+     console.log("Grocery: "+ error);
+  }
+}
+
+
+
 export const updateStudent = async (
   studentData: NewStudentParms,
   id: string

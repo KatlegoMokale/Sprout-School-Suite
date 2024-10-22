@@ -7,7 +7,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
 import CustomInput from '@/components/ui/CustomInput'
-import { newPayment } from '@/lib/actions/user.actions'
+import { newPayment, newPettyCash } from '@/lib/actions/user.actions'
 import { useRouter } from 'next/navigation'
 
 
@@ -28,6 +28,7 @@ const PettyCash = () => {
       price: 0,
       store: "",
       category: "",
+      date: "",
     },
   });
 
@@ -36,18 +37,15 @@ const PettyCash = () => {
     console.log("Submit");
     setIsLoading(true);
     try {
-      const addNewPettyCashTrans = await newPayment(data);
-      console.log("Add new Payment "+ addNewPayment);
+      const addNewPettyCash = await newPettyCash(data);
+      console.log("Add new Petty Cash "+ addNewPettyCash);
       // router.push('/transactions');
     } catch (error) {
       console.error("Error submitting form:", error);
       setError("An error occurred while submitting the form.");
-       
     } finally {
       setIsLoading(false);
     }
-    setFormData(data);
-    console.log("Form data ready for Appwrite:", data);
   };
 
 
