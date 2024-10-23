@@ -49,9 +49,6 @@ declare type NewStudentParms = {
     dateOfBirth: string;
     age: string;
     address1: string;
-    city: string;
-    province: string;
-    postalCode: string;
     homeLanguage: string;
     allergies?: string;
     medicalAidNumber?: string;
@@ -66,9 +63,6 @@ declare type NewStudentParms = {
     p1_phoneNumber: string;
     p1_email?: string;
     p1_address1: string;
-    p1_city: string;
-    p1_province: string;
-    p1_postalCode: string;
     p1_dateOfBirth: string;
     p1_gender: string;
     p1_occupation?: string;
@@ -81,13 +75,14 @@ declare type NewStudentParms = {
     p2_phoneNumber?: string;
     p2_email?: string;
     p2_address1?: string;
-    p2_city?: string;
-    p2_province?: string;
-    p2_postalCode?: string;
     p2_dateOfBirth?: string;
     p2_gender?: string;
     p2_occupation?: string;
     p2_workNumber?:string;
+
+    balance?: number;
+    studentStatus?: string;
+
 
   };
 
@@ -123,9 +118,10 @@ declare type NewStudentParms = {
   }
 
   declare type NewEventParms = {
-    name: string;
+    eventName: string;
     date: string;
-    price: number;
+    amount: number;
+    description: string;
   }
 
   declare type NewEventTransactionParms = {

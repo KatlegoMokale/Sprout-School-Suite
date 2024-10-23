@@ -234,7 +234,7 @@ const StudentsTable = () => {
         const order = sortOrder[field];
         if (order !== 'none') {
           const aValue = (a[field as keyof IStudent] || '').toString().toLowerCase();
-const bValue = (b[field as keyof IStudent] || '').toString().toLowerCase();
+    const bValue = (b[field as keyof IStudent] || '').toString().toLowerCase();
   
           if (aValue < bValue) return order === 'asc' ? -1 : 1;
           if (aValue > bValue) return order === 'asc' ? 1 : -1;
@@ -539,7 +539,7 @@ const bValue = (b[field as keyof IStudent] || '').toString().toLowerCase();
                 </TableBody>
                 </Table>
                 </CardContent>
-              </Card>
+            </Card>
         </TabsContent>
         ))}
       </Tabs>

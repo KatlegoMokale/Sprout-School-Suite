@@ -8,6 +8,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/
 import { grocerySchema } from '@/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { newGrocery } from '@/lib/actions/user.actions'
+import { Button } from "@/components/ui/button"
 
 const Grocery = () => {
 
@@ -45,16 +46,26 @@ const Grocery = () => {
 
 
   return (
-    <div>
+    <div className="">
+      <div className="w-full max-w-3xl p-8 ">
+      <h2 className="text-2xl font-bold mb-6 text-gray-800">Grocery Entry</h2>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          
+
+
+
+          <div className='md:col-span-2'>
           <CustomInput
           name='summery'
           control={form.control}
-          placeholder="Summery"
-          label={'Summery'}
+          placeholder="Summary"
+          label={'Summary'}
           />
 
+          </div>
+          
+        
           <CustomInput
           name='totalPaid'
           control={form.control}
@@ -78,10 +89,21 @@ const Grocery = () => {
           type='date'
           />
 
-          <button type="submit" className='form-btn'>Submit</button>
+          <div className="md:col-span-2">
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50"
+            >
+              {isLoading ? "Submitting..." : "Submit"}
+            </Button>
+          </div>
         </form>
 
       </Form>
+
+      </div>
+      
       
     </div>
   )

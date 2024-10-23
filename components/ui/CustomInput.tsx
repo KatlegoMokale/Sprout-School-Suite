@@ -102,9 +102,22 @@ const CustomInput = <T extends Record<string, any>>({
                   type={type !== undefined ? type : "text"}
                   onChange={(e) => {
                     const newValue = e.target.value;
-                    field.onChange(newValue);
+                    if (type === "number") {
+                      const numericValue = newValue.replace(/[^0-9]/g, '');
+                      field.onChange(Number(numericValue));
+                    } else {
+                      field.onChange(newValue);
+                    }
                     if (onChange) {
                       onChange(e);
+                    }
+                  }}
+                  onKeyPress={(e) => {
+                    if (type === "number") {
+                      const isNumber = /[0-9]/.test(e.key);
+                      if (!isNumber) {
+                        e.preventDefault();
+                      }
                     }
                   }}
                   value={field.value || value || ""}

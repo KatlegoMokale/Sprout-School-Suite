@@ -18,6 +18,7 @@ import { autocomplete } from "@/lib/google";
 import { PlaceAutocompleteResult } from "@googlemaps/google-maps-services-js";
 import { Command, CommandInput, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
 
+import { useToast } from '@/hooks/use-toast'
 import dynamic from "next/dynamic";
 import { error } from "console";
 import { useRouter } from "next/navigation";
@@ -39,6 +40,7 @@ const SearchAddress = dynamic(() => import("@/components/ui/search-address"), {
 const formSchema = newStudentFormSchema();
 
 const NewStudentForm = () => {
+  const { toast } = useToast()
   const [currentTab, setCurrentTab] = useState("guardian1");
   const [classData, setClassData] = useState<IClass[] | null>(null);
   const [formData, setFormData] = useState({});
@@ -170,7 +172,13 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
     try {
       const addNewStudent = await newStudent(data);
       console.log("Add new Student "+ addNewStudent);
-      router.push('/students');
+
+      toast({
+        title: "Success!",
+        description: "You have successfully added " + data.firstName + " " + data.surname + " to the system.",
+      })
+      form.reset();
+      // router.push('/students');
     } catch (error) {
       console.error("Error submitting form:", error);
       setError("An error occurred while submitting the form.");
@@ -254,19 +262,19 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
     <div className="flex flex-col gap-4">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          <div className="grid grid-cols-2 gap-6 bg-orange-50 rounded-lg p-5">
+          <div className="grid grid-cols-2 gap-6 bg-green-50 rounded-lg p-5">
             {/* ChildInformation//////////////////////////////////////////////////// */}
 
             <div className="flex flex-col col-span-1 p-6 pl-6 pr-6 pb-4">
               <Link href="/students" className=" w-min">
-                <span className=" -mt-6 -ml-4 flex items-center gap-2 hover:text-orange-300">
-                  <ChevronLeft className="h-5 w-5  hover:text-orange-300" />
+                <span className=" -mt-6 -ml-4 flex items-center gap-2 hover:text-green-300">
+                  <ChevronLeft className="h-5 w-5  hover:text-green-300" />
                   Back
                 </span>
               </Link>
               <h1 className="pt-5">Child Information</h1>
 
-              <div className="p-4 bg-orange-100 rounded-lg">
+              <div className="p-4 bg-green-100 rounded-lg">
                 <div className=" col-span-1">
                   <div className="grid grid-cols-2 gap-2">
                     <div className="cols-span-1">
@@ -454,7 +462,7 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
                             {
                               classData?.map((classItem) => (
                                 <SelectItem
-                                className="hover:bg-orange-200 text-14 font-semibold rounded-lg hover:animate-in p-2 cursor-pointer"
+                                className="hover:bg-green-200 text-14 font-semibold rounded-lg hover:animate-in p-2 cursor-pointer"
                                   key={classItem.$id}
                                   value={classItem.$id}
                                 >
@@ -476,7 +484,7 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
             <div className="flex flex-col col-span-1 p-6 rounded-lg bg-white shadow-lg">
               <h1>Parent Information</h1>
               <Tabs defaultValue="guardian1" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 bg-orange-100">
+                <TabsList className="grid w-full grid-cols-2 bg-green-100">
                   <TabsTrigger
                     value="guardian1"
                     onClick={() => handleTabChange("guardian1")}
@@ -725,6 +733,7 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
           {error && <div className="text-red-500">{error}</div>}
         </form>
       </Form>
+      <Toaster />
     </div>
   );};
 
@@ -741,4 +750,5 @@ export default NewStudentForm;
 </DialogContent>
 
 import { Checkbox } from "@/components/ui/checkbox";import { Select, SelectValue } from "@radix-ui/react-select";
+import { Toaster } from "@/components/ui/toaster";
 

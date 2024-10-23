@@ -2,7 +2,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { TableBody, TableCell, TableHead, TableHeader, TableRow,Table } from '@/components/ui/table'
 import { IStudent, ITransactions } from '@/lib/utils'
-import { Badge, Car } from 'lucide-react'
+import { Badge, Car, PlusCircle } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import {
   Pagination,
@@ -13,6 +13,12 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import Classes from '@/components/ui/classes'
+import PettyCash from '@/components/ui/pettyCash'
+import Grocery from '@/components/ui/grocery'
+import Event from '@/components/ui/event'
 
 const Finances = () => {
     const [transactions, setTransactions] = useState<ITransactions[]>([]);
@@ -245,6 +251,72 @@ const Finances = () => {
             </Table>
             </CardContent>
             
+          </Card>
+          <Card>
+          <Dialog>
+                    <DialogTrigger asChild>
+                      <Button
+                        size="sm"
+                        className="h-8 gap-1 hover:bg-orange-200"
+                      >
+                        <PlusCircle className="h-3.5 w-3.5" />
+                        <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                          Petty Cash Item
+                        </span>
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className='bg-white'>
+                    <DialogTitle className='
+                    hidden'>
+                      Create Event
+                    </DialogTitle>
+                      <PettyCash/>
+                    </DialogContent>
+            </Dialog>
+
+            <Dialog>
+                    <DialogTrigger asChild>
+                      <Button
+                        size="sm"
+                        className="h-8 gap-1 hover:bg-orange-200"
+                      >
+                        <PlusCircle className="h-3.5 w-3.5" />
+                        <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                          Grocery
+                        </span>
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className='bg-white'>
+                    <DialogTitle className='
+                    hidden'>
+                      Create Event
+                    </DialogTitle>
+                      <Grocery/>
+                    </DialogContent>
+            </Dialog>
+
+            <Dialog>
+                    <DialogTrigger asChild>
+                      <Button
+                        size="sm"
+                        className="h-8 gap-1 hover:bg-orange-200"
+                      >
+                        <PlusCircle className="h-3.5 w-3.5" />
+                        <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+                          Create Event
+                        </span>
+                      </Button>
+                    </DialogTrigger>
+                    
+                    <DialogContent className='bg-white'>
+
+                    <DialogTitle className='
+                    hidden'>
+                      Create Event
+                    </DialogTitle>
+                      <Event/>
+                    </DialogContent>
+            </Dialog>
           </Card>
         </div>
       </main>

@@ -53,7 +53,7 @@ const AddNewUser = () => {
  
          const newUser = await signUp(data);
          console.log(newUser);
-         setUser(newUser);
+        //  setUser(newUser);
 
     } catch (error) {
       console.log(error);

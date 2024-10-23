@@ -7,9 +7,10 @@ const database = new Databases(client)
 //Create event
 
 async function createEvent(data: {
-    name: string;
+    eventName: string;
     date: string;
-    price: number;
+    amount: number;
+    description: string;
 }) {
     try {
         const response = await database.createDocument(
@@ -49,8 +50,8 @@ export async function GET() {
 
 export async function POST(request: Request) {
     try {
-        const {name, date, price} = await request.json();
-        const data = {name, date, price}
+        const {eventName, date, amount, description} = await request.json();
+        const data = {eventName, date, amount, description}
         const response = await createEvent(data);
         return NextResponse.json({message: "POST Event created successfully--"}, {status: 201})
     } catch (error) {
