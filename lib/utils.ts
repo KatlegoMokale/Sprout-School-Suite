@@ -218,6 +218,45 @@ export interface ITransactions {
   paymentDate: string;
 }
 
+export interface IGrocery {
+  $id: string;
+  summery: string;
+  totalPaid: number;
+  store: string;
+  date: string;
+}
+
+
+export interface IPettyCash {
+  $id: string;
+  itemName: string;
+  quantity: number;
+  price: number;
+  store: string;
+  category: string;
+  date: string;
+}
+
+export interface IEvent{
+  $id: string;
+  eventName: string;
+  amount: number;
+  description: string;
+  date: string;
+}
+
+export interface IEventTransaction{
+  $id: string;
+  eventId: string
+  childId: string;
+  childName: string;
+  amount: number;
+  datePaid: string;
+  quantity: number;
+}
+
+
+
 export interface IStudent {
   $id: string;
   firstName: string;

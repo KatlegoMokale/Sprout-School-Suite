@@ -13,7 +13,7 @@ import CustomInput from "@/components/ui/CustomInput";
 import { IClass, newStudentFormSchema, parseStringify } from "@/lib/utils";
 import { DialogContent, DialogDescription } from "@/components/ui/dialog";
 import Link from "next/link";
-import { Check, ChevronLeft } from "lucide-react";
+import { Check, ChevronLeft, Loader2 } from "lucide-react";
 import { autocomplete } from "@/lib/google";
 import { PlaceAutocompleteResult } from "@googlemaps/google-maps-services-js";
 import { Command, CommandInput, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
@@ -259,34 +259,36 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
 
   // const form = useForm()
   return (
-    <div className="flex flex-col gap-4">
-      <Form {...form}>
+    <div className="flex flex-col px-4">
+      <Link href="/students" className="flex items-center text-sm text-muted-foreground hover:text-primary transition-colors">
+          <ChevronLeft className="mr-2 h-4 w-4" />
+          Back to Students
+        </Link>
+      <Card className=" border-none ">
+        <CardHeader>
+        
+        <CardTitle className="text-2xl font-bold mt-1">New Student Registration</CardTitle>
+        </CardHeader>
+        <CardContent>
+        <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          <div className="grid grid-cols-2 gap-6 bg-green-50 rounded-lg p-5">
-            {/* ChildInformation//////////////////////////////////////////////////// */}
-
-            <div className="flex flex-col col-span-1 p-6 pl-6 pr-6 pb-4">
-              <Link href="/students" className=" w-min">
-                <span className=" -mt-6 -ml-4 flex items-center gap-2 hover:text-green-300">
-                  <ChevronLeft className="h-5 w-5  hover:text-green-300" />
-                  Back
-                </span>
-              </Link>
-              <h1 className="pt-5">Child Information</h1>
-
-              <div className="p-4 bg-green-100 rounded-lg">
-                <div className=" col-span-1">
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="cols-span-1">
+            <Tabs defaultValue="student">
+              <TabsList className=" grid w-full grid-cols-3">
+                <TabsTrigger value="student">Student Information</TabsTrigger>
+                <TabsTrigger value="guardian1">Guardian 1</TabsTrigger>
+                <TabsTrigger value="guardian2">Guardian 2</TabsTrigger>
+              </TabsList>
+              <TabsContent value="student" className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 px-5">
+                <div className="cols-span-1">
                       <CustomInput<z.infer<typeof formSchema>>
                         name="firstName"
                         placeholder="Enter Child Name"
                         control={form.control}
                         label={"Name"}
                       />
-                    </div>
-
-                    <div>
+                </div>
+                    <div className="cols-span-1">
                       <CustomInput<z.infer<typeof formSchema>>
                         name="secondName"
                         placeholder="Enter Child Second Name"
@@ -473,32 +475,10 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
                           </SelectContent>
                         </Select1>
                         </div>
-                        
                       </div>
-                    
-                  </div>
-                </div>
               </div>
-            </div>
-            {/* ParentInformation//////////////////////////////////////////////////// */}
-            <div className="flex flex-col col-span-1 p-6 rounded-lg bg-white shadow-lg">
-              <h1>Parent Information</h1>
-              <Tabs defaultValue="guardian1" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 bg-green-100">
-                  <TabsTrigger
-                    value="guardian1"
-                    onClick={() => handleTabChange("guardian1")}
-                  >
-                    Guardian 1
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="guardian2"
-                    onClick={() => handleTabChange("guardian2")}
-                  >
-                    Guardian 2
-                  </TabsTrigger>
-                </TabsList>
-                <TabsContent value="guardian1">
+              </TabsContent>
+              <TabsContent value="guardian1">
                   <div className="grid grid-cols-2 gap-2">
                     <div className=" col-span-2 pt-1 w-full">
                       <CustomInput<z.infer<typeof formSchema>>
@@ -725,15 +705,28 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
                   </div>
                 </TabsContent>
               </Tabs>
-            </div>
-            <Button type="submit" disabled={isLoading} className="form-btn">
-              {isLoading ? "Adding..." : "Add Student"}
+              <Button 
+              type="submit" 
+              className="w-full transition-colors hover:bg-primary/90 bg-green-200 hover:bg-green-300" 
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Adding Student...
+                </>
+              ) : (
+                "Add Student"
+              )}
             </Button>
-          </div>
-          {error && <div className="text-red-500">{error}</div>}
         </form>
+
       </Form>
       <Toaster />
+        </CardContent>
+     
+      </Card>
+     
     </div>
   );};
 
@@ -751,4 +744,5 @@ export default NewStudentForm;
 
 import { Checkbox } from "@/components/ui/checkbox";import { Select, SelectValue } from "@radix-ui/react-select";
 import { Toaster } from "@/components/ui/toaster";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
