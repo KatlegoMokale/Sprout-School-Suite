@@ -24,6 +24,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { MapPin, Phone, MoreHorizontal, PlusCircle, Search, Filter } from "lucide-react"
 import Link from "next/link"
 import Classes from "@/components/ui/classes"
+import Event from "@/components/ui/event"
+import { IEvent } from "@/lib/utils"
+import { set } from "date-fns"
 
 interface IStaff {
   $id: string
@@ -49,6 +52,7 @@ const positionColors = {
 export default function CreativeStaffManagement() {
   const [staff, setStaff] = useState<IStaff[]>([])
   const [classes, setClasses] = useState<IClass[]>([])
+  const [events, setEvents] = useState<IEvent[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
@@ -58,17 +62,20 @@ export default function CreativeStaffManagement() {
     const fetchData = async () => {
       setIsLoading(true)
       try {
-        const [staffResponse, classesResponse] = await Promise.all([
+        const [staffResponse, classesResponse, eventsResponse] = await Promise.all([
           fetch("/api/stuff"),
           fetch("/api/class"),
+          fetch("/api/event"),
         ])
-        if (!staffResponse.ok || !classesResponse.ok) {
+        if (!staffResponse.ok || !classesResponse.ok || !eventsResponse.ok) {
           throw new Error("Failed to fetch data")
         }
         const staffData = await staffResponse.json()
         const classesData = await classesResponse.json()
+        const eventsData = await eventsResponse.json()
         setStaff(staffData)
         setClasses(classesData)
+        setEvents(eventsData)
       } catch (error) {
         console.error("Error fetching data:", error)
         setError("Failed to fetch data. Please try reloading the page.")
@@ -187,8 +194,8 @@ export default function CreativeStaffManagement() {
             ))}
           </motion.div>
         </div>
-        <div className="lg:w-1/4">
-          <Card className="bg-white shadow-xl rounded-lg overflow-hidden">
+        <div className="lg:w-1/4 grid grid-rows-2">
+          <Card className="bg-white shadow-xl rounded-lg overflow-hidden row-span-1">
             <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-4">
               <h2 className="text-2xl font-bold text-white mb-2">Classes</h2>
               <p className="text-blue-100">Overview of all classes</p>
@@ -221,6 +228,48 @@ export default function CreativeStaffManagement() {
                       <CardContent className="p-4">
                         <h3 className="font-semibold text-lg mb-1">Class {classData.name}</h3>
                         <p className="text-sm text-gray-600">Teacher: {classData.teacherName}</p>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="bg-white shadow-xl rounded-lg overflow-hidden mt-4">
+          <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-4">
+              <h2 className="text-2xl font-bold text-white mb-2">Events</h2>
+              <p className="text-blue-100">Overview of all Events</p>
+            </div>
+            <CardContent className="p-4">
+            <Dialog>
+                <DialogTrigger asChild>
+                  <Button className="w-full mb-4 bg-purple-500 hover:bg-purple-600 text-white">
+                    <PlusCircle className="h-4 w-4 mr-2" />
+                    Create New Event
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className=" bg-white">
+                  <DialogHeader className="hidden">
+                    <DialogTitle>Create New Event</DialogTitle>
+                    <DialogDescription>Add a new class to the system.</DialogDescription>
+                  </DialogHeader>
+                  <Event/>
+                </DialogContent>
+              </Dialog>
+              <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
+                {events.map((eventsData, index) => (
+                  <motion.div
+                    key={eventsData.$id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.1 }}
+                  >
+                    <Card className="bg-gray-50 hover:bg-gray-100 transition-colors duration-200">
+                      <CardContent className="p-4">
+                        <h3 className="font-semibold text-lg mb-1">Class {eventsData.eventName}</h3>
+                        <p className="text-sm text-gray-600">Description: {eventsData.description}</p>
+                        <p className="text-sm text-gray-600">Price: R {eventsData.amount}.00</p>
+                        <p className="text-sm text-gray-600">Total Paid: TBA</p>
                       </CardContent>
                     </Card>
                   </motion.div>

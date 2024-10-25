@@ -89,7 +89,7 @@ export default function SignInAuth() {
                     Remember me
                   </label>
                 </div>
-                <Button type="submit" className="w-full" disabled={isLoading}>
+                <Button type="submit" className="w-full shadow-sm"  disabled={isLoading}>
                   {isLoading ? (
                     <>
                       <Loader2 size={20} className="mr-2 animate-spin" />
@@ -103,7 +103,7 @@ export default function SignInAuth() {
             </Form>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
-            <div className="relative w-full">
+            {/* <div className="relative w-full">
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t" />
               </div>
@@ -118,7 +118,7 @@ export default function SignInAuth() {
               <Button variant="outline" className="w-full">
                 <Twitter className="mr-2 h-4 w-4" /> Twitter
               </Button>
-            </div>
+            </div> */}
           </CardFooter>
         </Card>
       </div>

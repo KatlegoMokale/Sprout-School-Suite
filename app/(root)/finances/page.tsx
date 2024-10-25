@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -50,42 +50,42 @@ export default function FinancialDashboard() {
   const [error, setError] = useState<string | null>(null)
   const [sortPeriod, setSortPeriod] = useState("all")
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setIsLoading(true)
-        const [transactionsRes, studentsRes, pettyCashRes, groceryRes] = await Promise.all([
-          fetch('/api/transactions'),
-          fetch('/api/students'),
-          fetch('/api/pettycash'),
-          fetch('/api/grocery')
-        ])
+  const fetchData = useCallback(async () => {
+    try {
+      setIsLoading(true)
+      const [transactionsRes, studentsRes, pettyCashRes, groceryRes] = await Promise.all([
+        fetch('/api/transactions'),
+        fetch('/api/students'),
+        fetch('/api/pettycash'),
+        fetch('/api/grocery')
+      ])
 
-        if (!transactionsRes.ok || !studentsRes.ok || !pettyCashRes.ok || !groceryRes.ok) {
-          throw new Error("Failed to fetch data")
-        }
-
-        const [transactionsData, studentsData, pettyCashData, groceryData] = await Promise.all([
-          transactionsRes.json(),
-          studentsRes.json(),
-          pettyCashRes.json(),
-          groceryRes.json()
-        ])
-
-        setTransactions(transactionsData)
-        setStudents(studentsData)
-        setPettyCash(pettyCashData)
-        setGrocery(groceryData)
-      } catch (error) {
-        console.error("Error fetching data:", error)
-        setError("Failed to fetch data. Please try again later.")
-      } finally {
-        setIsLoading(false)
+      if (!transactionsRes.ok || !studentsRes.ok || !pettyCashRes.ok || !groceryRes.ok) {
+        throw new Error("Failed to fetch data")
       }
-    }
 
-    fetchData()
+      const [transactionsData, studentsData, pettyCashData, groceryData] = await Promise.all([
+        transactionsRes.json(),
+        studentsRes.json(),
+        pettyCashRes.json(),
+        groceryRes.json()
+      ])
+
+      setTransactions(transactionsData)
+      setStudents(studentsData)
+      setPettyCash(pettyCashData)
+      setGrocery(groceryData)
+    } catch (error) {
+      console.error("Error fetching data:", error)
+      setError("Failed to fetch data. Please try again later.")
+    } finally {
+      setIsLoading(false)
+    }
   }, [])
+
+  useEffect(() => {
+    fetchData()
+  }, [fetchData])
 
   const calculateTotal = (data: any[], key: string) => {
     return data.reduce((total, item) => total + item[key], 0)
@@ -144,7 +144,7 @@ export default function FinancialDashboard() {
   }
 
   return (
-    <div className=" px-4 py-8">
+    <div className="px-4 py-8">
       <h1 className="text-3xl font-bold mb-8">Financial Dashboard</h1>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         {summaryCards.map((card, index) => (
@@ -245,7 +245,7 @@ export default function FinancialDashboard() {
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
-                    <PettyCash />
+                    <PettyCash onSuccess={fetchData} />
                   </DialogContent>
                 </Dialog>
                 <Dialog>
@@ -256,7 +256,7 @@ export default function FinancialDashboard() {
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
-                    <Grocery />
+                    <Grocery onSuccess={fetchData} />
                   </DialogContent>
                 </Dialog>
               </div>

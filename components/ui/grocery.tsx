@@ -9,12 +9,22 @@ import { grocerySchema } from '@/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { newGrocery } from '@/lib/actions/user.actions'
 import { Button } from "@/components/ui/button"
+import { useToast } from '@/hooks/use-toast'
+import { AnimatePresence, motion } from 'framer-motion'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
-const Grocery = () => {
-
+const Grocery = ({ onSuccess }: { onSuccess: () => void }) => {
+  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [showDialog, setShowDialog] = useState(false);
   const [error, setError] = useState<string| null>(null);
-  const [formData, setFormData] = useState({});
   const router = useRouter();
 
   const newGroceryForm = grocerySchema();
@@ -29,32 +39,45 @@ const Grocery = () => {
   });
 
   const onSubmit = async (data: z.infer<typeof newGroceryForm>) => {
-    console.log("Form data:", data);
-    console.log("Submit");
     setIsLoading(true);
     try {
-      const addNewGrocery = await newGrocery(data);
-      console.log("Add new Grocery "+ addNewGrocery);
-      // router.push('/transactions');
+      await newGrocery(data);
+      toast({
+        title: "Grocery Added",
+        description: "Grocery has been added successfully!",
+      });
+      setShowDialog(true);
     } catch (error) {
       console.error("Error submitting form:", error);
-      setError("An error occurred while submitting the form.");
+      toast({
+        title: "Error",
+        description: "An error occurred while submitting the form.",
+      });
     } finally {
       setIsLoading(false);
     }
   };
+  const handleAddAnother = () => {
+    form.reset();
+    setShowDialog(false);
+  };
 
+  const handleDone = () => {
+    setShowDialog(false);
+    onSuccess();
+  };
 
   return (
-    <div className="">
-      <div className="w-full max-w-3xl p-8 ">
+    <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0, y: -20 }}
+    className="w-full max-w-3xl p-8 bg-white rounded-lg shadow-lg"
+  >
       <h2 className="text-2xl font-bold mb-6 text-gray-800">Grocery Entry</h2>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-1 md:grid-cols-2 gap-6">
           
-
-
-
           <div className='md:col-span-2'>
           <CustomInput
           name='summery'
@@ -64,8 +87,6 @@ const Grocery = () => {
           />
 
           </div>
-          
-        
           <CustomInput
           name='totalPaid'
           control={form.control}
@@ -89,7 +110,7 @@ const Grocery = () => {
           type='date'
           />
 
-          <div className="md:col-span-2">
+<motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <Button
               type="submit"
               disabled={isLoading}
@@ -97,15 +118,39 @@ const Grocery = () => {
             >
               {isLoading ? "Submitting..." : "Submit"}
             </Button>
-          </div>
+          </motion.div>
         </form>
 
       </Form>
 
-      </div>
+      <AnimatePresence>
+        {showDialog && (
+          <Dialog open={showDialog} onOpenChange={setShowDialog}>
+            <DialogContent className='bg-white'>
+              <DialogHeader>
+                <DialogTitle>Item Added Successfully</DialogTitle>
+                <DialogDescription>
+                  Would you like to add another item or are you done?
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter className="sm:justify-start">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={handleAddAnother}
+                >
+                  Add Another
+                </Button>
+                <Button type="button" variant="default" onClick={handleDone}>
+                  Done
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )}
+      </AnimatePresence>      
       
-      
-    </div>
+    </motion.div>
   )
 }
 

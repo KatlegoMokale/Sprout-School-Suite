@@ -163,7 +163,7 @@ const PettyCash = ({ onSuccess }: { onSuccess: () => void }) => {
       <AnimatePresence>
         {showDialog && (
           <Dialog open={showDialog} onOpenChange={setShowDialog}>
-            <DialogContent>
+            <DialogContent className='bg-white'>
               <DialogHeader>
                 <DialogTitle>Item Added Successfully</DialogTitle>
                 <DialogDescription>

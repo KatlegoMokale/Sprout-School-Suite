@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { motion } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -9,10 +9,11 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Select1, SelectContent, SelectItem, SelectTrigger, SelectValue1 } from "@/components/ui/select"
 import { PiggyBank, ShoppingCart, DollarSign, TrendingUp, TrendingDown, CreditCard, GraduationCap, Users, BookOpen, CalendarIcon } from "lucide-react"
-import PettyCash from "@/components/ui/pettyCash"
 import Grocery from "@/components/ui/grocery"
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Skeleton } from '@/components/ui/skeleton'
+import PettyCash from "@/components/ui/pettyCash"
+import { IEvent } from "@/lib/utils"
 
 interface Transaction {
   $id: string
@@ -61,54 +62,58 @@ export default function Dashboard() {
   const [students, setStudents] = useState<Student[]>([])
   const [teachers, setTeachers] = useState<IStuff[]>([])
   const [classes, setClasses] = useState<any[]>([])
+  const [events, setEvents] = useState<IEvent[]>([])
   const [pettyCash, setPettyCash] = useState<PettyCashItem[]>([])
   const [grocery, setGrocery] = useState<GroceryItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [sortPeriod, setSortPeriod] = useState("all")
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setIsLoading(true)
-        const [transactionsRes, studentsRes, teachersRes, classesRes, pettyCashRes, groceryRes] = await Promise.all([
-          fetch('/api/transactions'),
-          fetch('/api/students'),
-          fetch('/api/stuff'),
-          fetch('/api/class'),
-          fetch('/api/pettycash'),
-          fetch('/api/grocery')
-        ])
+  const fetchData = useCallback(async () => {
+    try {
+      setIsLoading(true)
+      const [transactionsRes, studentsRes, teachersRes, classesRes, pettyCashRes, groceryRes, eventsRes] = await Promise.all([
+        fetch('/api/transactions'),
+        fetch('/api/students'),
+        fetch('/api/stuff'),
+        fetch('/api/class'),
+        fetch('/api/pettycash'),
+        fetch('/api/grocery'),
+        fetch('/api/event')
+      ])
 
-        if (!transactionsRes.ok || !studentsRes.ok || !teachersRes.ok || !classesRes.ok || !pettyCashRes.ok || !groceryRes.ok) {
-          throw new Error("Failed to fetch data")
-        }
-
-        const [transactionsData, studentsData, teachersData, classesData, pettyCashData, groceryData] = await Promise.all([
-          transactionsRes.json(),
-          studentsRes.json(),
-          teachersRes.json(),
-          classesRes.json(),
-          pettyCashRes.json(),
-          groceryRes.json()
-        ])
-
-        setTransactions(transactionsData)
-        setStudents(studentsData)
-        setTeachers(teachersData)
-        setClasses(classesData)
-        setPettyCash(pettyCashData)
-        setGrocery(groceryData)
-      } catch (error) {
-        console.error("Error fetching data:", error)
-        setError("Failed to fetch data. Please try again later.")
-      } finally {
-        setIsLoading(false)
+      if (!transactionsRes.ok || !studentsRes.ok || !teachersRes.ok || !classesRes.ok || !pettyCashRes.ok || !groceryRes.ok || !eventsRes.ok) {
+        throw new Error("Failed to fetch data")
       }
-    }
 
-    fetchData()
+      const [transactionsData, studentsData, teachersData, classesData, pettyCashData, groceryData, eventsData] = await Promise.all([
+        transactionsRes.json(),
+        studentsRes.json(),
+        teachersRes.json(),
+        classesRes.json(),
+        pettyCashRes.json(),
+        groceryRes.json(),
+        eventsRes.json()
+      ])
+
+      setTransactions(transactionsData)
+      setStudents(studentsData)
+      setTeachers(teachersData)
+      setClasses(classesData)
+      setPettyCash(pettyCashData)
+      setGrocery(groceryData)
+      setEvents(eventsData)
+    } catch (error) {
+      console.error("Error fetching data:", error)
+      setError("Failed to fetch data. Please try again later.")
+    } finally {
+      setIsLoading(false)
+    }
   }, [])
+
+  useEffect(() => {
+    fetchData()
+  }, [fetchData])
 
   const calculateTotal = (data: any[], key: string) => {
     return data.reduce((total, item) => total + item[key], 0)
@@ -167,8 +172,8 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8 text-green-800">Sprout School Suite Dashboard</h1>
+    <div className="px-4 pb-8">
+      <h1 className="text-3xl font-bold mb-8 text-green-800">AWDCC Dashboard</h1>
       
       {/* Quick Stats */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
@@ -193,7 +198,7 @@ export default function Dashboard() {
         <QuickStatCard
           icon={<CalendarIcon className="h-6 w-6" />}
           title="Upcoming Events"
-          value={isLoading ? <Skeleton className="h-8 w-16" /> : "5"}
+          value={isLoading ? <Skeleton className="h-8 w-16" /> : events.length}
           color="bg-pink-500"
         />
       </div>
@@ -291,7 +296,7 @@ export default function Dashboard() {
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
-                    <PettyCash />
+                    <PettyCash onSuccess={fetchData} />
                   </DialogContent>
                 </Dialog>
                 <Dialog>
@@ -302,7 +307,7 @@ export default function Dashboard() {
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
-                    <Grocery />
+                    <Grocery/>
                   </DialogContent>
                 </Dialog>
               </div>
@@ -333,10 +338,11 @@ export default function Dashboard() {
                       <TableRow>
                         <TableHead>Date</TableHead>
                         <TableHead>Description</TableHead>
-                        <TableHead  className="text-right">Amount</TableHead>
+                        <TableHead className="text-right">Amount</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
+                      
                       {filteredPettyCash.map((item) => (
                         <TableRow key={item.$id} className="hover:bg-green-50">
                           <TableCell>{new Date(item.date).toLocaleDateString()}</TableCell>
