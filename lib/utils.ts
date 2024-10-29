@@ -44,6 +44,8 @@ export const eventTransactionSchema = () => z.object({
   amount: z.number().min(1),
   datePaid: z.string().min(3),
   quantity: z.number().min(1),
+  /////New
+  paymentStatus: z.enum(['paid', 'pending', 'overdue'])
 });
 
 export const pettyCashSchema = () => z.object({
@@ -74,7 +76,8 @@ export const paymentFormSchema = () => z.object({
   amount: z.number().min(1),
   paymentMethod: z.string().min(3),
   paymentDate: z.string().min(3),
-
+  /////New
+  transactionType: z.enum(['fee', 'event', 'salary']),
 });
 
 export const authformSchemaLogin = () => z.object({
@@ -181,6 +184,47 @@ export const newParentFormSchema = (type: string) => z.object({
 
 
 });
+
+// New Table: school_fees
+export const schoolFeesSchema = z.object({
+  year: z.number(),
+  registrationFee: z.number(),
+  reRegistrationFee: z.number(),
+  monthlyFee: z.number(),
+  quarterlyFee: z.number(),
+  yearlyFee: z.number(),
+  siblingDiscountPercentage: z.number(),
+});
+
+// New Table: student_fees
+export const studentFeesSchema = z.object({
+  studentId: z.string(),
+  year: z.number(),
+  totalFees: z.number(),
+  paidAmount: z.number(),
+  balance: z.number(),
+  paymentFrequency: z.enum(['monthly', 'quarterly', 'yearly']),
+  nextPaymentDate: z.string(),
+});
+
+// New Table: fee_transactions
+export const feeTransactionSchema = z.object({
+  studentId: z.string(),
+  amount: z.number(),
+  paymentMethod: z.string(),
+  paymentDate: z.string(),
+  feeType: z.enum(['registration', 're-registration', 'tuition']),
+});
+
+// New Table: staff_salary
+export const staffSalarySchema = z.object({
+  staffId: z.string(),
+  baseSalary: z.number(),
+  bonuses: z.number(),
+  deductions: z.number(),
+  paymentDate: z.string(),
+});
+
 
 export const getBaseUrl = () => {
   if (typeof window !== 'undefined') return ''; // browser should use relative url
