@@ -3,12 +3,16 @@ import Event from '@/components/ui/event'
 import Grocery from '@/components/ui/grocery'
 import AddNewUser from '@/components/ui/newUser'
 import PettyCash from '@/components/ui/pettyCash'
+import SchoolFeesSetup from '@/components/ui/SchoolFeesSetup'
 import React from 'react'
+import SchoolFeeManagement from '../school-fees/page'
+import StudentFeesManagement from '@/components/ui/SchoolFeesManagement'
 
 const Users = () => {
   return (
-    <div><AddNewUser/></div>
-
+    // <div><AddNewUser/></div>
+    <SchoolFeesSetup/>
+    // <StudentFeesManagement/>
     // <PettyCash/>
     // <Grocery/>
     // <Event/>

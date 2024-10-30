@@ -186,20 +186,26 @@ export const newParentFormSchema = (type: string) => z.object({
 });
 
 // New Table: school_fees
-export const schoolFeesSchema = z.object({
+export const schoolFeesSchema = () => z.object({
   year: z.number(),
   registrationFee: z.number(),
-  reRegistrationFee: z.number(),
+  age: z.string(),
   monthlyFee: z.number(),
   quarterlyFee: z.number(),
   yearlyFee: z.number(),
-  siblingDiscountPercentage: z.number(),
+  siblingDiscountPrice: z.number(),
 });
 
 // New Table: student_fees
-export const studentFeesSchema = z.object({
+export const studentFeesSchema = () => z.object({
+  schoolfeesSchemaId: z.string(),
   studentId: z.string(),
   year: z.number(),
+  age: z.string(),
+  startDate: z.string(),
+  endDate: z.string().optional(),
+  registrationFee: z.number(),
+  fees: z.number(),
   totalFees: z.number(),
   paidAmount: z.number(),
   balance: z.number(),
@@ -213,15 +219,15 @@ export const feeTransactionSchema = z.object({
   amount: z.number(),
   paymentMethod: z.string(),
   paymentDate: z.string(),
-  feeType: z.enum(['registration', 're-registration', 'tuition']),
+  feeType: z.enum(['registration', 're-registration', 'school-fees']),
 });
 
 // New Table: staff_salary
 export const staffSalarySchema = z.object({
   staffId: z.string(),
   baseSalary: z.number(),
-  bonuses: z.number(),
-  deductions: z.number(),
+  bonuses: z.number().optional(),
+  deductions: z.number().optional(),
   paymentDate: z.string(),
 });
 
