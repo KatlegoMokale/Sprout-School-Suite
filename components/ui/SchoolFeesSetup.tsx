@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -10,21 +10,13 @@ import { Form } from "@/components/ui/form"
 import { toast } from "@/hooks/use-toast"
 import CustomInput from "@/components/ui/CustomInput"
 import { schoolFeesSchema } from "@/lib/utils"
+import { newSchoolFees } from "@/lib/actions/user.actions"
 
-// const schoolFeesSchema = z.object({
-//   year: z.number().min(2000).max(2100),
-//   registrationFee: z.number().min(0),
-//   reRegistrationFee: z.number().min(0),
-//   monthlyFee: z.number().min(0),
-//   quarterlyFee: z.number().min(0),
-//   yearlyFee: z.number().min(0),
-//   siblingDiscountPercentage: z.number().min(0).max(100),
-// })
-
-// type SchoolFeesFormData = z.infer<typeof schoolFeesSchema>
 
 export default function SchoolFeesSetup() {
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState({});
+  const [yearlyFee, setYearlyFee] = useState(0)
 
   const SchoolFeesFormData = schoolFeesSchema();
   const form = useForm<z.infer<typeof SchoolFeesFormData>>({
@@ -34,17 +26,31 @@ export default function SchoolFeesSetup() {
       registrationFee: 0,
       age: "",
       monthlyFee: 0,
-      quarterlyFee: 0,
       yearlyFee: 0,
-      siblingDiscountPrice: 0,
+      siblingDiscountPrice: 50,
     },
   })
+
+  const calculateFees = (monthlyFee: number) => {
+    const yearlyFee = monthlyFee * 10; // 12 months - 2 months discount // 3 months - 1 month discount
+    setYearlyFee(yearlyFee);
+    form.setValue("yearlyFee", yearlyFee);
+  }
+
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (name === 'monthlyFee') {
+        calculateFees(value.monthlyFee as number);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [form]);
+
 
   const onSubmit = async (data: z.infer<typeof SchoolFeesFormData>) => {
     setIsLoading(true)
     try {
-      // Here you would typically send the data to your API
-      // For example: await fetch('/api/school-fees', { method: 'POST', body: JSON.stringify(data) })
+      const addNewSchool = await newSchoolFees(data);
       console.log("School fees data:", data)
       toast({
         title: "Success",
@@ -60,6 +66,7 @@ export default function SchoolFeesSetup() {
     } finally {
       setIsLoading(false)
     }
+    setFormData(data);
   }
 
   return (
@@ -104,19 +111,16 @@ export default function SchoolFeesSetup() {
               type="number"
             />
             <CustomInput
-              name="quarterlyFee"
-              control={form.control}
-              label="Quarterly Fee"
-              placeholder="Enter quarterly fee"
-              type="number"
-            />
-            <CustomInput
               name="yearlyFee"
               control={form.control}
               label="Yearly Fee"
               placeholder="Enter yearly fee"
               type="number"
             />
+            <div className="mt-4 p-4 bg-gray-100 rounded-md">
+              <h3 className="text-lg font-semibold mb-2">Calculated Fees</h3>
+              <p>Yearly Fee (once-off): R {yearlyFee.toFixed(2)}</p>
+            </div>
             <CustomInput
               name="siblingDiscountPrice"
               control={form.control}

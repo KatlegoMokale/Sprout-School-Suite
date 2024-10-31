@@ -162,6 +162,23 @@ declare type NewStudentParms = {
     paymentDate: string;
   }
 
+  declare type NewStudentPayment = {
+    studentId: string;
+    amount: number;
+    paymentMethod: string;
+    paymentDate: string;
+    feeType: string;
+  };
+
+  declare type SchoolFeesSetup = {
+    year: number;
+    registrationFee: number;
+    age: string;
+    monthlyFee: number;
+    yearlyFee: number,
+    siblingDiscountPrice: number,
+  }
+
   declare type SchoolFees = {
     $id: string;
     class: string;

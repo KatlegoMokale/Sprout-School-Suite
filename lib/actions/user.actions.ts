@@ -133,9 +133,6 @@ export const newStuff = async (stuffData: NewStuffParams) => {
 }
 
 export const newPayment = async (paymentData: NewPaymentParms) => {
-    console.log("//////////////////////");
-    // const { studentId, firstName, surname, amount, paymentDate, paymentMethod } = paymentData;
-    console.log("paymentData", paymentData);
     try {
         console.log("//////////////////////");
         const response = await fetch(`${getBaseUrl()}/api/transactions`, {
@@ -154,6 +151,27 @@ export const newPayment = async (paymentData: NewPaymentParms) => {
     } catch (error) {
       console.log(error);
     }
+}
+
+
+export const newSchoolFees = async (paymentData: SchoolFeesSetup) => {
+  try {
+      const response = await fetch(`${getBaseUrl()}/api/school-fees-setup`, {
+          method: "POST",
+          headers: {
+              "Content-Type": "application.json",
+          },
+          body: JSON.stringify(paymentData),
+      });
+      if (response.ok) {
+          console.log("New School Fees added successfully!");
+        } else {
+          console.error("New School Fees submission failed.");
+          throw new Error("New School Fees submission failed.");
+        }
+  } catch (error) {
+    console.log(error);
+  }
 }
 
 export const newStudent = async (studentData: NewStudentParms) => {

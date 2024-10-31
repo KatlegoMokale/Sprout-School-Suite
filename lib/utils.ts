@@ -145,7 +145,7 @@ export const newStudentFormSchema = () => z.object({
   lastPaid: z.string().optional(),
 
   studentStatus: z.string().optional(),
-
+  // siblingIds: z.array(z.string()).optional(),
 
 });
 
@@ -162,9 +162,6 @@ export const newStuffFormSchema = () => z.object({
   contact: z.string().min(10).max(10),
   position: z.string().min(3),
   startDate: z.string().min(3),
-
-
-
 
 });
 
@@ -191,7 +188,6 @@ export const schoolFeesSchema = () => z.object({
   registrationFee: z.number(),
   age: z.string(),
   monthlyFee: z.number(),
-  quarterlyFee: z.number(),
   yearlyFee: z.number(),
   siblingDiscountPrice: z.number(),
 });
@@ -223,12 +219,13 @@ export const feeTransactionSchema = z.object({
 });
 
 // New Table: staff_salary
-export const staffSalarySchema = z.object({
-  staffId: z.string(),
-  baseSalary: z.number(),
-  bonuses: z.number().optional(),
-  deductions: z.number().optional(),
-  paymentDate: z.string(),
+export const staffSalarySchema = () => z.object({
+  staffId: z.string().min(1, "Staff member is required"),
+  baseSalary: z.number().min(0, "Base salary must be a positive number"),
+  bonuses: z.number().min(0, "Bonuses must be a positive number"),
+  deductions: z.number().min(0, "Deductions must be a positive number"),
+  paymentDate: z.string().min(1, "Payment date is required"),
+  staffStatus: z.enum(['Active', 'Non-Active']),
 });
 
 
