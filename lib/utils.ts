@@ -165,6 +165,17 @@ export const newStuffFormSchema = () => z.object({
 
 });
 
+export const classAndFeesFormSchema = z.object({
+  id: z.string().optional(),
+  name: z.string().min(3, "Class name must be at least 3 characters"),
+  ageStart: z.number().min(0).max(6),
+  ageEnd: z.number().min(0).max(6),
+  ageUnit: z.enum(["months", "years"]),
+  teacherId: z.string().min(3, "Teacher ID must be at least 3 characters"),
+  teacherName: z.string().min(3, "Teacher name must be at least 3 characters"),
+  monthlyFee: z.number().min(0),
+})
+
 export const newParentFormSchema = (type: string) => z.object({
   //new student form
 
@@ -194,13 +205,10 @@ export const schoolFeesSchema = () => z.object({
 
 // New Table: student_fees
 export const studentFeesSchema = () => z.object({
-  schoolfeesSchemaId: z.string(),
   studentId: z.string(),
-  year: z.number(),
-  age: z.string(),
+  schoolFeesRegId: z.string(),
   startDate: z.string(),
   endDate: z.string().optional(),
-  registrationFee: z.number(),
   fees: z.number(),
   totalFees: z.number(),
   paidAmount: z.number(),
@@ -302,6 +310,16 @@ export interface IEventTransaction{
   quantity: number;
 }
 
+
+export interface ISchoolFeesReg {
+  $id: string;
+  year: number;
+  registrationFee: number;
+  age: string;
+  monthlyFee: number;
+  yearlyFee: number,
+  siblingDiscountPrice: number,
+}
 
 
 export interface IStudent {

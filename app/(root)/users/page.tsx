@@ -8,13 +8,15 @@ import React from 'react'
 import SchoolFeeManagement from '../school-fees/page'
 import StudentFeesManagement from '@/components/ui/SchoolFeesManagement'
 import StaffSalaryManagement from '@/components/ui/StaffSalary'
+import ClassAndFeeManagement from '@/components/ui/ClassAndFeeManagement'
 
 const Users = () => {
   return (
     // <div><AddNewUser/></div>
     // <SchoolFeesSetup/>
     // <StaffSalaryManagement/>
-    <SchoolFeesSetup/>
+    // <SchoolFeesSetup/>
+    <ClassAndFeeManagement/>
     // <StudentFeesManagement/>
     // <PettyCash/>
     // <Grocery/>

@@ -7,13 +7,10 @@ const database = new Databases(client)
 
 
 async function createStudentSchoolFees(data:{
-    schoolfeesSchemaId: string;
     studentId: string;
-    year: Number;
-    age: string;
+    schoolFeesRegId: string;
     startDate: string;
     endDate: string;
-    registrationFee: number;
     fees: number;
     totalFees: number;
     paidAmount: number
@@ -69,13 +66,10 @@ export async function GET() {
   export async function POST(request: Request) {
     try {
         const {
-            schoolfeesSchemaId,
             studentId,
-            year,
-            age,
+            schoolFeesRegId,
             startDate,
             endDate,
-            registrationFee,
             fees,
             totalFees,
             paidAmount,
@@ -84,13 +78,10 @@ export async function GET() {
             nextPaymentDate,
         } = await request.json();
         const data = {
-            schoolfeesSchemaId,
             studentId,
-            year,
-            age,
+            schoolFeesRegId,
             startDate,
             endDate,
-            registrationFee,
             fees,
             totalFees,
             paidAmount,

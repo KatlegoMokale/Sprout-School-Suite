@@ -34,17 +34,16 @@ interface Student {
 export default function StudentFeesManagement() {
   const [isLoading, setIsLoading] = useState(false)
   const [students, setStudents] = useState<Student[]>([])
+  const [schoolFeesReg, setSchoolFeesReg] = useState<
 
   const  StudentFeesSchema = studentFeesSchema()
   const form = useForm<z.infer<typeof StudentFeesSchema>>({
     resolver: zodResolver(StudentFeesSchema),
     defaultValues: {
       studentId: "",
-      year: new Date().getFullYear(),
-      age: "",
+      schoolFeesRegId: "",
       startDate:"",
       endDate:"",
-      registrationFee: 0,
       fees: 0,
       totalFees: 0,
       paidAmount: 0,

@@ -179,6 +179,7 @@ declare type NewStudentParms = {
     siblingDiscountPrice: number,
   }
 
+
   declare type SchoolFees = {
     $id: string;
     class: string;
@@ -216,6 +217,20 @@ declare type NewStudentParms = {
     email?: string;
     address: string;
     position: string;
+  }
+
+  declare type CreateSchoolFeesParms = {
+    $id: string;
+    studentId: string;
+    schoolFeesRegId: string;
+    startDate: string;
+    endDate: string;
+    fees: number;
+    totalFees?: number;
+    paidAmount?: number
+    balance: number;
+    paymentFrequency: string;
+    nextPaymentDate: string;
   }
 
   declare type NewUserParams = {
