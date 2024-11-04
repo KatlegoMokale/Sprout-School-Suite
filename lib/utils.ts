@@ -168,8 +168,8 @@ export const newStuffFormSchema = () => z.object({
 export const classAndFeesFormSchema = z.object({
   id: z.string().optional(),
   name: z.string().min(3, "Class name must be at least 3 characters"),
-  ageStart: z.number().min(0).max(6),
-  ageEnd: z.number().min(0).max(6),
+  ageStart: z.number().min(0).max(12),
+  ageEnd: z.number().min(0).max(12),
   ageUnit: z.enum(["months", "years"]),
   teacherId: z.string().min(3, "Teacher ID must be at least 3 characters"),
   teacherName: z.string().min(3, "Teacher name must be at least 3 characters"),
@@ -194,27 +194,42 @@ export const newParentFormSchema = (type: string) => z.object({
 });
 
 // New Table: school_fees
+// export const schoolFeesSchema = () => z.object({
+//   year: z.number(),
+//   registrationFee: z.number(),
+//   age: z.string(),
+//   monthlyFee: z.number(),
+//   yearlyFee: z.number(),
+//   siblingDiscountPrice: z.number(),
+// });
+
+// New Table: school_fees
 export const schoolFeesSchema = () => z.object({
   year: z.number(),
   registrationFee: z.number(),
-  age: z.string(),
+  ageStart: z.number().min(0).max(12),
+  ageEnd: z.number().min(0).max(12),
+  ageUnit: z.enum(["months", "years"]),
   monthlyFee: z.number(),
   yearlyFee: z.number(),
   siblingDiscountPrice: z.number(),
 });
+
+
+
 
 // New Table: student_fees
 export const studentFeesSchema = () => z.object({
   studentId: z.string(),
   schoolFeesRegId: z.string(),
   startDate: z.string(),
-  endDate: z.string().optional(),
+  endDate: z.string(),
   fees: z.number(),
   totalFees: z.number(),
   paidAmount: z.number(),
   balance: z.number(),
   paymentFrequency: z.enum(['monthly', 'quarterly', 'yearly']),
-  nextPaymentDate: z.string(),
+  nextPaymentDate: z.number(),
 });
 
 // New Table: fee_transactions
@@ -315,7 +330,9 @@ export interface ISchoolFeesReg {
   $id: string;
   year: number;
   registrationFee: number;
-  age: string;
+  ageStart: number;
+  ageEnd: number;
+  ageUnit: string;
   monthlyFee: number;
   yearlyFee: number,
   siblingDiscountPrice: number,
@@ -378,3 +395,13 @@ export interface IStudent {
 }
 
 
+
+export interface ISchoolFees {
+  $id: string
+  year: number
+  ageStart: number
+  ageEnd: number
+  ageUnit: string
+  monthlyFee: number
+  yearlyFee: number
+}

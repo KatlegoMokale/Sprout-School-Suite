@@ -16,7 +16,7 @@ async function createStudentSchoolFees(data:{
     paidAmount: number
     balance: number;
     paymentFrequency: string;
-    nextPaymentDate: string; }) {
+    nextPaymentDate: number; }) {
         
         try {
             const response = await database.createDocument(

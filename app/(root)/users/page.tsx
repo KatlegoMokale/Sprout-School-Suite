@@ -16,8 +16,8 @@ const Users = () => {
     // <SchoolFeesSetup/>
     // <StaffSalaryManagement/>
     // <SchoolFeesSetup/>
-    <ClassAndFeeManagement/>
-    // <StudentFeesManagement/>
+    // <ClassAndFeeManagement/>
+    <StudentFeesManagement/>
     // <PettyCash/>
     // <Grocery/>
     // <Event/>

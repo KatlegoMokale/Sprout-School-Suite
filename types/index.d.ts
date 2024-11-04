@@ -173,10 +173,25 @@ declare type NewStudentParms = {
   declare type SchoolFeesSetup = {
     year: number;
     registrationFee: number;
-    age: string;
+    ageStart: number;
+    ageEnd: number;
+    ageUnit: string;
     monthlyFee: number;
     yearlyFee: number,
     siblingDiscountPrice: number,
+  }
+
+  declare type StudentReg = {
+    studentId: string;
+    schoolFeesRegId: string;
+    startDate: string;
+    endDate: string;
+    fees: number;
+    totalFees: number;
+    paidAmount: number;
+    balance: number;
+    paymentFrequency: string;
+    nextPaymentDate: number;
   }
 
 
@@ -227,10 +242,10 @@ declare type NewStudentParms = {
     endDate: string;
     fees: number;
     totalFees?: number;
-    paidAmount?: number
+    paidAmount: number
     balance: number;
     paymentFrequency: string;
-    nextPaymentDate: string;
+    nextPaymentDate: number;
   }
 
   declare type NewUserParams = {

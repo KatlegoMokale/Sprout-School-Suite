@@ -9,7 +9,9 @@ const database = new Databases(client)
 async function createNewSchoolFees(data:{
     year: string;
     registrationFee: string;
-    age: string;
+    ageStart: string;
+    ageEnd: string;
+    ageUnit: string;
     monthlyFee: number;
     yearlyFee: number;
     siblingDiscountPrice: number }) {
@@ -64,7 +66,9 @@ export async function GET() {
         const {
             year,
             registrationFee,
-            age,
+            ageStart,
+            ageEnd,
+            ageUnit,
             monthlyFee,
             quarterlyFee,
             yearlyFee,
@@ -73,7 +77,9 @@ export async function GET() {
         const data = {
             year,
             registrationFee,
-            age,
+            ageStart,
+            ageEnd,
+            ageUnit,
             monthlyFee,
             quarterlyFee,
             yearlyFee,

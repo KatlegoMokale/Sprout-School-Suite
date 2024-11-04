@@ -154,20 +154,40 @@ export const newPayment = async (paymentData: NewPaymentParms) => {
 }
 
 
-export const newSchoolFees = async (paymentData: SchoolFeesSetup) => {
+export const newSchoolFees = async (schoolFeesData: SchoolFeesSetup) => {
   try {
       const response = await fetch(`${getBaseUrl()}/api/school-fees-setup`, {
           method: "POST",
           headers: {
               "Content-Type": "application.json",
           },
-          body: JSON.stringify(paymentData),
+          body: JSON.stringify(schoolFeesData),
       });
       if (response.ok) {
           console.log("New School Fees added successfully!");
         } else {
           console.error("New School Fees submission failed.");
           throw new Error("New School Fees submission failed.");
+        }
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export const newStudentRegistration = async (studentRegistration: StudentReg) => {
+  try {
+      const response = await fetch(`${getBaseUrl()}/api/student-school-fees`, {
+          method: "POST",
+          headers: {
+              "Content-Type": "application.json",
+          },
+          body: JSON.stringify(studentRegistration),
+      });
+      if (response.ok) {
+          console.log("New student registered successfully!");
+        } else {
+          console.error("New student registration submission failed.");
+          throw new Error("New student registration submission failed.");
         }
   } catch (error) {
     console.log(error);
@@ -337,8 +357,6 @@ export const updateStudent = async (
     age,
     gender,
     address1,
-    city,
-    province,
     homeLanguage,
     allergies,
     medicalAidNumber,
@@ -347,9 +365,6 @@ export const updateStudent = async (
     p1_firstName,
     p1_surname,
     p1_address1,
-    p1_city,
-    p1_province,
-    p1_postalCode,
     p1_dateOfBirth,
     p1_gender,
     p1_idNumber,
@@ -361,9 +376,6 @@ export const updateStudent = async (
     p2_firstName,
     p2_surname,
     p2_address1,
-    p2_city,
-    p2_province,
-    p2_postalCode,
     p2_dateOfBirth,
     p2_gender,
     p2_idNumber,

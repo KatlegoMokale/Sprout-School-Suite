@@ -39,7 +39,9 @@ async function deleteSchoolFees(id: string) {
 async function updateSchoolFees(id: string, data: {
     year: string;
     registrationFee: string;
-    age: string;
+    ageStart: string;
+    ageEnd: string;
+    ageUnit: string;
     monthlyFee: number;
     yearlyFee: number;
     siblingDiscountPrice: number 

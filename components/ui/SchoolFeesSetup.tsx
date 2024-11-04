@@ -17,6 +17,7 @@ export default function SchoolFeesSetup() {
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({});
   const [yearlyFee, setYearlyFee] = useState(0)
+  const [yearlyFeeNormal, setYearlyFeeNormal] = useState(0)
 
   const SchoolFeesFormData = schoolFeesSchema();
   const form = useForm<z.infer<typeof SchoolFeesFormData>>({
@@ -24,7 +25,9 @@ export default function SchoolFeesSetup() {
     defaultValues: {
       year: new Date().getFullYear(),
       registrationFee: 0,
-      age: "",
+      ageStart: 0,
+      ageEnd: 0,
+      ageUnit: "months",
       monthlyFee: 0,
       yearlyFee: 0,
       siblingDiscountPrice: 50,
@@ -33,7 +36,9 @@ export default function SchoolFeesSetup() {
 
   const calculateFees = (monthlyFee: number) => {
     const yearlyFee = monthlyFee * 10; // 12 months - 2 months discount // 3 months - 1 month discount
+    const yearlyFeeNormal = monthlyFee * 12; // 12 months Full price Monthly
     setYearlyFee(yearlyFee);
+    setYearlyFeeNormal(yearlyFeeNormal);
     form.setValue("yearlyFee", yearlyFee);
   }
 
@@ -91,18 +96,34 @@ export default function SchoolFeesSetup() {
               placeholder="Enter registration fee"
               type="number"
             />
-            <CustomInput
-            name="age"
-            control={form.control}
-            placeholder="Select age"
-            label="Age"
-            select={true}
-            options={[
-              { value: "Babies", label: "3 months - 1 Year" },
-              { value: "2 Years", label: "2 Years" },
-              { value: "3 - 6 Years", label: "3 - 6 Years" },
-            ]}
-            />
+              <div className="flex items-center space-x-2">
+                        <CustomInput
+                          label="Age Start"
+                          name="ageStart"
+                          control={form.control}
+                          type="number"
+                          placeholder="Start"
+                        />
+                        <span>-</span>
+                        <CustomInput
+                          name="ageEnd"
+                          label="Age End"
+                          control={form.control}
+                          type="number"
+                          placeholder="End"
+                        />
+                        <CustomInput
+                          name="ageUnit"
+                          label="Age Unit"
+                          placeholder="Age Unit"
+                          control={form.control}
+                          select={true}
+                          options={[
+                            { value: "months", label: "Months" },
+                            { value: "years", label: "Years" },
+                          ]}
+                        />
+              </div>
             <CustomInput
               name="monthlyFee"
               control={form.control}
@@ -120,6 +141,7 @@ export default function SchoolFeesSetup() {
             <div className="mt-4 p-4 bg-gray-100 rounded-md">
               <h3 className="text-lg font-semibold mb-2">Calculated Fees</h3>
               <p>Yearly Fee (once-off): R {yearlyFee.toFixed(2)}</p>
+              <p>Yearly Fee Monthly: R {yearlyFeeNormal.toFixed(2)}</p>
             </div>
             <CustomInput
               name="siblingDiscountPrice"
