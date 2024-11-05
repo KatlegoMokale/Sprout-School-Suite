@@ -6,7 +6,7 @@ import PettyCash from '@/components/ui/pettyCash'
 import SchoolFeesSetup from '@/components/ui/SchoolFeesSetup'
 import React from 'react'
 import SchoolFeeManagement from '../school-fees/page'
-import StudentFeesManagement from '@/components/ui/SchoolFeesManagement'
+import StudentFeesManagement from '@/components/ui/StudentRegistration'
 import StaffSalaryManagement from '@/components/ui/StaffSalary'
 import ClassAndFeeManagement from '@/components/ui/ClassAndFeeManagement'
 

@@ -188,7 +188,7 @@ declare type NewStudentParms = {
     endDate: string;
     fees: number;
     totalFees: number;
-    paidAmount: number;
+    paidAmount?: number;
     balance: number;
     paymentFrequency: string;
     nextPaymentDate: number;
@@ -242,7 +242,7 @@ declare type NewStudentParms = {
     endDate: string;
     fees: number;
     totalFees?: number;
-    paidAmount: number
+    paidAmount?: number;
     balance: number;
     paymentFrequency: string;
     nextPaymentDate: number;

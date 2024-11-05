@@ -10,10 +10,10 @@ import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/
 import { toast } from "@/hooks/use-toast"
 import CustomInput from "@/components/ui/CustomInput"
 import { Select1, SelectContent, SelectItem, SelectTrigger, SelectValue1 } from "@/components/ui/select"
-import { ISchoolFees, IStudent, studentFeesSchema } from "@/lib/utils"
+import { ISchoolFees, ISchoolFeesReg, IStudent, studentFeesSchema } from "@/lib/utils"
 import { newStudentRegistration } from "@/lib/actions/user.actions"
 
-export default function StudentFeesManagement() {
+export default function StudentRegistration() {
   const [isLoading, setIsLoading] = useState(false)
   const [students, setStudents] = useState<IStudent[]>([])
   const [filteredStudents, setFilteredStudents] = useState<IStudent[]>([])
@@ -151,6 +151,13 @@ export default function StudentFeesManagement() {
     const paymentFrequency = form.getValues("paymentFrequency")
     const schoolFeesRegId = form.getValues("schoolFeesRegId")
     const studentId = form.getValues("studentId")
+    let registrationFee = 0
+    const selectedRegistration = schoolFees.find(fee => fee.$id === schoolFeesRegId)
+    if (selectedRegistration) {
+      registrationFee = selectedRegistration.registrationFee || 0
+    }
+
+    console.log("Registration Fee:" + registrationFee)
 
     if (!startDate || !endDate || !paymentFrequency || !schoolFeesRegId || !studentId) {
       toast({
@@ -182,9 +189,9 @@ export default function StudentFeesManagement() {
 
     let totalFees = 0
     if (paymentFrequency === 'monthly') {
-      totalFees = (selectedSchoolFees.monthlyFee * monthsDiff)
+      totalFees = (selectedSchoolFees.monthlyFee * monthsDiff) + registrationFee
     } else if (paymentFrequency === 'yearly') {
-      totalFees = selectedSchoolFees.yearlyFee
+      totalFees = selectedSchoolFees.yearlyFee + registrationFee
     }
 
     form.setValue("fees", selectedSchoolFees.monthlyFee)

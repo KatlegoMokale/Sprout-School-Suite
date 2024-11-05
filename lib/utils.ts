@@ -226,7 +226,7 @@ export const studentFeesSchema = () => z.object({
   endDate: z.string(),
   fees: z.number(),
   totalFees: z.number(),
-  paidAmount: z.number(),
+  paidAmount: z.number().optional(),
   balance: z.number(),
   paymentFrequency: z.enum(['monthly', 'quarterly', 'yearly']),
   nextPaymentDate: z.number(),
@@ -399,6 +399,7 @@ export interface IStudent {
 export interface ISchoolFees {
   $id: string
   year: number
+  registrationFee: number;
   ageStart: number
   ageEnd: number
   ageUnit: string
