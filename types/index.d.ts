@@ -160,6 +160,7 @@ declare type NewStudentParms = {
     paymentMethod: string;
     amount: number;
     paymentDate: string;
+    transactionType: string;
   }
 
   declare type NewStudentPayment = {

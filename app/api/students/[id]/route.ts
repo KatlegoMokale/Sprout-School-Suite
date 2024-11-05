@@ -87,6 +87,40 @@ async function updateStudent(id: string, data: {
     }
 }
 
+
+async function updateStudentBalance(id: string, balance: number) {
+  try {
+      const response = await database.updateDocument(
+          process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
+          "students",
+          id,
+          { balance: balance } // Pass as an object with the field name
+      );
+      return response;
+  } catch (error) {
+      console.error("Error updating student balance:", error);
+      throw new Error("Failed to update student balance");
+  }
+}
+
+export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+  try {
+      const id = params.id;
+      const { balance } = await req.json();
+      const response = await updateStudentBalance(id, balance);
+      return NextResponse.json({ 
+          message: "Student balance updated successfully",
+          data: response 
+      });
+  } catch (error) {
+      return NextResponse.json(
+          { error: "Failed to update student balance" },
+          { status: 500 }
+      );
+  }
+}
+
+
 export async function GET(
     req: Request, 
     { params }: { params: { id: string } }) {
@@ -117,6 +151,8 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
     );
   }
 }
+
+
 
 export async function PUT(req: Request, { params }: { params: { id: string } }) {
     try {

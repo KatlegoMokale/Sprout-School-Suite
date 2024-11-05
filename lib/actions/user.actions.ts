@@ -132,6 +132,31 @@ export const newStuff = async (stuffData: NewStuffParams) => {
   }
 }
 
+export async function updateStudentBalance(studentId: string, amount: number) {
+  try {
+      const response = await fetch(`${getBaseUrl()}/api/students/${studentId}`, {
+          method: 'PATCH',
+          headers: {
+              'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ balance: amount }),
+      });
+
+      if (!response.ok) {
+          throw new Error('Failed to update balance');
+      }
+
+      const data = await response.json();
+      return data;
+
+  } catch (error) {
+      console.error("Error updating balance:", error);
+      throw new Error("Failed to update student balance");
+  }
+}
+
+
+
 export const newPayment = async (paymentData: NewPaymentParms) => {
     try {
         console.log("//////////////////////");

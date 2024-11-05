@@ -7,8 +7,8 @@ const database = new Databases(client)
 
 ///Create Transaction
 
-async function createTransaction(data : {StudentId: string, Type: string; StudentName: string; StudentSurname: string;
-     Amount: number; DatePaid: string;}) {
+async function createTransaction(data : {studentId: string, Type: string; firstName: string; surname: string;
+     amount: number; paymentDate: string; transactionType: string;}) {
     
         try {
             const response = await database.createDocument(

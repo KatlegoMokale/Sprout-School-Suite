@@ -50,7 +50,7 @@ import {
   Plus,
 } from "lucide-react";
 import { IStudent, paymentFormSchema } from "@/lib/utils";
-import { newPayment } from "@/lib/actions/user.actions";
+import { newPayment, updateStudentBalance } from "@/lib/actions/user.actions";
 import CustomInputPayment from "@/components/ui/CustomInputPayment";
 
 interface Student {
@@ -249,6 +249,7 @@ export default function SchoolFeeManagement() {
       paymentMethod: "",
       paymentDate: "",
       studentId: "",
+      transactionType: "fees",
     },
   });
 
@@ -256,9 +257,20 @@ export default function SchoolFeeManagement() {
     console.log("Form data:", data);
     console.log("Submit");
     setIsLoadingForm(true);
+
+    console.log("Selected Student ID:", data.studentId);
+    console.log("Students:", students.find((s) => s.$id === data.studentId));
+
+    const myStudent = students.find((s) => s.$id === data.studentId);
+
     try {
       const addNewPayment = await newPayment(data);
+      const newBalance = myStudent?.balance !== undefined ? myStudent.balance - data.amount : undefined;
+      if (myStudent?.balance !== undefined && newBalance !== undefined) {
+        await updateStudentBalance(data.studentId, newBalance);
+      }
       console.log("Add new Payment " + addNewPayment);
+
       // router.push('/transactions');
     } catch (error) {
       console.error("Error submitting form:", error);
@@ -269,7 +281,6 @@ export default function SchoolFeeManagement() {
     setFormData(data);
     console.log("Form data ready for Appwrite:", data);
   };
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -421,7 +432,18 @@ export default function SchoolFeeManagement() {
                       <FormItem>
                         <FormLabel>Student</FormLabel>
                         <Select1
-                          onValueChange={field.onChange}
+                          onValueChange={(value) => {
+                            field.onChange(value);
+                            console.log(value);
+                            const student = students.find(
+                              (student) => student.$id === value
+                            );
+                            form.setValue(
+                              "firstName",
+                              student?.firstName || ""
+                            );
+                            form.setValue("surname", student?.surname || "");
+                          }}
                           defaultValue={field.value}
                         >
                           <FormControl>
@@ -431,7 +453,17 @@ export default function SchoolFeeManagement() {
                           </FormControl>
                           <SelectContent>
                             {students.map((student) => (
-                              <SelectItem key={student.$id} value={student.$id}>
+                              <SelectItem
+                                key={student.$id}
+                                value={student.$id}
+                                onChange={(value) => {
+                                  field.onChange(value);
+                                  setSelectedStudent(student);
+                                  console.log(selectedStudent);
+                                  form.setValue("firstName", student.firstName);
+                                  form.setValue("surname", student.surname);
+                                }}
+                              >
                                 {student.firstName} {student.surname} -{" "}
                                 {classes.find(
                                   (c) => c.$id === student.studentClass
@@ -444,6 +476,14 @@ export default function SchoolFeeManagement() {
                       </FormItem>
                     )}
                   />
+                  <div className=" hidden">
+                    <CustomInputPayment
+                      name="studentId"
+                      control={form.control}
+                      placeholder="Student ID"
+                      label={"Student ID"}
+                    />
+                  </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <CustomInputPayment
@@ -466,18 +506,31 @@ export default function SchoolFeeManagement() {
                     label={"Amount"}
                     type="number"
                   />
-                  <CustomInputPayment
-                    name="paymentMethod"
-                    placeholder="Select Method"
-                    control={form.control}
-                    label={"Payment Method"}
-                    select={true}
-                    options={[
-                      { label: "Cash", value: "cash" },
-                      { label: "EFT", value: "EFT" },
-                      { label: "Card", value: "card" },
-                    ]}
-                  />
+                  <div className="grid grid-cols-2 gap-4">
+                    <CustomInputPayment
+                      name="paymentMethod"
+                      placeholder="Select Method"
+                      control={form.control}
+                      label={"Payment Method"}
+                      select={true}
+                      options={[
+                        { label: "Cash", value: "cash" },
+                        { label: "EFT", value: "EFT" },
+                        { label: "Card", value: "card" },
+                      ]}
+                    />
+                    <CustomInputPayment
+                      name="transactionType"
+                      control={form.control}
+                      placeholder="Transaction Type"
+                      label={"Transaction Type"}
+                      select={true}
+                      options={[
+                        { label: "School Fees", value: "fees" },
+                        { label: "Registration Fee", value: "registration" },
+                      ]}
+                    />
+                  </div>
                   <CustomInputPayment
                     name="paymentDate"
                     label="Payment Date"

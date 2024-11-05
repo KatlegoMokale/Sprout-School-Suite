@@ -77,7 +77,7 @@ export const paymentFormSchema = () => z.object({
   paymentMethod: z.string().min(3),
   paymentDate: z.string().min(3),
   /////New
-  transactionType: z.enum(['fee', 'event', 'salary']),
+  transactionType: z.enum(['fees', 'registration']),
 });
 
 export const authformSchemaLogin = () => z.object({

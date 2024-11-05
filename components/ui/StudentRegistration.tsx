@@ -11,7 +11,7 @@ import { toast } from "@/hooks/use-toast"
 import CustomInput from "@/components/ui/CustomInput"
 import { Select1, SelectContent, SelectItem, SelectTrigger, SelectValue1 } from "@/components/ui/select"
 import { ISchoolFees, ISchoolFeesReg, IStudent, studentFeesSchema } from "@/lib/utils"
-import { newStudentRegistration } from "@/lib/actions/user.actions"
+import { newStudentRegistration, updateStudentBalance } from "@/lib/actions/user.actions"
 
 export default function StudentRegistration() {
   const [isLoading, setIsLoading] = useState(false)
@@ -107,12 +107,20 @@ export default function StudentRegistration() {
     try {
       const startYear = new Date(data.startDate).getFullYear()
       const studentRegisteredYears = registeredYears[data.studentId] || []
+      const myStudent = students.find(student => student.$id === data.studentId)
+      let oldBalance = myStudent?.balance || 0;
+      let totalFees = data.totalFees + oldBalance;
       
       if (studentRegisteredYears.includes(startYear)) {
         throw new Error("Student is already registered for this year")
       }
 
       const newRegistration = await newStudentRegistration(data)
+      if(myStudent?.balance !== undefined){
+        await updateStudentBalance(myStudent?.$id, totalFees);
+      }
+
+
       console.log("Student fees data:", data)
       toast({
         title: "Success",
