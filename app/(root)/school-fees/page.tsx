@@ -44,80 +44,84 @@ import {
 import {
   DollarSign,
   TrendingUp,
-  TrendingDown,
   CreditCard,
   Search,
-  Plus,
 } from "lucide-react";
-import { IStudent, paymentFormSchema } from "@/lib/utils";
+import { IClass, IStudent, ITransactions, paymentFormSchema, IStudentFeesSchema } from "@/lib/utils";
 import { newPayment, updateStudentBalance } from "@/lib/actions/user.actions";
 import CustomInputPayment from "@/components/ui/CustomInputPayment";
+import { Checkbox } from "@/components/ui/checkbox";
+import { updateStudentAmountPaid, updateStudentRegBalance } from "@/lib/actions/user.actions";
 
-interface Student {
-  $id: string;
-  firstName: string;
-  surname: string;
-  studentClass: string;
-  balance: number;
-  nextPaymentDate: string;
-}
-
-interface PaymentProps {
-  student: IStudent | null;
-}
-
-interface Transaction {
-  $id: string;
-  studentId: string;
-  amount: number;
-  paymentMethod: string;
-  paymentDate: string;
-}
-
-interface Class {
-  $id: string;
-  name: string;
-}
-
-const formSchema = z.object({
-  studentId: z.string().min(1, "Student is required"),
-  amount: z.number().min(0, "Amount must be positive"),
-  paymentMethod: z.string().min(1, "Payment method is required"),
-});
+const newPaymentFormSchema = paymentFormSchema();
 
 export default function SchoolFeeManagement() {
   const [isLoadingForm, setIsLoadingForm] = useState(false);
-  const [students, setStudents] = useState<Student[]>([]);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [classes, setClasses] = useState<Class[]>([]);
+  const [students, setStudents] = useState<IStudent[]>([]);
+  const [filteredStudents, setFilteredStudents] = useState<IStudent[]>([]);
+  const [transactions, setTransactions] = useState<ITransactions[]>([]);
+  const [classes, setClasses] = useState<IClass[]>([]);
+  const [studentFees, setStudentFees] = useState<IStudentFeesSchema[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedClass, setSelectedClass] = useState<string | null>(null);
-  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const [selectedStudent, setSelectedStudent] = useState<IStudent | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [formData, setFormData] = useState({});
+  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
+  const [registeredYears, setRegisteredYears] = useState<Record<string, number[]>>({});
+  const [paymentStep, setPaymentStep] = useState(1);
+  const [showUnregistered, setShowUnregistered] = useState(false);
+
+  const form = useForm<z.infer<typeof newPaymentFormSchema>>({
+    resolver: zodResolver(newPaymentFormSchema),
+    defaultValues: {
+      firstName: "",
+      surname: "",
+      amount: 0,
+      paymentMethod: "",
+      paymentDate: "",
+      studentId: "",
+      transactionType: "fees",
+    },
+  });
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [studentsResponse, transactionsResponse, classesResponse] =
+        const [studentsResponse, transactionsResponse, classesResponse, studentFeesResponse] =
           await Promise.all([
             fetch("/api/students"),
             fetch("/api/transactions"),
             fetch("/api/class"),
+            fetch("/api/student-school-fees")
           ]);
+
         if (
           !studentsResponse.ok ||
           !transactionsResponse.ok ||
-          !classesResponse.ok
+          !classesResponse.ok ||
+          !studentFeesResponse.ok
         )
           throw new Error("Failed to fetch data");
-        const studentsData = await studentsResponse.json();
-        const transactionsData = await transactionsResponse.json();
-        const classesData = await classesResponse.json();
+        const studentsData: IStudent[] = await studentsResponse.json();
+        const transactionsData: ITransactions[] = await transactionsResponse.json();
+        const classesData: IClass[] = await classesResponse.json();
+        const studentFeesData: IStudentFeesSchema[] = await studentFeesResponse.json();
+        
         setStudents(studentsData);
+        setFilteredStudents(studentsData);
         setTransactions(transactionsData);
         setClasses(classesData);
+        setStudentFees(studentFeesData);
+
+        const regYears: Record<string, number[]> = {};
+        studentFeesData.forEach((fee) => {
+          if (!regYears[fee.studentId]) {
+            regYears[fee.studentId] = [];
+          }
+          regYears[fee.studentId].push(new Date(fee.startDate).getFullYear());
+        });
+        setRegisteredYears(regYears);
       } catch (error) {
         console.error("Error fetching data:", error);
         toast({
@@ -132,48 +136,49 @@ export default function SchoolFeeManagement() {
 
     fetchData();
   }, []);
-  // selectedClass === "all" || student.studentClass === selectedClass
-  const filteredStudents = students.filter(
-    (student) =>
+
+  useEffect(() => {
+    const filtered = students.filter(student => 
       (!selectedClass || student.studentClass === selectedClass) &&
       `${student.firstName} ${student.surname}`
         .toLowerCase()
-        .includes(searchTerm.toLowerCase())
-  );
+        .includes(searchTerm.toLowerCase()) &&
+      (showUnregistered ? !registeredYears[student.$id]?.includes(selectedYear) : registeredYears[student.$id]?.includes(selectedYear))
+    );
+    setFilteredStudents(filtered);
+    if (filtered.length === 0) {
+      toast({
+        title: "No Students Found",
+        description: `There are no ${showUnregistered ? 'unregistered' : 'registered'} students for the year ${selectedYear}.`,
+        variant: "warning",
+      });
+    }
+  }, [selectedYear, students, registeredYears, selectedClass, searchTerm, showUnregistered]);
 
   const getClassName = (classId: string) => {
     return classes.find((c) => c.$id === classId)?.name || "Unknown";
   };
 
   const getStudentBalance = (studentId: string) => {
-    const studentTransactions = transactions.filter(
-      (t) => t.studentId === studentId
-    );
-    return studentTransactions.reduce((sum, t) => sum + t.amount, 0);
+    const studentFee = studentFees.find(fee => fee.studentId === studentId);
+    return studentFee ? studentFee.balance : 0;
   };
 
   const getStudentLastPaid = (studentId: string) => {
-    const studentTransactions = transactions.filter(
-      (t) => t.studentId === studentId
-    );
+    const studentTransactions = transactions.filter(t => t.studentId === studentId);
     if (studentTransactions.length === 0) return null;
-    return Math.max(
-      ...studentTransactions.map((t) => new Date(t.paymentDate).getTime())
-    );
+    return Math.max(...studentTransactions.map(t => new Date(t.paymentDate).getTime()));
   };
 
-  const isOutstanding = (student: Student) => {
-    const lastPaidDate = getStudentLastPaid(student.$id);
-    if (!lastPaidDate) return true;
-    return new Date(student.nextPaymentDate) <= new Date();
+  const isOutstanding = (student: IStudent) => {
+    const studentFee = studentFees.find(fee => fee.studentId === student.$id);
+    if (!studentFee) return false;
+    return new Date(studentFee.nextPaymentDate).getTime() <= Date.now();
   };
 
-  const totalFees = transactions.reduce((sum, t) => sum + t.amount, 0);
-  const totalPaid = totalFees;
-  const totalOutstanding = students.reduce(
-    (sum, s) => sum + (isOutstanding(s) ? s.balance : 0),
-    0
-  );
+  const totalFees = studentFees.reduce((sum, fee) => sum + fee.totalFees, 0);
+  const totalPaid = studentFees.reduce((sum, fee) => sum + fee.paidAmount, 0);
+  const totalOutstanding = studentFees.reduce((sum, fee) => sum + fee.balance, 0);
 
   const summaryCards = [
     {
@@ -196,91 +201,122 @@ export default function SchoolFeeManagement() {
     },
   ];
 
-  // const onSubmit = async (data: z.infer<typeof formSchema>) => {
-  //   try {
-  //     // Simulating API call to add a new transaction
-  //     const newTransaction: Transaction = {
-  //       $id: Date.now().toString(),
-  //       studentId: data.studentId,
-  //       amount: data.amount,
-  //       paymentMethod: data.paymentMethod,
-  //       paymentDate: new Date().toISOString(),
-  //     }
-  //     setTransactions([...transactions, newTransaction])
-
-  //     // Update student balance and next payment date
-  //     const updatedStudents = students.map(student => {
-  //       if (student.$id === data.studentId) {
-  //         const newBalance = student.balance - data.amount
-  //         const nextPaymentDate = new Date()
-  //         nextPaymentDate.setMonth(nextPaymentDate.getMonth() + 1) // Assuming monthly payments
-  //         return {
-  //           ...student,
-  //           balance: newBalance,
-  //           nextPaymentDate: nextPaymentDate.toISOString(),
-  //         }
-  //       }
-  //       return student
-  //     })
-  //     setStudents(updatedStudents)
-
-  //     toast({
-  //       title: "Success",
-  //       description: "Payment has been recorded successfully.",
-  //     })
-  //     form.reset()
-  //   } catch (error) {
-  //     console.error("Error submitting payment:", error)
-  //     toast({
-  //       title: "Error",
-  //       description: "Failed to record payment. Please try again.",
-  //       variant: "destructive",
-  //     })
-  //   }
-  // }
-
-  const newPayemntFormSchema = paymentFormSchema();
-  const form = useForm<z.infer<typeof newPayemntFormSchema>>({
-    resolver: zodResolver(newPayemntFormSchema),
-    defaultValues: {
-      firstName: "",
-      surname: "",
-      amount: 0,
-      paymentMethod: "",
-      paymentDate: "",
-      studentId: "",
-      transactionType: "fees",
-    },
-  });
-
-  const onSubmit = async (data: z.infer<typeof newPayemntFormSchema>) => {
-    console.log("Form data:", data);
-    console.log("Submit");
+  const onSubmit = async (data: z.infer<typeof newPaymentFormSchema>) => {
     setIsLoadingForm(true);
-
-    console.log("Selected Student ID:", data.studentId);
-    console.log("Students:", students.find((s) => s.$id === data.studentId));
-
-    const myStudent = students.find((s) => s.$id === data.studentId);
+    setError(null);
 
     try {
-      const addNewPayment = await newPayment(data);
-      const newBalance = myStudent?.balance !== undefined ? myStudent.balance - data.amount : undefined;
-      if (myStudent?.balance !== undefined && newBalance !== undefined) {
+      const studentFee = studentFees.find((fee) => fee.studentId === data.studentId);
+      if (!studentFee) {
+        throw new Error("Student fee information not found");
+      }
+
+      const newBalance = studentFee.balance - data.amount;
+      const newPaidAmount = studentFee.paidAmount + data.amount;
+
+      // First, update the paid amount and balance
+      await updateStudentAmountPaid(studentFee.$id, newPaidAmount);
+      await updateStudentRegBalance(studentFee.$id, newBalance);
+
+      const student = students.find((s) => s.$id === data.studentId);
+      if (student) {
+        const newBalance = student.balance - data.amount;
         await updateStudentBalance(data.studentId, newBalance);
       }
-      console.log("Add new Payment " + addNewPayment);
 
-      // router.push('/transactions');
+      // If updates are successful, add the new payment
+      const addNewPayment = await newPayment(data);
+
+      // Update local state
+      setStudentFees(prevFees => 
+        prevFees.map(fee => 
+          fee.$id === studentFee.$id 
+            ? { ...fee, paidAmount: newPaidAmount, balance: newBalance } 
+            : fee
+        )
+      );
+
+      toast({
+        title: "Success",
+        description: "Payment has been recorded successfully.",
+      });
+      form.reset();
+      setPaymentStep(1);
     } catch (error) {
       console.error("Error submitting form:", error);
-      setError("An error occurred while submitting the form.");
+      setError("An error occurred while submitting the form. Please try again.");
+      toast({
+        title: "Error",
+        description: "Failed to process payment. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoadingForm(false);
     }
-    setFormData(data);
-    console.log("Form data ready for Appwrite:", data);
   };
+
+  const getStudentInfo = (studentId: string) => {
+    const student = students.find(s => s.$id === studentId);
+    const studentFee = studentFees.find(fee => fee.studentId === studentId);
+    if (!student || !studentFee) return null;
+
+    const studentTransactions = transactions.filter(t => t.studentId === studentId);
+
+    return (
+      <div className="space-y-6 bg-white p-6 rounded-lg shadow-md">
+        <h3 className="text-2xl font-bold border-b pb-2">Account Statement</h3>
+        
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <h4 className="text-lg font-semibold">Student Information</h4>
+            <p><strong>Name:</strong> {student.firstName} {student.surname}</p>
+            <p><strong>Date of Birth:</strong> {new Date(student.dateOfBirth).toLocaleDateString()}</p>
+            <p><strong>Age:</strong> {student.age} years</p>
+            <p><strong>Address:</strong> {student.address1}</p>
+            <p><strong>Class:</strong> {getClassName(student.studentClass || '')}</p>
+          </div>
+          <div>
+            <h4 className="text-lg font-semibold">Parent/Guardian Information</h4>
+            <p><strong>Name:</strong> {student.p1_firstName} {student.p1_surname}</p>
+            <p><strong>Email:</strong> {student.p1_email}</p>
+            <p><strong>Phone:</strong> {student.p1_phoneNumber}</p>
+          </div>
+        </div>
+
+        <div>
+          <h4 className="text-lg font-semibold">Financial Summary</h4>
+          <p><strong>Total Fees:</strong> R {studentFee.totalFees.toFixed(2)}</p>
+          <p><strong>Paid Amount:</strong> R {studentFee.paidAmount.toFixed(2)}</p>
+          <p><strong>Current Balance:</strong> R {studentFee.balance.toFixed(2)}</p>
+          <p><strong>Payment Frequency:</strong> {studentFee.paymentFrequency}</p>
+          <p><strong>Next Payment Date:</strong> {new Date(studentFee.nextPaymentDate).toLocaleDateString()}</p>
+        </div>
+
+        <div>
+          <h4 className="text-lg font-semibold">Transaction History</h4>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Date</TableHead>
+                <TableHead>Amount</TableHead>
+                <TableHead>Method</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {studentTransactions.map((transaction, index) => (
+                <TableRow key={index}>
+                  <TableCell>{new Date(transaction.paymentDate).toLocaleDateString()}</TableCell>
+                  <TableCell>R {transaction.amount.toFixed(2)}</TableCell>
+                  <TableCell>{transaction.paymentMethod}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
+    );
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -289,8 +325,11 @@ export default function SchoolFeeManagement() {
     );
   }
 
+  const currentYear = new Date().getFullYear();
+  const yearRange = Array.from({ length: 11 }, (_, i) => currentYear - 5 + i);
+
   return (
-    <div className=" px-4 py-8">
+    <div className="px-4 py-8">
       <h1 className="text-3xl font-bold mb-8">School Fee Management</h1>
 
       <div className="grid gap-6 md:grid-cols-3 mb-8">
@@ -349,13 +388,41 @@ export default function SchoolFeeManagement() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Classes</SelectItem>
-                    {classes.map((cls) => (
+                    {classes.map((cls) => 
                       <SelectItem key={cls.$id} value={cls.$id}>
                         {cls.name}
+                      </SelectItem>
+                    )}
+                  </SelectContent>
+                </Select1>
+                <Select1
+                  value={selectedYear.toString()}
+                  onValueChange={(value) => setSelectedYear(parseInt(value))}
+                >
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue1 placeholder="Filter by year" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {yearRange.map((year) => (
+                      <SelectItem key={year} value={year.toString()}>
+                        {year}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select1>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="showUnregistered"
+                    checked={showUnregistered}
+                    onCheckedChange={(checked) => setShowUnregistered(checked as boolean)}
+                  />
+                  <label
+                    htmlFor="showUnregistered"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    Show Unregistered
+                  </label>
+                </div>
               </div>
               <div className="rounded-md border">
                 <Table>
@@ -371,176 +438,183 @@ export default function SchoolFeeManagement() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredStudents.map((student) => (
-                      <TableRow key={student.$id}>
-                        <TableCell>
-                          {student.firstName} {student.surname}
-                        </TableCell>
-                        <TableCell>
-                          {classes.find((c) => c.$id === student.studentClass)
-                            ?.name || "N/A"}
-                        </TableCell>
-                        <TableCell>R {student.balance.toFixed(2)}</TableCell>
-                        <TableCell>
-                          {getStudentLastPaid(student.$id)
-                            ? new Date(
-                                getStudentLastPaid(student.$id)!
-                              ).toLocaleDateString()
-                            : "N/A"}
-                        </TableCell>
-                        <TableCell>
-                          {new Date(
-                            student.nextPaymentDate
-                          ).toLocaleDateString()}
-                        </TableCell>
-                        <TableCell>
-                          <span
-                            className={`px-2 py-1 rounded-full text-xs ${
-                              isOutstanding(student)
-                                ? "bg-red-100 text-red-800"
-                                : "bg-green-100 text-green-800"
-                            }`}
-                          >
-                            {isOutstanding(student) ? "Outstanding" : "Paid"}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setSelectedStudent(student)}
-                          >
-                            View Details
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {filteredStudents.map((student) => {
+                      const studentFee = studentFees.find(fee => fee.studentId === student.$id);
+                      return (
+                        <TableRow key={student.$id}>
+                          <TableCell>
+                            {student.firstName} {student.surname}
+                          </TableCell>
+                          <TableCell>
+                            {getClassName(student.studentClass || '')}
+                          </TableCell>
+                          <TableCell>R {(studentFee?.balance || 0).toFixed(2)}</TableCell>
+                          <TableCell>
+                            {getStudentLastPaid(student.$id)
+                              ? new Date(getStudentLastPaid(student.$id)!).toLocaleDateString()
+                              : "N/A"}
+                          </TableCell>
+                          <TableCell>
+                            {studentFee
+                              ? new Date(studentFee.nextPaymentDate).toLocaleDateString()
+                              : "N/A"}
+                          </TableCell>
+                          <TableCell>
+                            <span
+                              className={`px-2 py-1 rounded-full text-xs ${
+                                isOutstanding(student)
+                                  ? "bg-red-100 text-red-800"
+                                  : "bg-green-100 text-green-800"
+                              }`}
+                            >
+                              {isOutstanding(student) ? "Outstanding" : "Paid"}
+                            </span>
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setSelectedStudent(student)}
+                            >
+                              View Details
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </Table>
               </div>
             </TabsContent>
             <TabsContent value="payment">
               <Form {...form}>
-                <form
-                  onSubmit={form.handleSubmit(onSubmit)}
-                  className="space-y-4"
-                >
-                  <FormField
-                    control={form.control}
-                    name="studentId"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Student</FormLabel>
-                        <Select1
-                          onValueChange={(value) => {
-                            field.onChange(value);
-                            console.log(value);
-                            const student = students.find(
-                              (student) => student.$id === value
-                            );
-                            form.setValue(
-                              "firstName",
-                              student?.firstName || ""
-                            );
-                            form.setValue("surname", student?.surname || "");
-                          }}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue1 placeholder="Select a student" />
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      {paymentStep === 1 && (
+                        <div>
+                          <h2 className="text-xl font-semibold mb-4">Step 1: Select Year</h2>
+                          <Select1
+                            value={selectedYear.toString()}
+                            onValueChange={(value) => setSelectedYear(parseInt(value))}
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue1 placeholder="Select Year" />
                             </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {students.map((student) => (
-                              <SelectItem
-                                key={student.$id}
-                                value={student.$id}
-                                onChange={(value) => {
-                                  field.onChange(value);
-                                  setSelectedStudent(student);
-                                  console.log(selectedStudent);
-                                  form.setValue("firstName", student.firstName);
-                                  form.setValue("surname", student.surname);
-                                }}
-                              >
-                                {student.firstName} {student.surname} -{" "}
-                                {classes.find(
-                                  (c) => c.$id === student.studentClass
-                                )?.name || "N/A"}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select1>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <div className=" hidden">
-                    <CustomInputPayment
-                      name="studentId"
-                      control={form.control}
-                      placeholder="Student ID"
-                      label={"Student ID"}
-                    />
+                            <SelectContent>
+                              {yearRange.map((year) => (
+                                <SelectItem key={year} value={year.toString()}>
+                                  {year}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select1>
+                          <Button className="mt-4" onClick={() => setPaymentStep(2)}>Next</Button>
+                        </div>
+                      )}
+                      {paymentStep === 2 && (
+                        <div>
+                          <h2 className="text-xl font-semibold mb-4">Step 2: Select Student and Transaction Type</h2>
+                          <FormField
+                            control={form.control}
+                            name="studentId"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Student</FormLabel>
+                                <Select1
+                                  onValueChange={(value) => {
+                                    field.onChange(value);
+                                    const student = students.find(
+                                      (student) => student.$id === value
+                                    );
+                                    form.setValue(
+                                      "firstName",
+                                      student?.firstName || ""
+                                    );
+                                    form.setValue("surname", student?.surname || "");
+                                  }}
+                                  value={field.value}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue1 placeholder="Select a student" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    {filteredStudents.map((student) => (
+                                      <SelectItem
+                                        key={student.$id}
+                                        value={student.$id}
+                                      >
+                                        {student.firstName} {student.surname} -{" "}
+                                        {getClassName(student.studentClass || '')}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select1>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          <CustomInputPayment
+                            name="transactionType"
+                            control={form.control}
+                            placeholder="Transaction Type"
+                            label="Transaction Type"
+                            select={true}
+                            options={[
+                              { label: "School Fees", value: "fees" },
+                              { label: "Registration Fee", value: "registration" },
+                            ]}
+                          />
+                          <div className="flex justify-between mt-4">
+                            <Button onClick={() => setPaymentStep(1)}>Previous</Button>
+                            <Button onClick={() => setPaymentStep(3)}>Next</Button>
+                          </div>
+                        </div>
+                      )}
+                      {paymentStep === 3 && (
+                        <div>
+                          <h2 className="text-xl font-semibold mb-4">Step 3: Payment Details</h2>
+                          <CustomInputPayment
+                            name="amount"
+                            control={form.control}
+                            placeholder="Amount"
+                            label="Amount"
+                            type="number"
+                          />
+                          <CustomInputPayment
+                            name="paymentMethod"
+                            placeholder="Select Method"
+                            control={form.control}
+                            label="Payment Method"
+                            select={true}
+                            options={[
+                              { label: "Cash", value: "cash" },
+                              { label: "EFT", value: "EFT" },
+                              { label: "Card", value: "card" },
+                            ]}
+                          />
+                          <CustomInputPayment
+                            name="paymentDate"
+                            label="Payment Date"
+                            control={form.control}
+                            placeholder="Payment Date"
+                            type="date"
+                          />
+                          <div className="flex justify-between mt-4">
+                            <Button onClick={() => setPaymentStep(2)}>Previous</Button>
+                            <Button type="submit" disabled={isLoadingForm}>
+                              {isLoadingForm ? "Processing..." : "Record Payment"}
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    <div className="border-l pl-4">
+                      {form.watch("studentId") && getStudentInfo(form.watch("studentId"))}
+                    </div>
                   </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <CustomInputPayment
-                      name="firstName"
-                      control={form.control}
-                      placeholder="Name"
-                      label={"Name"}
-                    />
-                    <CustomInputPayment
-                      name="surname"
-                      control={form.control}
-                      placeholder="Surname"
-                      label={"Surname"}
-                    />
-                  </div>
-                  <CustomInputPayment
-                    name="amount"
-                    control={form.control}
-                    placeholder="Amount"
-                    label={"Amount"}
-                    type="number"
-                  />
-                  <div className="grid grid-cols-2 gap-4">
-                    <CustomInputPayment
-                      name="paymentMethod"
-                      placeholder="Select Method"
-                      control={form.control}
-                      label={"Payment Method"}
-                      select={true}
-                      options={[
-                        { label: "Cash", value: "cash" },
-                        { label: "EFT", value: "EFT" },
-                        { label: "Card", value: "card" },
-                      ]}
-                    />
-                    <CustomInputPayment
-                      name="transactionType"
-                      control={form.control}
-                      placeholder="Transaction Type"
-                      label={"Transaction Type"}
-                      select={true}
-                      options={[
-                        { label: "School Fees", value: "fees" },
-                        { label: "Registration Fee", value: "registration" },
-                      ]}
-                    />
-                  </div>
-                  <CustomInputPayment
-                    name="paymentDate"
-                    label="Payment Date"
-                    control={form.control}
-                    placeholder="Payment Date"
-                    type="date"
-                  />
-                  <Button type="submit" className="w-full">
-                    Record Payment
-                  </Button>
                 </form>
               </Form>
             </TabsContent>
@@ -567,31 +641,29 @@ export default function SchoolFeeManagement() {
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label className="text-right">Class</Label>
                 <div className="col-span-3">
-                  {getClassName(selectedStudent.studentClass)}
+                  {getClassName(selectedStudent.studentClass || '')}
                 </div>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label className="text-right">Balance</Label>
                 <div className="col-span-3">
-                  R {selectedStudent.balance.toFixed(2)}
+                  R {getStudentBalance(selectedStudent.$id).toFixed(2)}
                 </div>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label className="text-right">Last Paid</Label>
                 <div className="col-span-3">
                   {getStudentLastPaid(selectedStudent.$id)
-                    ? new Date(
-                        getStudentLastPaid(selectedStudent.$id)!
-                      ).toLocaleDateString()
+                    ? new Date(getStudentLastPaid(selectedStudent.$id)!).toLocaleDateString()
                     : "N/A"}
                 </div>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label className="text-right">Next Payment</Label>
                 <div className="col-span-3">
-                  {new Date(
-                    selectedStudent.nextPaymentDate
-                  ).toLocaleDateString()}
+                  {studentFees.find(fee => fee.studentId === selectedStudent.$id)?.nextPaymentDate
+                    ? new Date(studentFees.find(fee => fee.studentId === selectedStudent.$id)!.nextPaymentDate).toLocaleDateString()
+                    : "N/A"}
                 </div>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">

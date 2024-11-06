@@ -108,5 +108,99 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
       );
     }
   }
+
+
+  async function updateAmountPaid(id: string, paidAmount: number) {
+    try {
+      const response = await database.updateDocument(
+          process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
+          "studentFeesManagement", // Update to correct collection name
+          id,
+          { paidAmount }
+      );
+      return response;
+  } catch (error) {
+      console.error("Error updating student amount paid:", error);
+      throw new Error("Failed to update student amount paid");
+  }
+  }
   
+
+  async function updateRegBalance(id: string, balance: number) {
+    try {
+        const response = await database.updateDocument(
+            process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
+            "studentFeesManagement",
+            id,
+            { balance: balance } // Pass as an object with the field name
+        );
+        return response;
+    } catch (error) {
+        console.error("Error updating student amount paid:", error);
+        throw new Error("Failed to update student amount paid");
+    }
+  }
+  
+  export async function PATCH(
+    req: Request,
+    { params }: { params: { id: string } }
+) {
+    try {
+        // Ensure we have the ID
+        if (!params?.id) {
+            return NextResponse.json(
+                { error: "Student ID is required" },
+                { status: 400 }
+            );
+        }
+
+        const id = params.id;
+        const body = await req.json();
+        const { balance, paidAmount } = body;
+        
+        console.log('Received PATCH request:', { id, balance, paidAmount });
+
+        let response;
+        try {
+            if (balance !== undefined) {
+                console.log('Updating balance:', balance);
+                response = await updateRegBalance(id, balance);
+            } else if (paidAmount !== undefined) {
+                console.log('Updating paid amount:', paidAmount);
+                response = await updateAmountPaid(id, paidAmount);
+            } else {
+                return NextResponse.json(
+                    { error: "Either balance or paidAmount must be provided" },
+                    { status: 400 }
+                );
+            }
+        } catch (updateError: any) {
+            // Handle Appwrite specific errors
+            if (updateError.code === 404) {
+                return NextResponse.json(
+                    { error: "Student fee record not found" },
+                    { status: 404 }
+                );
+            }
+            throw updateError;
+        }
+
+        return NextResponse.json({
+            message: "Student payment details updated successfully",
+            data: response
+        });
+    } catch (error: any) {
+        console.error('Error in PATCH /api/student-school-fees/[id]:', error);
+        
+        // Return appropriate status codes based on the error
+        const statusCode = error.code === 404 ? 404 : 500;
+        return NextResponse.json(
+            { 
+                error: error.message || "Failed to update student payment details",
+                details: error.response || null
+            },
+            { status: statusCode }
+        );
+    }
+}
 

@@ -77,7 +77,7 @@ export const paymentFormSchema = () => z.object({
   paymentMethod: z.string().min(3),
   paymentDate: z.string().min(3),
   /////New
-  transactionType: z.enum(['fees', 'registration']),
+  transactionType: z.string().min(3),
 });
 
 export const authformSchemaLogin = () => z.object({
@@ -406,3 +406,17 @@ export interface ISchoolFees {
   monthlyFee: number
   yearlyFee: number
 }
+
+export interface IStudentFeesSchema {
+  $id: string; 
+  studentId: string;
+  schoolFeesRegId: string;
+  startDate: string;
+  endDate: string;
+  fees: number;
+  totalFees: number;
+  paidAmount: number;
+  balance: number;
+  paymentFrequency: string;
+  nextPaymentDate: number
+};

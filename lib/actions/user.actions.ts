@@ -7,32 +7,29 @@ import { parseStringify } from "../utils";
 
 
 export const signIn = async ({email, password}: signInProps) => {
-  console.log("//////////////////////");
-    try{
-        const { account } = await createAdminClient();
-        
-        const response = await account.createEmailPasswordSession(email, password,);
-        // console.log("Creating Email Password Session :"+ response.$createdAt);
+  try {
+      const cookieStore = await cookies();
+      const { account } = await createAdminClient();
+      const response = await account.createEmailPasswordSession(email, password);
+      const maxAgeSeconds = 3600;
+      
+      await Promise.resolve(cookieStore.set("appwrite-session", response.secret, { 
+        path: "/",
+        httpOnly: true,
+        sameSite: "strict",
+        secure: true,
+        maxAge: maxAgeSeconds,
+      }));
 
-
-    // Set the session cookie after successful sign-in
-    const maxAgeSeconds = 3600; //1 hour
-        cookies().set("appwrite-session", response.secret, { 
-          path: "/",
-          httpOnly: true,
-          sameSite: "strict",
-          secure: true,
-          maxAge: maxAgeSeconds,
-        });
-        // console.log("Session created:", response); 
-
-        return parseStringify(response);
-
-    } catch (error){
-      console.error('Error during sign-in:', error);
-      return { success: false, message: error }; // Return error details
-    }
+      const user = await account.get();
+      return parseStringify(user);
+  } catch (error) {
+    console.error('Error during sign-in:', error);
+    return { success: false, message: error };
+  }
 }
+
+
 
 export const signUp = async (userData: SignUpParams) => {
     const {email, password, firstName, surname} = userData;
@@ -62,20 +59,22 @@ export const signUp = async (userData: SignUpParams) => {
 }
 
 export async function getLoggedInUser() {
-    try {
-      // console.log("Getting logged in user ------------");
-      const { account } = await createSessionClient();
-      // console.log("Getting logged in user ------------"+ account);
-      const user = await account.get();
-      // console.log("User Logged In:", user); 
-
-      return parseStringify(user);
-    } catch (error) {
-      console.log("User not logged in");
-      console.error('Error getting logged-in user:', error);
+  try {
+    const cookieStore = await cookies();
+    const sessionCookie = await Promise.resolve(cookieStore.get('appwrite-session'));
+    
+    if (!sessionCookie) {
       return null;
     }
+
+    const { account } = await createSessionClient();
+    const user = await account.get();
+    return parseStringify(user);
+  } catch (error) {
+    console.log("No active session found");
+    return null;
   }
+}
   
 export const logoutAccount = async () => {
     try {
@@ -155,6 +154,51 @@ export async function updateStudentBalance(studentId: string, amount: number) {
   }
 }
 
+export async function updateStudentAmountPaid(id: string, paidAmount: number) {
+  try {
+      const response = await fetch(`${getBaseUrl()}/api/student-school-fees/${id}`, {
+          method: 'PATCH',
+          headers: {
+              'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ paidAmount }),
+      });
+
+      if (!response.ok) {
+          const errorData = await response.json();
+          console.error("Server response:", errorData);
+          throw new Error(`Failed to update student amount paid: ${errorData.error || response.statusText}`);
+      }
+
+      return await response.json();
+  } catch (error) {
+      console.error("Error in updateStudentAmountPaid:", error);
+      throw error;
+  }
+}
+
+export async function updateStudentRegBalance(id: string, balance: number) {
+  try {
+      const response = await fetch(`${getBaseUrl()}/api/student-school-fees/${id}`, {
+          method: 'PATCH',
+          headers: {
+              'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ balance }),
+      });
+
+      if (!response.ok) {
+          const errorData = await response.json();
+          console.error("Server response:", errorData);
+          throw new Error(`Failed to update student balance: ${errorData.error || response.statusText}`);
+      }
+
+      return await response.json();
+  } catch (error) {
+      console.error("Error in updateStudentRegBalance:", error);
+      throw error;
+  }
+}
 
 
 export const newPayment = async (paymentData: NewPaymentParms) => {

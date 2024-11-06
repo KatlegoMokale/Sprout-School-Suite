@@ -41,7 +41,7 @@ interface CustomPaymentInput {
     value: string;
     label: string;
   }[];
-  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onChange?: (value: string) => void;
 }
 
 const CustomInputPayment = ({
@@ -66,7 +66,13 @@ const CustomInputPayment = ({
           </FormLabel>
           <div className="flex w-full flex-col">
             {select === true && options ? (
-              <Select1 onValueChange={field.onChange}>
+              <Select1 onValueChange={(value) => {
+                field.onChange(value);
+                if (onChange) {
+                  onChange(value); // Call the onChange handler with selected value
+                }
+              }}
+            >
                 <FormControl className=" p-2 bg-white">
                   <SelectTrigger className=" bg-white w-[180px] ">
                     <SelectValue1
