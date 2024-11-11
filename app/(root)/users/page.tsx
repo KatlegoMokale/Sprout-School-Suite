@@ -9,6 +9,8 @@ import SchoolFeeManagement from '../school-fees/page'
 import StudentFeesManagement from '@/components/ui/StudentRegistration'
 import StaffSalaryManagement from '@/components/ui/StaffSalary'
 import ClassAndFeeManagement from '@/components/ui/ClassAndFeeManagement'
+import MyDocument from '@/components/ui/PDFStatement'
+import ReactPDF, { PDFViewer } from '@react-pdf/renderer'
 
 const Users = () => {
   return (

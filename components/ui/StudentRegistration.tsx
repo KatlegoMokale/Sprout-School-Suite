@@ -38,7 +38,7 @@ export default function StudentRegistration() {
       paidAmount: 0,
       balance: 0,
       paymentFrequency: "monthly",
-      nextPaymentDate: 0,
+      paymentDate: 0,
     },
   })
 
@@ -399,14 +399,14 @@ export default function StudentRegistration() {
 
                 <CustomInput
                   placeholder="Select next payment date"
-                  name="nextPaymentDate"
+                  name="paymentDate"
                   control={form.control}
                   label="Next Payment Date"
                   type="number"
                 />
 
                 <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Updating..." : "Update Student Fees"}
+                  {isLoading ? "Updating..." : "Register Student"}
                 </Button>
               </>
             )}

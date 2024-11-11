@@ -229,7 +229,7 @@ export const studentFeesSchema = () => z.object({
   paidAmount: z.number().optional(),
   balance: z.number(),
   paymentFrequency: z.enum(['monthly', 'quarterly', 'yearly']),
-  nextPaymentDate: z.number(),
+  paymentDate: z.number(),
 });
 
 // New Table: fee_transactions
@@ -286,6 +286,7 @@ export interface ITransactions {
   amount: number;
   paymentMethod: string;
   paymentDate: string;
+  transactionType: string;
 }
 
 export interface IGrocery {
@@ -418,5 +419,5 @@ export interface IStudentFeesSchema {
   paidAmount: number;
   balance: number;
   paymentFrequency: string;
-  nextPaymentDate: number
+  paymentDate: number
 };

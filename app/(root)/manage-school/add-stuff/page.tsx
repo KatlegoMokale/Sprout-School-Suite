@@ -54,6 +54,8 @@ const AddStuff = () => {
   const [onSelectedAddress, setOnSelectedAddress] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
+  
+
   useEffect(() => {
     const fetchPredictions = async () => {
       const predictions = await autocomplete(input);
@@ -62,6 +64,14 @@ const AddStuff = () => {
     };
     fetchPredictions();
   }, [input]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
 
   const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
     setSelectedAddress(prediction);
@@ -144,6 +154,8 @@ const AddStuff = () => {
 
     setFormData(data);
   };
+
+ 
 
   return (
     <div className="flex flex-col gap-4 bg-orange-50">

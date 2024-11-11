@@ -48,12 +48,28 @@ import {
   Search,
 } from "lucide-react";
 import { IClass, IStudent, ITransactions, paymentFormSchema, IStudentFeesSchema } from "@/lib/utils";
-import { newPayment, updateStudentBalance } from "@/lib/actions/user.actions";
+import { newPayment } from "@/lib/actions/user.actions";
 import CustomInputPayment from "@/components/ui/CustomInputPayment";
 import { Checkbox } from "@/components/ui/checkbox";
 import { updateStudentAmountPaid, updateStudentRegBalance } from "@/lib/actions/user.actions";
+import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { Dropdown } from "react-day-picker";
 
 const newPaymentFormSchema = paymentFormSchema();
+
+const handleInvoiceClick = (e: React.MouseEvent, studentId: string) => {
+  e.preventDefault();
+  try {
+    window.open(`/school-fees/${studentId}`, '_blank');
+  } catch (error) {
+    console.error("Error opening invoice:", error);
+    toast({
+      title: "Error",
+      description: "Failed to open invoice. Please try again.",
+      variant: "destructive",
+    });
+  }
+};
 
 export default function SchoolFeeManagement() {
   const [isLoadingForm, setIsLoadingForm] = useState(false);
@@ -173,7 +189,7 @@ export default function SchoolFeeManagement() {
   const isOutstanding = (student: IStudent) => {
     const studentFee = studentFees.find(fee => fee.studentId === student.$id);
     if (!studentFee) return false;
-    return new Date(studentFee.nextPaymentDate).getTime() <= Date.now();
+    return new Date(studentFee.paymentDate).getTime() <= Date.now();
   };
 
   const totalFees = studentFees.reduce((sum, fee) => sum + fee.totalFees, 0);
@@ -217,12 +233,6 @@ export default function SchoolFeeManagement() {
       // First, update the paid amount and balance
       await updateStudentAmountPaid(studentFee.$id, newPaidAmount);
       await updateStudentRegBalance(studentFee.$id, newBalance);
-
-      const student = students.find((s) => s.$id === data.studentId);
-      if (student) {
-        const newBalance = student.balance - data.amount;
-        await updateStudentBalance(data.studentId, newBalance);
-      }
 
       // If updates are successful, add the new payment
       const addNewPayment = await newPayment(data);
@@ -289,7 +299,7 @@ export default function SchoolFeeManagement() {
           <p><strong>Paid Amount:</strong> R {studentFee.paidAmount.toFixed(2)}</p>
           <p><strong>Current Balance:</strong> R {studentFee.balance.toFixed(2)}</p>
           <p><strong>Payment Frequency:</strong> {studentFee.paymentFrequency}</p>
-          <p><strong>Next Payment Date:</strong> {new Date(studentFee.nextPaymentDate).toLocaleDateString()}</p>
+          <p><strong>Next Payment Date:</strong> {new Date(studentFee.paymentDate).toLocaleDateString()}</p>
         </div>
 
         <div>
@@ -456,7 +466,7 @@ export default function SchoolFeeManagement() {
                           </TableCell>
                           <TableCell>
                             {studentFee
-                              ? new Date(studentFee.nextPaymentDate).toLocaleDateString()
+                              ? new Date(studentFee.paymentDate).toLocaleDateString()
                               : "N/A"}
                           </TableCell>
                           <TableCell>
@@ -471,13 +481,9 @@ export default function SchoolFeeManagement() {
                             </span>
                           </TableCell>
                           <TableCell>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setSelectedStudent(student)}
-                            >
-                              View Details
-                            </Button>
+                              <a href="#" onClick={(e) => handleInvoiceClick(e, student.$id)} className="w-full">
+                                View Account
+                              </a>
                           </TableCell>
                         </TableRow>
                       );
@@ -661,8 +667,8 @@ export default function SchoolFeeManagement() {
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label className="text-right">Next Payment</Label>
                 <div className="col-span-3">
-                  {studentFees.find(fee => fee.studentId === selectedStudent.$id)?.nextPaymentDate
-                    ? new Date(studentFees.find(fee => fee.studentId === selectedStudent.$id)!.nextPaymentDate).toLocaleDateString()
+                  {studentFees.find(fee => fee.studentId === selectedStudent.$id)?.paymentDate
+                    ? new Date(studentFees.find(fee => fee.studentId === selectedStudent.$id)!.paymentDate).toLocaleDateString()
                     : "N/A"}
                 </div>
               </div>

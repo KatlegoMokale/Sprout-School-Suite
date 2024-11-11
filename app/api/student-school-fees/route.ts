@@ -16,7 +16,7 @@ async function createStudentSchoolFees(data:{
     paidAmount?: number
     balance: number;
     paymentFrequency: string;
-    nextPaymentDate: number; }) {
+    paymentDate: number; }) {
         
         try {
             const response = await database.createDocument(
@@ -75,7 +75,7 @@ export async function GET() {
             paidAmount,
             balance,
             paymentFrequency,
-            nextPaymentDate,
+            paymentDate,
         } = await request.json();
         const data = {
             studentId,
@@ -87,7 +87,7 @@ export async function GET() {
             paidAmount,
             balance,
             paymentFrequency,
-            nextPaymentDate,
+            paymentDate,
         };
         const response = await createStudentSchoolFees(data);
         return NextResponse.json(
