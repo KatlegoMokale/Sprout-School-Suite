@@ -54,7 +54,23 @@ const AddStuff = () => {
   const [onSelectedAddress, setOnSelectedAddress] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
-  
+
+  const stuffFormSchema = newStuffFormSchema();
+  const form = useForm<z.infer<typeof stuffFormSchema>>({
+    resolver: zodResolver(stuffFormSchema),
+    defaultValues: {
+      firstName: "",
+      secondName: "",
+      surname: "",
+      dateOfBirth: "",
+      idNumber: "",
+      address1: "",
+      contact: "",
+      gender: "",
+      position: "",
+      startDate: "",
+    },
+  });
 
   useEffect(() => {
     const fetchPredictions = async () => {
@@ -117,23 +133,6 @@ const AddStuff = () => {
     );
   }
 
-  const stuffFormSchema = newStuffFormSchema();
-  const form = useForm<z.infer<typeof stuffFormSchema>>({
-    resolver: zodResolver(stuffFormSchema),
-    defaultValues: {
-      firstName: "",
-      secondName: "",
-      surname: "",
-      dateOfBirth: "",
-      idNumber: "",
-      address1: "",
-      contact: "",
-      gender: "",
-      position: "",
-      startDate: "",
-    },
-  });
-
   const handleConfirmAddStuff = async () => {
     console.log("Add Stuff onSubmit beginning...");
     setIsLoading(true);
@@ -154,8 +153,6 @@ const AddStuff = () => {
 
     setFormData(data);
   };
-
- 
 
   return (
     <div className="flex flex-col gap-4 bg-orange-50">

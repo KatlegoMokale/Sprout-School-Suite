@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -34,13 +34,13 @@ export default function SchoolFeesSetup() {
     },
   })
 
-  const calculateFees = (monthlyFee: number) => {
+  const calculateFees = useCallback((monthlyFee: number) => {
     const yearlyFee = monthlyFee * 10; // 12 months - 2 months discount // 3 months - 1 month discount
     const yearlyFeeNormal = monthlyFee * 12; // 12 months Full price Monthly
     setYearlyFee(yearlyFee);
     setYearlyFeeNormal(yearlyFeeNormal);
     form.setValue("yearlyFee", yearlyFee);
-  }
+    }, [form]);
 
   useEffect(() => {
     const subscription = form.watch((value, { name }) => {
@@ -49,7 +49,7 @@ export default function SchoolFeesSetup() {
       }
     });
     return () => subscription.unsubscribe();
-  }, [form]);
+  }, [calculateFees, form]);
 
 
   const onSubmit = async (data: z.infer<typeof SchoolFeesFormData>) => {

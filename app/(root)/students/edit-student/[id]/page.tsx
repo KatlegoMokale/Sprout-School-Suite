@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 import React, { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
@@ -18,7 +18,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { IClass, newStudentFormSchema, parseStringify } from "@/lib/utils"
 import { updateStudent } from "@/lib/actions/user.actions"
 
-const EditStudentForm = ({ params }: { params: { id: string } }) => {
+export default function EditStudentForm({ params }: { params: { id: string } }) {
   const [classData, setClassData] = useState<IClass[] | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -107,7 +107,7 @@ const EditStudentForm = ({ params }: { params: { id: string } }) => {
       <div className="flex items-center justify-center h-screen">
         <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
       </div>
-    );
+    )
   }
 
   if (error) {
@@ -287,7 +287,7 @@ const EditStudentForm = ({ params }: { params: { id: string } }) => {
         <AlertDialogContent>
           <AlertDialogHeader>Confirm Update</AlertDialogHeader>
           <AlertDialogDescription>
-            Are you sure you want to update this student's information?
+            Are you sure you want to update this student&apos;s information?
           </AlertDialogDescription>
           <AlertDialogFooter>
             <AlertDialogCancel className="hover:bg-slate-200" onClick={() => setIsConfirmOpen(false)}>
@@ -302,5 +302,3 @@ const EditStudentForm = ({ params }: { params: { id: string } }) => {
     </div>
   )
 }
-
-export default EditStudentForm

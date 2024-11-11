@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
@@ -84,14 +84,7 @@ export default function StudentRegistration() {
     fetchData()
   }, [])
 
-  useEffect(() => {
-    const subscription = form.watch((value, { name, type }) => {
-      if (name === 'startDate' || name === 'endDate') {
-        calculateFees()
-      }
-    })
-    return () => subscription.unsubscribe()
-  }, [form])
+
 
   useEffect(() => {
     if (selectedYear) {
@@ -153,7 +146,7 @@ export default function StudentRegistration() {
     }
   }
 
-  const calculateFees = () => {
+  const calculateFees = useCallback(() => {
     const startDate = form.getValues("startDate")
     const endDate = form.getValues("endDate")
     const paymentFrequency = form.getValues("paymentFrequency")
@@ -206,7 +199,16 @@ export default function StudentRegistration() {
     form.setValue("totalFees", totalFees)
     form.setValue("balance", totalFees)
     setShowHiddenFields(true)
-  }
+  }, [form, schoolFees, registeredYears])
+
+  useEffect(() => {
+    const subscription = form.watch((value, { name, type }) => {
+    if (name === 'startDate' || name === 'endDate') {
+    calculateFees()
+    }
+    })
+    return () => subscription.unsubscribe()
+    }, [calculateFees, form])
 
   return (
     <Card className="w-full max-w-2xl mx-auto">
