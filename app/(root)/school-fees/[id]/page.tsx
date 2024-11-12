@@ -30,10 +30,10 @@ export default function StudentInvoice({ params }: { params: { id: string } }) {
     return thirtyDayMonths.includes(month) ? 30 : 31
   }
 
-  const adjustPaymentDate = (year: number, month: number, day: number): Date => {
+  const adjustPaymentDate = useCallback((year: number, month: number, day: number): Date => {
     const lastDay = getLastDayOfMonth(year, month)
     return new Date(year, month, Math.min(day, lastDay))
-  }
+  }, [])
 
   const generateStatementItems = useCallback((transactions: ITransactions[], fees: IStudentFeesSchema[], schoolFees: ISchoolFees[]) => {
     const items = []
@@ -116,7 +116,7 @@ export default function StudentInvoice({ params }: { params: { id: string } }) {
     }
 
     return items
-  }, [])
+  }, [adjustPaymentDate])
 
   useEffect(() => {
     const fetchData = async () => {
