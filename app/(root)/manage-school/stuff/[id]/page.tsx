@@ -63,7 +63,6 @@ const EditStuff = () => {
         // Update form fields
         form.setValue("address1", address1 + ", " + city);
       
-        form.setValue("p1_address1", address1 + ", " + city);
       
       
       };

@@ -48,40 +48,42 @@ declare type NewStudentParms = {
     surname: string;
     dateOfBirth: string;
     age: string;
+    gender:string;
     address1: string;
     homeLanguage: string;
     allergies?: string;
     medicalAidNumber?: string;
     medicalAidScheme?: string;
-    gender:string;
     studentClass?:string;
+    studentStatus?: string;
+    balance?: number;
+    lastPaid?: string;
 
     p1_relationship: string;
     p1_firstName: string;
     p1_surname: string;
-    p1_idNumber: string;
+    p1_email: string;
     p1_phoneNumber: string;
-    p1_email?: string;
-    p1_address1: string;
-    p1_dateOfBirth: string;
+    p1_idNumber: string;
     p1_gender: string;
+    p1_dateOfBirth: string;
+    p1_address1: string;
     p1_occupation?: string;
     p1_workNumber?:string;
 
     p2_relationship?: string;
     p2_firstName?: string;
     p2_surname?: string;
-    p2_idNumber?: string;
-    p2_phoneNumber?: string;
     p2_email?: string;
-    p2_address1?: string;
-    p2_dateOfBirth?: string;
+    p2_phoneNumber?: string;
+    p2_idNumber?: string;
     p2_gender?: string;
+    p2_dateOfBirth?: string;
+    p2_address1?: string;
     p2_occupation?: string;
     p2_workNumber?:string;
 
-    balance?: number;
-    studentStatus?: string;
+ 
 
 
   };

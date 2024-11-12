@@ -307,7 +307,7 @@ export default function Dashboard() {
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
-                    <Grocery/>
+                    <Grocery onSuccess={fetchData} />
                   </DialogContent>
                 </Dialog>
               </div>

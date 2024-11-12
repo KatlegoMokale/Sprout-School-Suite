@@ -18,8 +18,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { IClass, newStudentFormSchema, parseStringify } from "@/lib/utils"
 import { updateStudent } from "@/lib/actions/user.actions"
 
-const EditStudentForm = ({ params }: { params: { id: string } }) => {
-  const unwrappedParams = React.use(params);
+export default function EditStudentForm({ params }: { params: Promise<{ id: string }> }) {
   const [classData, setClassData] = useState<IClass[] | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -36,6 +35,7 @@ const EditStudentForm = ({ params }: { params: { id: string } }) => {
     const fetchData = async () => {
       setIsLoading(true)
       try {
+        const unwrappedParams = await params
         const [classesResponse, studentResponse] = await Promise.all([
           fetch("/api/class"),
           fetch(`/api/students/${unwrappedParams.id}`)
@@ -59,17 +59,55 @@ const EditStudentForm = ({ params }: { params: { id: string } }) => {
       }
     }
     fetchData()
-  }, [unwrappedParams.id, form])
+  }, [params, form])
 
   const onSubmit = async (data: z.infer<typeof studentFormSchema>) => {
     setIsConfirmOpen(true)
-    setFormData(data)
+    const studentData: NewStudentParms = {
+      firstName: data.firstName,
+      secondName: data.secondName,
+      surname: data.surname,
+      dateOfBirth: data.dateOfBirth,
+      age: data.age,
+      gender: data.gender,
+      address1: data.address1,
+      homeLanguage: data.homeLanguage,
+      allergies: data.allergies,
+      medicalAidNumber: data.medicalAidNumber,
+      medicalAidScheme: data.medicalAidScheme,
+      studentClass: data.studentClass,
+      p1_firstName: data.p1_firstName,
+      p1_surname: data.p1_surname,
+      p1_address1: data.p1_address1,
+      p1_dateOfBirth: data.p1_dateOfBirth,
+      p1_gender: data.p1_gender,
+      p1_idNumber: data.p1_idNumber,
+      p1_occupation: data.p1_occupation,
+      p1_phoneNumber: data.p1_phoneNumber,
+      p1_email: data.p1_email,
+      p1_workNumber: data.p1_workNumber,
+      p1_relationship: data.p1_relationship,
+      p2_firstName: data.p2_firstName,
+      p2_surname: data.p2_surname,
+      p2_address1: data.p2_address1,
+      p2_dateOfBirth: data.p2_dateOfBirth,
+      p2_gender: data.p2_gender,
+      p2_idNumber: data.p2_idNumber,
+      p2_occupation: data.p2_occupation,
+      p2_phoneNumber: data.p2_phoneNumber,
+      p2_email: data.p2_email,
+      p2_workNumber: data.p2_workNumber,
+      p2_relationship: data.p2_relationship,
+      studentStatus: data.studentStatus,
+    };
+    setFormData(studentData); 
   }
 
   const handleConfirmUpdate = async () => {
     setIsLoading(true)
     try {
-      await updateStudent(formData, unwrappedParams.id)
+      const unwrappedParams = await params
+      await updateStudent(formData as NewStudentParms, unwrappedParams.id)
       toast({
         title: "Success",
         description: "Student information has been updated.",
@@ -82,7 +120,6 @@ const EditStudentForm = ({ params }: { params: { id: string } }) => {
       setIsLoading(false)
     }
   }
-
   const calculateAge = (birthDate: string): string => {
     const today = new Date()
     const birth = new Date(birthDate)
@@ -105,8 +142,8 @@ const EditStudentForm = ({ params }: { params: { id: string } }) => {
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
       </div>
     )
   }
@@ -303,5 +340,3 @@ const EditStudentForm = ({ params }: { params: { id: string } }) => {
     </div>
   )
 }
-
-export default EditStudentForm

@@ -107,7 +107,7 @@ export const newStudentFormSchema = () => {
     secondName: z.string().optional(),
     surname: z.string().min(1, "Surname is required"),
     dateOfBirth: z.string().min(1, "Date of birth is required"),
-    age: z.string(),
+    age: z.string(), // Age is optional, calculated elsewhere
     gender: z.string().min(1, "Gender is required"),
     address1: z.string().min(1, "Address is required"),
     homeLanguage: z.string().min(1, "Home language is required"),
@@ -116,6 +116,8 @@ export const newStudentFormSchema = () => {
     medicalAidScheme: z.string().optional(),
     studentClass: z.string().min(1, "Class is required"),
     studentStatus: z.enum(["active", "non-active"]),
+    balance: z.number().min(0),
+    lastPaid: z.string().optional(),
 
     // Guardian 1 Information
     p1_relationship: z.string().min(1, "Relationship is required"),
@@ -134,7 +136,7 @@ export const newStudentFormSchema = () => {
     p2_relationship: z.string().optional(),
     p2_firstName: z.string().optional(),
     p2_surname: z.string().optional(),
-    p2_email: z.string().email("Invalid email address").optional(),
+    p2_email: z.string().email().optional(),
     p2_phoneNumber: z.string().optional(),
     p2_idNumber: z.string().optional(),
     p2_gender: z.string().optional(),
@@ -142,8 +144,8 @@ export const newStudentFormSchema = () => {
     p2_address1: z.string().optional(),
     p2_occupation: z.string().optional(),
     p2_workNumber: z.string().optional(),
-  })
-}
+  });
+};
 
 
 export const newStuffFormSchema = () => z.object({

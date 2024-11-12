@@ -5,7 +5,7 @@ export default function FeeForm() {
   const [studentId, setStudentId] = useState('')
   const [amount, setAmount] = useState('')
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     // Here you would typically send this data to your backend
     console.log('Fee submitted:', { studentId, amount })

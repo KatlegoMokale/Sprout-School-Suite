@@ -60,10 +60,11 @@ async function updateClassAndFees(id: string, data: {
 }
 
 export async function GET(
-    req: Request, 
-    { params }: { params: { id: string } }) {
+    req: Request
+) {
   try {
-    const id = params.id;
+    const url = new URL(req.url);
+    const id = url.pathname.split('/').pop() as string; // Extract id from URL
     const data = await fetchClassAndFees(id);
     return NextResponse.json({data});
   } catch (error) {
@@ -76,9 +77,10 @@ export async function GET(
 }
   
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request) {
   try {
-    const id = params.id;
+    const url = new URL(req.url);
+    const id = url.pathname.split('/').pop() as string; // Extract id from URL
     await deleteClassAndFees(id);
     return NextResponse.json({message: "ClassAndFees deleted successfully"});
   } catch (error) {
@@ -90,18 +92,17 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
   }
 }
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
-    try {
-        const id = params.id;
-      const data = await req.json();
-      await updateClassAndFees(id, data);
-      return NextResponse.json({message : "ClassAndFees updated successfully"});
-    } catch (error) {
-      return NextResponse.json(
-        { error: "Failed to update ClassAndFees" },
-        { status: 500 }
-      );
-    }
+export async function PUT(req: Request) {
+  try {
+    const url = new URL(req.url);
+    const id = url.pathname.split('/').pop() as string; // Extract id from URL
+    const data = await req.json();
+    await updateClassAndFees(id, data);
+    return NextResponse.json({message : "ClassAndFees updated successfully"});
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Failed to update ClassAndFees" },
+      { status: 500 }
+    );
   }
-  
-
+}

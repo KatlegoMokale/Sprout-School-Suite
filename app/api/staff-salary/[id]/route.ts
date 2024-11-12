@@ -5,7 +5,6 @@ import { NextResponse } from "next/server";
 const database = new Databases(client);
 
 //Fetch Staff Salary
-
 async function fetchStaffSalary(id: string) {
   try {
     const data = await database.getDocument(
@@ -20,7 +19,7 @@ async function fetchStaffSalary(id: string) {
   }
 }
 
-//Delete Student
+//Delete Staff Salary
 async function deleteStaffSalary(id: string) {
   try {
     const response = await database.deleteDocument(
@@ -35,34 +34,35 @@ async function deleteStaffSalary(id: string) {
   }
 }
 
-//Update Student
+//Update Staff Salary
 async function updateStaffSalary(id: string, data: {
-    staffId: string;
-    baseSalary: number;
-    bonuses: number;
-    deductions: number;
-    paymentDate: string;
-    staffStatus : string;
+  staffId: string;
+  baseSalary: number;
+  bonuses: number;
+  deductions: number;
+  paymentDate: string;
+  staffStatus : string;
 }){
-    try {
-        const response = await database.updateDocument(
-            process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
-            "students",
-            id,
-            data
-        );
-        return response;
-    } catch (error) {
-        console.error("Error updating student:", error);
-        throw new Error("Failed to update staff salary");
-    }
+  try {
+    const response = await database.updateDocument(
+      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
+      "staffSalarySchema",
+      id,
+      data
+    );
+    return response;
+  } catch (error) {
+    console.error("Error updating student:", error);
+    throw new Error("Failed to update staff salary");
+  }
 }
 
 export async function GET(
-    req: Request, 
-    { params }: { params: { id: string } }) {
+  req: Request
+) {
   try {
-    const id = params.id;
+    const url = new URL(req.url);
+    const id = url.pathname.split('/').pop() as string; // Extract id from URL
     const data = await fetchStaffSalary(id);
     return NextResponse.json({data});
   } catch (error) {
@@ -71,13 +71,12 @@ export async function GET(
       { status: 500 }
     );
   }
-    
 }
-  
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request) {
   try {
-    const id = params.id;
+    const url = new URL(req.url);
+    const id = url.pathname.split('/').pop() as string; // Extract id from URL
     await deleteStaffSalary(id);
     return NextResponse.json({message: "Staff salary deleted successfully"});
   } catch (error) {
@@ -89,18 +88,17 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
   }
 }
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
-    try {
-        const id = params.id;
-      const data = await req.json();
-      await updateStaffSalary(id, data);
-      return NextResponse.json({message : "Staff salary updated successfully"});
-    } catch (error) {
-      return NextResponse.json(
-        { error: "Failed to update staff salary" },
-        { status: 500 }
-      );
-    }
+export async function PUT(req: Request) {
+  try {
+    const url = new URL(req.url);
+    const id = url.pathname.split('/').pop() as string; // Extract id from URL
+    const data = await req.json();
+    await updateStaffSalary(id, data);
+    return NextResponse.json({message : "Staff salary updated successfully"});
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Failed to update staff salary" },
+      { status: 500 }
+    );
   }
-  
-
+}

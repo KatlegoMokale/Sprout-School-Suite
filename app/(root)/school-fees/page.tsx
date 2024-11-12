@@ -166,7 +166,7 @@ export default function SchoolFeeManagement() {
       toast({
         title: "No Students Found",
         description: `There are no ${showUnregistered ? 'unregistered' : 'registered'} students for the year ${selectedYear}.`,
-        variant: "warning",
+        variant: "destructive",
       });
     }
   }, [selectedYear, students, registeredYears, selectedClass, searchTerm, showUnregistered]);

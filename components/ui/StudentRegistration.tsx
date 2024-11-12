@@ -211,7 +211,7 @@ export default function StudentRegistration() {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
                 control={form.control}
-                name="yearFilter"
+                name="startDate"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Filter by Year</FormLabel>
@@ -219,12 +219,12 @@ export default function StudentRegistration() {
                       onValueChange={(value) => {
                         const year = parseInt(value);
                         setSelectedYear(year);
-                        field.onChange(year);
+                        field.onChange(value);
                         form.setValue("studentId", "");
                         form.setValue("schoolFeesRegId", "");
                         setShowHiddenFields(false);
                       }} 
-                      value={field.value?.toString()}
+                      value={field.value}
                     >
                       <FormControl>
                         <SelectTrigger>

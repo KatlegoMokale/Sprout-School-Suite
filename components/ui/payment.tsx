@@ -1,7 +1,7 @@
 "use client"
 import React, { useState } from 'react'
 import { Button } from "@/components/ui/button"
-import { paymentFormSchema } from '@/lib/utils'
+import { IStudent, paymentFormSchema } from '@/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form'
 import { z } from 'zod'

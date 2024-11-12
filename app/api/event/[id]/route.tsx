@@ -36,30 +36,31 @@ async function deleteEvent(id: string) {
 
 //Update Event
 async function updateEvent(id: string, data: {
-    eventName: string;
-    date: string;
-    amount: number;
-    description: string; 
+  eventName: string;
+  date: string;
+  amount: number;
+  description: string;
 }){
-    try {
-        const response = await database.updateDocument(
-            process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
-            "schoolFees",
-            id,
-            data
-        );
-        return response;
-    } catch (error) {
-        console.error("Error updating Event:", error);
-        throw new Error("Failed to update Event");
-    }
+  try {
+    const response = await database.updateDocument(
+      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
+      "schoolFees",
+      id,
+      data
+    );
+    return response;
+  } catch (error) {
+    console.error("Error updating Event:", error);
+    throw new Error("Failed to update Event");
+  }
 }
 
 export async function GET(
-    req: Request, 
-    { params }: { params: { id: string } }) {
+  req: Request
+) {
   try {
-    const id = params.id;
+    const url = new URL(req.url);
+    const id = url.pathname.split('/').pop() as string; // Extract id from URL
     const data = await fetchEvent(id);
     return NextResponse.json({data});
   } catch (error) {
@@ -68,13 +69,12 @@ export async function GET(
       { status: 500 }
     );
   }
-    
 }
-  
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request) {
   try {
-    const id = params.id;
+    const url = new URL(req.url);
+    const id = url.pathname.split('/').pop() as string; // Extract id from URL
     await deleteEvent(id);
     return NextResponse.json({message: "Event Fees deleted successfully"});
   } catch (error) {
@@ -86,18 +86,17 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
   }
 }
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
-    try {
-        const id = params.id;
-      const data = await req.json();
-      await updateEvent(id, data);
-      return NextResponse.json({message : "Event updated successfully"});
-    } catch (error) {
-      return NextResponse.json(
-        { error: "Failed to update Event" },
-        { status: 500 }
-      );
-    }
+export async function PUT(req: Request) {
+  try {
+    const url = new URL(req.url);
+    const id = url.pathname.split('/').pop() as string; // Extract id from URL
+    const data = await req.json();
+    await updateEvent(id, data);
+    return NextResponse.json({message : "Event updated successfully"});
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Failed to update Event" },
+      { status: 500 }
+    );
   }
-  
-
+}

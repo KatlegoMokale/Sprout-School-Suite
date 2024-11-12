@@ -119,6 +119,7 @@ export default function ClassAndFeeManagement() {
                         name={`classesAndFees.${index}.name`}
                         control={form.control}
                         placeholder="Class Name"
+                        label="Class Name"
                       />
                     </TableCell>
                     <TableCell>
@@ -128,6 +129,7 @@ export default function ClassAndFeeManagement() {
                           control={form.control}
                           type="number"
                           placeholder="Start"
+                          label="Age Start"
                         />
                         <span>-</span>
                         <CustomInput
@@ -135,6 +137,7 @@ export default function ClassAndFeeManagement() {
                           control={form.control}
                           type="number"
                           placeholder="End"
+                          label="Age End"
                         />
                         <CustomInput
                           name={`classesAndFees.${index}.ageUnit`}
@@ -144,6 +147,8 @@ export default function ClassAndFeeManagement() {
                             { value: "months", label: "Months" },
                             { value: "years", label: "Years" },
                           ]}
+                          label="Age Unit"
+                          placeholder="Age Unit"
                         />
                       </div>
                     </TableCell>
@@ -153,11 +158,13 @@ export default function ClassAndFeeManagement() {
                           name={`classesAndFees.${index}.teacherId`}
                           control={form.control}
                           placeholder="Teacher ID"
+                          label="Teacher ID"
                         />
                         <CustomInput
                           name={`classesAndFees.${index}.teacherName`}
                           control={form.control}
                           placeholder="Teacher Name"
+                          label="Teacher Name"
                         />
                       </div>
                     </TableCell>
@@ -167,6 +174,7 @@ export default function ClassAndFeeManagement() {
                         control={form.control}
                         type="number"
                         placeholder="Monthly Fee"
+                        label="Monthly Fee"
                       />
                     </TableCell>
                     <TableCell>
@@ -180,8 +188,7 @@ export default function ClassAndFeeManagement() {
                       </Button>
                     </TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
+                ))}              </TableBody>
             </Table>
             <Button
               type="button"

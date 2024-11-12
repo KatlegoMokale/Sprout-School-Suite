@@ -160,7 +160,7 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
 
       balance: 0,
       lastPaid: "",
-      studentStatus: "",
+      studentStatus: "active",
     },
   });
   

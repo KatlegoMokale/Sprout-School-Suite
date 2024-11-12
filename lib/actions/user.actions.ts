@@ -44,7 +44,7 @@ export const signUp = async (userData: SignUpParams) => {
         );
         const session = await account.createEmailPasswordSession(email, password);
       
-        cookies().set("appwrite-session", session.secret, {
+        (await cookies()).set("appwrite-session", session.secret, {
           path: "/",
           httpOnly: true,
           sameSite: "strict",
@@ -67,23 +67,30 @@ export async function getLoggedInUser() {
       return null;
     }
 
-    const { account } = await createSessionClient();
-    const user = await account.get();
+    const client = await createSessionClient();
+    if (!client) {
+      return null;
+    }
+
+    const user = await client.account.get();
     return parseStringify(user);
   } catch (error) {
     console.log("No active session found");
     return null;
   }
-}
-  
+}  
 export const logoutAccount = async () => {
     try {
-        const {account} = await createSessionClient();
+        const client = await createSessionClient();
+        if (!client) {
+            throw new Error('Failed to create session client');
+        }
 
-        cookies().delete('appwrite-session');
+        (await cookies()).delete('appwrite-session');
 
-        await account.deleteSession('cuurent');
+        await client.account.deleteSession('current');
     } catch (error) {
+        console.error('Logout error:', error);
         return null;
     }
 }
@@ -412,67 +419,26 @@ export const newGrocery = async (data: NewGroceryParms) => {
 
 
 
-export const updateStudent = async (
-  studentData: NewStudentParms,
-  id: string
-) => {
-  // console.log("//////////////////////");
-  // console.log("studentData", studentData);
-  const {
-    firstName,
-    secondName,
-    surname,
-    dateOfBirth,
-    age,
-    gender,
-    address1,
-    homeLanguage,
-    allergies,
-    medicalAidNumber,
-    medicalAidScheme,
-    studentClass,
-    p1_firstName,
-    p1_surname,
-    p1_address1,
-    p1_dateOfBirth,
-    p1_gender,
-    p1_idNumber,
-    p1_occupation,
-    p1_phoneNumber,
-    p1_email,
-    p1_workNumber,
-    p1_relationship,
-    p2_firstName,
-    p2_surname,
-    p2_address1,
-    p2_dateOfBirth,
-    p2_gender,
-    p2_idNumber,
-    p2_occupation,
-    p2_phoneNumber,
-    p2_email,
-    p2_workNumber,
-    p2_relationship,
-  } = studentData;
-
+export const updateStudent = async (studentData: NewStudentParms, id: string) => {
   try {
-    // console.log("//////////////////////1");
-
     const response = await fetch(`${getBaseUrl()}/api/students/${id}`, {
       method: "PUT",
       headers: {
-        "Content-Type": "application.json",
+        "Content-Type": "application/json", // Correct content type
       },
       body: JSON.stringify(studentData),
     });
-    console.log("//////////////////////2" + response.body);
+
     if (response.ok) {
       console.log("Student updated successfully!");
+      // You might want to return the response here or handle it further
     } else {
-      throw new Error("Student update failed.");
+      const errorData = await response.json(); // Read the error response
+      throw new Error(`Student update failed: ${errorData.message}`);
     }
   } catch (error) {
     console.log(error);
+    throw error; // Re-throw the error to be handled by the caller
   }
 };
 
