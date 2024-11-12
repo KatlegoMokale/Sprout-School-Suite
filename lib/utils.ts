@@ -100,54 +100,51 @@ export const authFormSchema = (type: string) => z.object({
 });
 
 
-export const newStudentFormSchema = () => z.object({
-  //new student form
+export const newStudentFormSchema = () => {
+  return z.object({
+    // Student Information
+    firstName: z.string().min(1, "First name is required"),
+    secondName: z.string().optional(),
+    surname: z.string().min(1, "Surname is required"),
+    dateOfBirth: z.string().min(1, "Date of birth is required"),
+    age: z.string(),
+    gender: z.string().min(1, "Gender is required"),
+    address1: z.string().min(1, "Address is required"),
+    homeLanguage: z.string().min(1, "Home language is required"),
+    allergies: z.string().optional(),
+    medicalAidNumber: z.string().optional(),
+    medicalAidScheme: z.string().optional(),
+    studentClass: z.string().min(1, "Class is required"),
+    studentStatus: z.enum(["active", "non-active"]),
 
-  firstName: z.string().min(3),
-  secondName: z.string().optional(),
-  surname: z.string().min(3),
-  address1: z.string().min(3).max(150),
-  dateOfBirth: z.string().min(3),
-  gender: z.string().min(3),
-  age: z.string().min(1).max(20),
-  homeLanguage: z.string().min(3),
-  allergies: z.string().optional(),
-  medicalAidNumber: z.string().optional(),
-  medicalAidScheme: z.string().optional(),
-  studentClass: z.string().optional(),
+    // Guardian 1 Information
+    p1_relationship: z.string().min(1, "Relationship is required"),
+    p1_firstName: z.string().min(1, "First name is required"),
+    p1_surname: z.string().min(1, "Surname is required"),
+    p1_email: z.string().email("Invalid email address"),
+    p1_phoneNumber: z.string().min(1, "Phone number is required"),
+    p1_idNumber: z.string().min(1, "ID number is required"),
+    p1_gender: z.string().min(1, "Gender is required"),
+    p1_dateOfBirth: z.string().min(1, "Date of birth is required"),
+    p1_address1: z.string().min(1, "Address is required"),
+    p1_occupation: z.string().optional(),
+    p1_workNumber: z.string().optional(),
 
+    // Guardian 2 Information (all optional)
+    p2_relationship: z.string().optional(),
+    p2_firstName: z.string().optional(),
+    p2_surname: z.string().optional(),
+    p2_email: z.string().email("Invalid email address").optional(),
+    p2_phoneNumber: z.string().optional(),
+    p2_idNumber: z.string().optional(),
+    p2_gender: z.string().optional(),
+    p2_dateOfBirth: z.string().optional(),
+    p2_address1: z.string().optional(),
+    p2_occupation: z.string().optional(),
+    p2_workNumber: z.string().optional(),
+  })
+}
 
-  p1_relationship: z.string().min(3),
-  p1_firstName: z.string().min(3),
-  p1_surname: z.string().min(3),
-  p1_address1: z.string().min(3).max(150),
-  p1_dateOfBirth: z.string().min(3),
-  p1_gender: z.string().min(3),
-  p1_idNumber : z.string().min(13).max(13),
-  p1_occupation: z.string().optional(),
-  p1_phoneNumber: z.string().min(10).max(10),
-  p1_email: z.string().email().optional(),
-  p1_workNumber: z.string().optional(),
- 
-  p2_relationship: z.string().optional(),
-  p2_firstName: z.string().optional(),
-  p2_surname: z.string().optional(),
-  p2_address1: z.string().optional(),
-  p2_dateOfBirth: z.string().optional(),
-  p2_gender: z.string().optional(),
-  p2_idNumber: z.string().optional(),
-  p2_occupation: z.string().optional(),
-  p2_phoneNumber: z.string().optional(),
-  p2_email: z.string().optional(),
-  p2_workNumber: z.string().optional(),
-
-  balance: z.number().optional(),
-  lastPaid: z.string().optional(),
-
-  studentStatus: z.string().optional(),
-  // siblingIds: z.array(z.string()).optional(),
-
-});
 
 export const newStuffFormSchema = () => z.object({
   //new student form

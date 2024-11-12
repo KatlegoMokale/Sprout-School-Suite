@@ -1,4 +1,4 @@
-'use client'
+"use client"
 
 import React, { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
@@ -14,21 +14,67 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import CustomInput from "@/components/ui/CustomInput"
 import { Select1, SelectContent, SelectItem, SelectTrigger, SelectValue1 } from "@/components/ui/select"
 import { toast } from "@/hooks/use-toast"
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTrigger } from "@/components/ui/alert-dialog"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader } from "@/components/ui/alert-dialog"
 import { IClass, newStudentFormSchema, parseStringify } from "@/lib/utils"
 import { updateStudent } from "@/lib/actions/user.actions"
 
-export default function EditStudentForm({ params }: { params: { id: string } }) {
+interface PageProps {
+  params: {
+    id: string;
+  };
+  searchParams?: { [key: string]: string | string[] | undefined };
+}
+
+type StudentFormData = z.infer<ReturnType<typeof newStudentFormSchema>>;
+
+export default function EditStudentForm({ params }: PageProps) {
   const [classData, setClassData] = useState<IClass[] | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
-  const [formData, setFormData] = useState({})
+  const [formData, setFormData] = useState<StudentFormData | null>(null)
   const router = useRouter()
 
   const studentFormSchema = newStudentFormSchema()
-  const form = useForm<z.infer<typeof studentFormSchema>>({
+  const form = useForm<StudentFormData>({
     resolver: zodResolver(studentFormSchema),
+    defaultValues: {
+      firstName: "",
+      surname: "",
+      dateOfBirth: "",
+      age: "",
+      gender: "",
+      address1: "",
+      homeLanguage: "",
+      allergies: "",
+      medicalAidNumber: "",
+      medicalAidScheme: "",
+      studentClass: "",
+      studentStatus: "active",
+      p1_relationship: "",
+      p1_firstName: "",
+      p1_surname: "",
+      p1_email: "",
+      p1_phoneNumber: "",
+      p1_idNumber: "",
+      p1_gender: "",
+      p1_dateOfBirth: "",
+      p1_address1: "",
+      p1_occupation: "",
+      p1_workNumber: "",
+      p2_relationship: "",
+      p2_firstName: "",
+      p2_surname: "",
+      p2_email: "",
+      p2_phoneNumber: "",
+      p2_idNumber: "",
+      p2_gender: "",
+      p2_dateOfBirth: "",
+      p2_address1: "",
+      p2_occupation: "",
+      p2_workNumber: "",
+      secondName: ""
+    }
   })
 
   useEffect(() => {
@@ -44,11 +90,18 @@ export default function EditStudentForm({ params }: { params: { id: string } }) 
         const studentData = await studentResponse.json()
         
         setClassData(classesData)
-        setFormData(studentData.student)
+        
+        // Ensure the student data matches our form schema
+        const formattedStudentData: StudentFormData = {
+          ...form.getValues(), // Get default values
+          ...studentData.student, // Spread in the fetched data
+        }
+        
+        setFormData(formattedStudentData)
         
         // Set form values
-        Object.entries(studentData.student).forEach(([key, value]) => {
-          form.setValue(key as any, value as any)
+        Object.entries(formattedStudentData).forEach(([key, value]) => {
+          form.setValue(key as keyof StudentFormData, value)
         })
       } catch (error) {
         console.error("Error fetching data:", error)
@@ -60,12 +113,17 @@ export default function EditStudentForm({ params }: { params: { id: string } }) 
     fetchData()
   }, [params.id, form])
 
-  const onSubmit = async (data: z.infer<typeof studentFormSchema>) => {
-    setIsConfirmOpen(true)
+  const onSubmit = async (data: StudentFormData) => {
     setFormData(data)
+    setIsConfirmOpen(true)
   }
 
   const handleConfirmUpdate = async () => {
+    if (!formData) {
+      setError("No form data available")
+      return
+    }
+
     setIsLoading(true)
     try {
       await updateStudent(formData, params.id)
@@ -113,6 +171,7 @@ export default function EditStudentForm({ params }: { params: { id: string } }) 
   if (error) {
     return <div className="text-red-500">{error}</div>
   }
+
 
   return (
     <div className="flex flex-col px-4">
