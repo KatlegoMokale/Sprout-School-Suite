@@ -8,13 +8,9 @@ import { IStudent, ITransactions, IStudentFeesSchema, ISchoolFees } from "@/lib/
 import { jsPDF } from "jspdf"
 import "jspdf-autotable"
 
-type StudentInvoiceProps = {
-  params: {
-    id: string
-  }
-}
 
-export default function StudentInvoice({ params }: StudentInvoiceProps) {
+
+export default function StudentInvoice({ params }: { params: { id: string } }) {
   const [isLoading, setIsLoading] = useState(true)
   const [student, setStudent] = useState<IStudent | null>(null)
   const [transactions, setTransactions] = useState<ITransactions[]>([])
