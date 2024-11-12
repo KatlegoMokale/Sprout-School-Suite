@@ -192,7 +192,7 @@ declare type NewStudentParms = {
     paidAmount?: number;
     balance: number;
     paymentFrequency: string;
-    nextPaymentDate: number;
+    paymentDate: number;
   }
 
 

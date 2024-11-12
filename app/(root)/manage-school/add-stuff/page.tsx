@@ -32,6 +32,7 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
+  AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
@@ -115,7 +116,6 @@ const AddStuff = () => {
     // Update form fields
     form.setValue("address1", address1 + ", " + city);
 
-    form.setValue("p1_address1", address1 + ", " + city);
   };
 
   {
@@ -163,7 +163,7 @@ const AddStuff = () => {
         </Button> */}
         </AlertDialogTrigger>
         <AlertDialogContent>
-          <AlertDialogHeader>Confirm Adding New Stuff </AlertDialogHeader>
+            <AlertDialogTitle>Confirm Adding New Stuff</AlertDialogTitle>
           <AlertDialogDescription>
             Are you sure you want to update this stuff member information?
           </AlertDialogDescription>

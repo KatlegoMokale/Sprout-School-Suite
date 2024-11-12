@@ -1,4 +1,5 @@
 import { logoutAccount } from '@/lib/actions/user.actions'
+import { LogOut } from 'lucide-react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import React, { use } from 'react'
@@ -14,7 +15,7 @@ const Footer = () => {
        }
     }
   return (
-    <footer className='footer '>
+    <footer className='footer justify-center items-center'>
         {/* <div className={type==='mobile' ? 'footer_name-mobile' : 'footer_name'}>
             <p className=' text-xl font-bold text-gray-700'>
                 {user?.firstName[0]}
@@ -28,11 +29,8 @@ const Footer = () => {
                 {user?.email}
            </h1>
         </div> */}
-        <div>
-            
-        </div>
-        <div className='footer_image' onClick={handleLogOut}>
-            <Image src="icons/logout.svg" fill alt='jsm' />
+        <div className=' bg-white flex justify-center w-full items-center' onClick={handleLogOut}>
+            <LogOut className=' hover:text-red-400 text-gray-600' />
         </div>
     </footer>
   )

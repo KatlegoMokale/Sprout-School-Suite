@@ -11,7 +11,8 @@ try {
   .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT!)
   .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT!);
 
-const session = cookies().get("appwrite-session");
+  const cookieStore = await cookies();
+  const session = cookieStore.get("appwrite-session");
 // console.log("Session:", session);
 // console.log("Session Name:", session?.name);
 // console.log("Session Value:", session?.value);

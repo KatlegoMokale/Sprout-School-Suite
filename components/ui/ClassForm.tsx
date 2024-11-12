@@ -25,6 +25,7 @@ import CustomInputPayment from "./CustomInputPayment";
 import { Search } from "lucide-react";
 import { newClass, newPayment } from "@/lib/actions/user.actions";
 import { useRouter } from "next/navigation";
+import { Select1, SelectContent, SelectItem, SelectTrigger, SelectValue1 } from "./select";
 
 interface ClassesProps {
   classes: IClass[] | null;
@@ -87,6 +88,10 @@ const Classes = () => {
     return () => subscription.unsubscribe();
   }, [form, teachers]);
 
+  const handleTeacherChange = (value: string) => {
+      form.setValue('teacherName', value )
+  };
+
   const onSubmit = async (data: z.infer<typeof newClassFormSchema>) => {
     try {
       setIsLoading(true);
@@ -102,18 +107,7 @@ const Classes = () => {
     console.log("Form data ready for Appwrite:", data);
   };
 
-  const handleTeacherChange = (selectedTeacherId: string) => {
-    const selectedTeacher = teachers?.find(
-      (teacher) => teacher.$id === selectedTeacherId
-    );
-    if (selectedTeacher) {
-      form.setValue("teacherId", selectedTeacher.$id);
-      form.setValue(
-        "teacherName",
-        `${selectedTeacher.firstName} ${selectedTeacher.surname}`
-      );
-    }
-  };
+
 
   return (
     <div className=" container">
@@ -137,22 +131,40 @@ const Classes = () => {
                   label={"Class Age"}
                 />
               </div>
+              <div className="form-item">
+                          <div className=" text-md  font-semibold text-gray-600 ">
+                            Select Teacher
+                          </div>
+                          <Select1 onValueChange={handleTeacherChange}>
+                          <SelectTrigger className="w-full">
+                            <SelectValue1 placeholder="Select Class 1" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-white gap-2 rounded-lg">
+                            {
+                              teachers?.map((teacher) => (
+                                <SelectItem
+                                className="hover:bg-green-200 text-14 font-semibold rounded-lg hover:animate-in p-2 cursor-pointer"
+                                  key={teacher.$id}
+                                  value={teacher.$id}
+                                >
+                                  {teacher.firstName} {teacher.secondName}
+                                </SelectItem>
+                              ))
+                            }
+                          </SelectContent>
+                        </Select1>
+                        </div>
 
-              <div className="">
+              <div className="hidden">
                 <CustomInput<z.infer<typeof newClassFormSchema>>
                   name="teacherName"
                   placeholder="Enter Teacher Name"
                   control={form.control}
                   label={"Teacher Name"}
-                  select={true}
-                  options={teachers?.map((teacher) => ({
-                    label: `${teacher.firstName} ${teacher.surname}`, // Correct label
-                    value: teacher.$id,
-                  }))}
                 />
               </div>
 
-              <div className="">
+              <div className="hidden">
                 <CustomInput<z.infer<typeof newClassFormSchema>>
                   name="teacherId"
                   placeholder="Enter Teacher ID"

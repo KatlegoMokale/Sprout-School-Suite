@@ -14,12 +14,12 @@ import ReactPDF, { PDFViewer } from '@react-pdf/renderer'
 
 const Users = () => {
   return (
-    // <div><AddNewUser/></div>
+    <div><AddNewUser/></div>
     // <SchoolFeesSetup/>
     // <StaffSalaryManagement/>
     // <SchoolFeesSetup/>
     // <ClassAndFeeManagement/>
-    <StudentFeesManagement/>
+    // <StudentFeesManagement/>
     // <PettyCash/>
     // <Grocery/>
     // <Event/>

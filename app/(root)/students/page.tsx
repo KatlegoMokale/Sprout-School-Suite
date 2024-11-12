@@ -29,7 +29,16 @@ import {
   SelectValue1,
 } from "@/components/ui/select"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { MoreHorizontal, PlusCircle, Search } from "lucide-react"
+import { MoreHorizontal, PlusCircle, Search, UserPlus, UserRoundPen } from "lucide-react"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import StudentRegistration from "@/components/ui/StudentRegistration"
 
 interface IStudent {
   $id: string
@@ -163,10 +172,27 @@ export default function StudentManagement() {
               </Select1>
               <Link href="/students/add-student">
                 <Button size="sm">
-                  <PlusCircle className="h-4 w-4 mr-2" />
-                  Add Student
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Add New Student
                 </Button>
               </Link>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button size="sm">
+                      <UserRoundPen className="h-4 w-4 mr-2" />
+                        Register Student
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className=" container">
+                    <DialogTitle hidden>
+                      Register Student
+                    </DialogTitle>
+                    <StudentRegistration/>
+                  </DialogContent>
+                  
+                </Dialog>
+                
+
             </div>
           </div>
         </CardHeader>

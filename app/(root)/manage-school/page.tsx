@@ -23,7 +23,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { MapPin, Phone, MoreHorizontal, PlusCircle, Search, Filter } from "lucide-react"
 import Link from "next/link"
-import Classes from "@/components/ui/classes"
+import Classes from "@/components/ui/ClassForm"
 import Event from "@/components/ui/event"
 import { IEvent } from "@/lib/utils"
 import { set } from "date-fns"
@@ -208,7 +208,7 @@ export default function CreativeStaffManagement() {
                     Add New Class
                   </Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className="bg-white">
                   <DialogHeader>
                     <DialogTitle>Add New Class</DialogTitle>
                     <DialogDescription>Add a new class to the system.</DialogDescription>

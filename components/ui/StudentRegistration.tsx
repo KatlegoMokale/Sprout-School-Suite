@@ -12,6 +12,7 @@ import CustomInput from "@/components/ui/CustomInput"
 import { Select1, SelectContent, SelectItem, SelectTrigger, SelectValue1 } from "@/components/ui/select"
 import { ISchoolFees, ISchoolFeesReg, IStudent, studentFeesSchema } from "@/lib/utils"
 import { newStudentRegistration, updateStudentBalance } from "@/lib/actions/user.actions"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 export default function StudentRegistration() {
   const [isLoading, setIsLoading] = useState(false)
@@ -58,7 +59,6 @@ export default function StudentRegistration() {
         setFilteredStudents(studentsData)
         setSchoolFees(schoolFeesData)
         
-        // Process registrations data to create a map of student IDs to registered years
         const regYears: Record<string, number[]> = {}
         registrationsData.forEach((reg: any) => {
           if (!regYears[reg.studentId]) {
@@ -67,10 +67,6 @@ export default function StudentRegistration() {
           regYears[reg.studentId].push(new Date(reg.startDate).getFullYear())
         })
         setRegisteredYears(regYears)
-
-        console.log("Students:", studentsData)
-        console.log("School fees:", schoolFeesData)
-        console.log("Registered years:", regYears)
       } catch (error) {
         console.error("Error fetching data:", error)
         toast({
@@ -83,8 +79,6 @@ export default function StudentRegistration() {
 
     fetchData()
   }, [])
-
-
 
   useEffect(() => {
     if (selectedYear) {
@@ -113,24 +107,20 @@ export default function StudentRegistration() {
         await updateStudentBalance(myStudent?.$id, totalFees);
       }
 
-
       console.log("Student fees data:", data)
       toast({
         title: "Success",
         description: "Student fees have been updated.",
       })
 
-      // Update the registered years for this student
       setRegisteredYears(prev => ({
         ...prev,
         [data.studentId]: [...(prev[data.studentId] || []), startYear]
       }))
 
-      // Reset the form
       form.reset()
       setShowHiddenFields(false)
 
-      // Update filtered students
       if (selectedYear) {
         setFilteredStudents(prev => prev.filter(student => student.$id !== data.studentId))
       }
@@ -208,212 +198,214 @@ export default function StudentRegistration() {
     }
     })
     return () => subscription.unsubscribe()
-    }, [calculateFees, form])
+  }, [calculateFees, form])
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
+    <Card className="w-full max-w-2xl border-none mx-auto">
       <CardHeader>
         <CardTitle>Student Year Registration</CardTitle>
       </CardHeader>
       <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="yearFilter"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Filter by Year</FormLabel>
-                  <Select1 
-                    onValueChange={(value) => {
-                      const year = parseInt(value);
-                      setSelectedYear(year);
-                      field.onChange(year);
-                      form.setValue("studentId", "");
+        <ScrollArea className="h-[calc(100vh-12rem)] pr-4">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="yearFilter"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Filter by Year</FormLabel>
+                    <Select1 
+                      onValueChange={(value) => {
+                        const year = parseInt(value);
+                        setSelectedYear(year);
+                        field.onChange(year);
+                        form.setValue("studentId", "");
+                        form.setValue("schoolFeesRegId", "");
+                        setShowHiddenFields(false);
+                      }} 
+                      value={field.value?.toString()}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue1 placeholder="Select year to filter" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {yearRange.map(year => (
+                          <SelectItem key={year} value={year.toString()}>
+                            {year}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select1>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="studentId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Student</FormLabel>
+                    <Select1 onValueChange={(value) => {
+                      field.onChange(value);
                       form.setValue("schoolFeesRegId", "");
                       setShowHiddenFields(false);
-                    }} 
-                    value={field.value?.toString()}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue1 placeholder="Select year to filter" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {yearRange.map(year => (
-                        <SelectItem key={year} value={year.toString()}>
-                          {year}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select1>
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="studentId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Student</FormLabel>
-                  <Select1 onValueChange={(value) => {
-                    field.onChange(value);
-                    form.setValue("schoolFeesRegId", "");
-                    setShowHiddenFields(false);
-                  }} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue1 placeholder="Select a student" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {filteredStudents.map(student => (
-                        <SelectItem key={student.$id} value={student.$id}>
-                          {student.firstName} {student.surname} - {student.age}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select1>
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="schoolFeesRegId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Age Group</FormLabel>
-                  <Select1 onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue1 placeholder="Select age group" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {schoolFees.map(fee => {
-                        const isRegistered = registeredYears[form.getValues("studentId")]?.includes(fee.year);
-                        return (
-                          fee.year === selectedYear ? 
-                          <SelectItem 
-                            key={fee.$id} 
-                            value={fee.$id}
-                            disabled={isRegistered}
-                          >
-                            {fee.ageStart}-{fee.ageEnd} {fee.ageUnit}
-                            {isRegistered && (
-                              <span className="ml-2 text-xs text-red-500">
-                                (Already registered)
-                              </span>
-                            )}
+                    }} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue1 placeholder="Select a student" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {filteredStudents.map(student => (
+                          <SelectItem key={student.$id} value={student.$id}>
+                            {student.firstName} {student.surname} - {student.age}
                           </SelectItem>
-                          :
-                          <></>
-                        );
-                      })}
-                    </SelectContent>
-                  </Select1>
-                </FormItem>
-              )}
-            />
+                        ))}
+                      </SelectContent>
+                    </Select1>
+                  </FormItem>
+                )}
+              />
 
-            <CustomInput
-              name="startDate"
-              placeholder="Select start date"
-              control={form.control}
-              label="Start Date"
-              type="date"
-              onChange={() => calculateFees()}
-            />
+              <FormField
+                control={form.control}
+                name="schoolFeesRegId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Age Group</FormLabel>
+                    <Select1 onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue1 placeholder="Select age group" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {schoolFees.map(fee => {
+                          const isRegistered = registeredYears[form.getValues("studentId")]?.includes(fee.year);
+                          return (
+                            fee.year === selectedYear ? 
+                            <SelectItem 
+                              key={fee.$id} 
+                              value={fee.$id}
+                              disabled={isRegistered}
+                            >
+                              {fee.ageStart}-{fee.ageEnd} {fee.ageUnit}
+                              {isRegistered && (
+                                <span className="ml-2 text-xs text-red-500">
+                                  (Already registered)
+                                </span>
+                              )}
+                            </SelectItem>
+                            :
+                            <></>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select1>
+                  </FormItem>
+                )}
+              />
 
-            <CustomInput
-              name="endDate"
-              placeholder="Select end date"
-              control={form.control}
-              label="End Date"
-              type="date"
-              onChange={() => calculateFees()}
-            />
+              <CustomInput
+                name="startDate"
+                placeholder="Select start date"
+                control={form.control}
+                label="Start Date"
+                type="date"
+                onChange={() => calculateFees()}
+              />
 
-             <CustomInput
-              name="paymentFrequency"
-              control={form.control}
-              label="Payment Frequency"
-              placeholder="Select payment frequency"
-              select={true}
-              options={[
-                { value: "monthly", label: "Monthly" },
-                { value: "yearly", label: "Yearly" },
-              ]}
-              onChange={() => calculateFees()}
-            />
+              <CustomInput
+                name="endDate"
+                placeholder="Select end date"
+                control={form.control}
+                label="End Date"
+                type="date"
+                onChange={() => calculateFees()}
+              />
 
-            {!showHiddenFields && (
-              <Button type="button" onClick={calculateFees} className="w-full">
-                Continue
-              </Button>
-            )}
+              <CustomInput
+                name="paymentFrequency"
+                control={form.control}
+                label="Payment Frequency"
+                placeholder="Select payment frequency"
+                select={true}
+                options={[
+                  { value: "monthly", label: "Monthly" },
+                  { value: "yearly", label: "Yearly" },
+                ]}
+                onChange={() => calculateFees()}
+              />
 
-            {showHiddenFields && (
-              <>
-                <CustomInput
-                  name="fees"
-                  placeholder="Enter monthly fee"
-                  control={form.control}
-                  label="Monthly Fee"
-                  type="number"
-                  readonly={true}
-                />
-
-                <CustomInput
-                  name="totalFees"
-                  placeholder="Enter total fees"
-                  control={form.control}
-                  label="Total Fees"
-                  type="number"
-                  readonly={true}
-                />
-
-                <CustomInput
-                  name="paidAmount"
-                  placeholder="Enter paid amount"
-                  control={form.control}
-                  label="Paid Amount"
-                  type="number"
-                  onChange={(e) => {
-                    const value = parseFloat(e.target.value)
-                    form.setValue("paidAmount", value)
-                    const totalFees = form.getValues("totalFees")
-                    form.setValue("balance", totalFees - value)
-                  }}
-                />
-
-                <CustomInput
-                  name="balance"
-                  placeholder="Enter balance"
-                  control={form.control}
-                  label="Balance"
-                  type="number"
-                  readonly={true}
-                />
-
-                <CustomInput
-                  placeholder="Select next payment date"
-                  name="paymentDate"
-                  control={form.control}
-                  label="Next Payment Date"
-                  type="number"
-                />
-
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Updating..." : "Register Student"}
+              {!showHiddenFields && (
+                <Button type="button" onClick={calculateFees} className="w-full">
+                  Continue
                 </Button>
-              </>
-            )}
-          </form>
-        </Form>
+              )}
+
+              {showHiddenFields && (
+                <>
+                  <CustomInput
+                    name="fees"
+                    placeholder="Enter monthly fee"
+                    control={form.control}
+                    label="Monthly Fee"
+                    type="number"
+                    readonly={true}
+                  />
+
+                  <CustomInput
+                    name="totalFees"
+                    placeholder="Enter total fees"
+                    control={form.control}
+                    label="Total Fees"
+                    type="number"
+                    readonly={true}
+                  />
+
+                  <CustomInput
+                    name="paidAmount"
+                    placeholder="Enter paid amount"
+                    control={form.control}
+                    label="Paid Amount"
+                    type="number"
+                    onChange={(e) => {
+                      const value = parseFloat(e.target.value)
+                      form.setValue("paidAmount", value)
+                      const totalFees = form.getValues("totalFees")
+                      form.setValue("balance", totalFees - value)
+                    }}
+                  />
+
+                  <CustomInput
+                    name="balance"
+                    placeholder="Enter balance"
+                    control={form.control}
+                    label="Balance"
+                    type="number"
+                    readonly={true}
+                  />
+
+                  <CustomInput
+                    placeholder="Select next payment date"
+                    name="paymentDate"
+                    control={form.control}
+                    label="Next Payment Date"
+                    type="number"
+                  />
+
+                  <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading ? "Updating..." : "Register Student"}
+                  </Button>
+                </>
+              )}
+            </form>
+          </Form>
+        </ScrollArea>
       </CardContent>
     </Card>
   )

@@ -64,7 +64,7 @@ import Footer from './ui/Footer'
               </Tooltip>
               </TooltipProvider>  
               </nav>
-              <Footer className='flex flex-col items-center gap-4 px-2 sm:py-5'/>
+              <Footer/>
     
           </aside>
         </section>
