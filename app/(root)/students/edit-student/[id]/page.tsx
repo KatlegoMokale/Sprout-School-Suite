@@ -288,7 +288,7 @@ const EditStudentForm = ({ params }: { params: { id: string } }) => {
         <AlertDialogContent>
           <AlertDialogHeader>Confirm Update</AlertDialogHeader>
           <AlertDialogDescription>
-            Are you sure you want to update this student's information?
+            Are you sure you want to update this student&apos;s information?
           </AlertDialogDescription>
           <AlertDialogFooter>
             <AlertDialogCancel className="hover:bg-slate-200" onClick={() => setIsConfirmOpen(false)}>
