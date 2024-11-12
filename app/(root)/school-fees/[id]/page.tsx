@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState, useCallback } from 'react'
+import React, { useEffect, useState, useCallback, useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableHead, TableHeader, TableRow, TableCell, TableFooter } from '@/components/ui/table'
 import { Input } from '@/components/ui/input'
@@ -18,22 +18,22 @@ export default function StudentInvoice({ params }: { params: { id: string } }) {
   const [startDate, setStartDate] = useState<string>('')
   const [endDate, setEndDate] = useState<string>('')
 
-  const isLeapYear = (year: number): boolean => {
+  const isLeapYear = useCallback((year: number): boolean => {
     return (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0)
-  }
+  }, [])
 
-  const getLastDayOfMonth = (year: number, month: number): number => {
+  const getLastDayOfMonth = useCallback((year: number, month: number): number => {
     if (month === 1) { // February
       return isLeapYear(year) ? 29 : 28
     }
     const thirtyDayMonths = [3, 5, 8, 10] // April, June, September, November
     return thirtyDayMonths.includes(month) ? 30 : 31
-  }
+  }, [isLeapYear])
 
   const adjustPaymentDate = useCallback((year: number, month: number, day: number): Date => {
     const lastDay = getLastDayOfMonth(year, month)
     return new Date(year, month, Math.min(day, lastDay))
-  }, [])
+  }, [getLastDayOfMonth])
 
   const generateStatementItems = useCallback((transactions: ITransactions[], fees: IStudentFeesSchema[], schoolFees: ISchoolFees[]) => {
     const items = []
@@ -159,18 +159,20 @@ export default function StudentInvoice({ params }: { params: { id: string } }) {
     fetchData()
   }, [params.id, generateStatementItems])
 
-  const filterStatementItems = () => {
-    if (!startDate && !endDate) return statementItems
+  const filterStatementItems = useMemo(() => {
+    return () => {
+      if (!startDate && !endDate) return statementItems
 
-    return statementItems.filter(item => {
-      const itemDate = new Date(item.date)
-      const start = startDate ? new Date(startDate) : new Date(0)
-      const end = endDate ? new Date(endDate) : new Date()
-      return itemDate >= start && itemDate <= end
-    })
-  }
+      return statementItems.filter(item => {
+        const itemDate = new Date(item.date)
+        const start = startDate ? new Date(startDate) : new Date(0)
+        const end = endDate ? new Date(endDate) : new Date()
+        return itemDate >= start && itemDate <= end
+      })
+    }
+  }, [statementItems, startDate, endDate])
 
-  const downloadPDF = () => {
+  const downloadPDF = useCallback(() => {
     if (!student) return
 
     const filteredItems = filterStatementItems()
@@ -203,7 +205,7 @@ export default function StudentInvoice({ params }: { params: { id: string } }) {
     })
 
     doc.save(`student_statement_${student.firstName}_${student.surname}.pdf`)
-  }
+  }, [student, filterStatementItems, endDate])
 
   if (isLoading) {
     return (
