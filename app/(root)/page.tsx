@@ -14,6 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Skeleton } from '@/components/ui/skeleton'
 import PettyCash from "@/components/ui/pettyCash"
 import { IEvent } from "@/lib/utils"
+import { currentUser } from '@clerk/nextjs/server'
 
 interface Transaction {
   $id: string
@@ -70,6 +71,7 @@ export default function Dashboard() {
   const [sortPeriod, setSortPeriod] = useState("all")
 
   const fetchData = useCallback(async () => {
+
     try {
       setIsLoading(true)
       const [transactionsRes, studentsRes, teachersRes, classesRes, pettyCashRes, groceryRes, eventsRes] = await Promise.all([

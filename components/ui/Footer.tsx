@@ -1,4 +1,5 @@
 import { logoutAccount } from '@/lib/actions/user.actions'
+import { SignOutButton } from '@clerk/nextjs'
 import { LogOut } from 'lucide-react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
@@ -30,7 +31,7 @@ const Footer = () => {
            </h1>
         </div> */}
         <div className=' bg-white flex justify-center w-full items-center' onClick={handleLogOut}>
-            <LogOut className=' hover:text-red-400 text-gray-600' />
+            <SignOutButton/>
         </div>
     </footer>
   )

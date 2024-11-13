@@ -11,8 +11,8 @@ import * as LucideIcons from 'lucide-react';
 import Footer from './ui/Footer'
 
 
-// const MainNav = () => {
-  const MainNav = ({user}: {user: SiderbarProps}) => {
+const MainNav = () => {
+  // const MainNav = ({user}: {user: SiderbarProps}) => {
     const pathname = usePathname();
     return (
         <section className=''>
