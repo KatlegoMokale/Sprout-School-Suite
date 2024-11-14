@@ -46,6 +46,7 @@ import {
   TrendingUp,
   CreditCard,
   Search,
+  ChevronLeft,
 } from "lucide-react";
 import { IClass, IStudent, ITransactions, paymentFormSchema, IStudentFeesSchema } from "@/lib/utils";
 import { newPayment } from "@/lib/actions/user.actions";
@@ -54,22 +55,23 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { updateStudentAmountPaid, updateStudentRegBalance } from "@/lib/actions/user.actions";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Dropdown } from "react-day-picker";
+import Link from "next/link";
 
 const newPaymentFormSchema = paymentFormSchema();
 
-const handleInvoiceClick = (e: React.MouseEvent, studentId: string) => {
-  e.preventDefault();
-  try {
-    window.open(`/school-fees/${studentId}`, '_blank');
-  } catch (error) {
-    console.error("Error opening invoice:", error);
-    toast({
-      title: "Error",
-      description: "Failed to open invoice. Please try again.",
-      variant: "destructive",
-    });
-  }
-};
+// const handleInvoiceClick = (e: React.MouseEvent, studentId: string) => {
+//   e.preventDefault();
+//   try {
+//     window.open(`/school-fees/${studentId}`, '_blank');
+//   } catch (error) {
+//     console.error("Error opening invoice:", error);
+//     toast({
+//       title: "Error",
+//       description: "Failed to open invoice. Please try again.",
+//       variant: "destructive",
+//     });
+//   }
+// };
 
 export default function SchoolFeeManagement() {
   const [isLoadingForm, setIsLoadingForm] = useState(false);
@@ -274,6 +276,7 @@ export default function SchoolFeeManagement() {
 
     return (
       <div className="space-y-6 bg-white p-6 rounded-lg shadow-md">
+    
         <h3 className="text-2xl font-bold border-b pb-2">Account Statement</h3>
         
         <div className="grid grid-cols-2 gap-4">
@@ -481,9 +484,9 @@ export default function SchoolFeeManagement() {
                             </span>
                           </TableCell>
                           <TableCell>
-                              <a href="#" onClick={(e) => handleInvoiceClick(e, student.$id)} className="w-full">
+                              <Link href={`/school-fees/${student.$id}`} className="w-full">
                                 View Account
-                              </a>
+                              </Link>
                           </TableCell>
                         </TableRow>
                       );

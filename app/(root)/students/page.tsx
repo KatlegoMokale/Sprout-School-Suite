@@ -39,24 +39,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import StudentRegistration from "@/components/ui/StudentRegistration"
+import { IClass, IStudent } from "@/lib/utils"
 
-interface IStudent {
-  $id: string
-  firstName: string
-  secondName: string
-  surname: string
-  dateOfBirth: string
-  age: number
-  studentClass: string
-  p1_firstName: string
-  p1_surname: string
-  p1_phoneNumber: string
-}
-
-interface IClass {
-  $id: string
-  name: string
-}
 
 export default function StudentManagement() {
   const [students, setStudents] = useState<IStudent[]>([])
