@@ -31,7 +31,9 @@ const Footer = () => {
            </h1>
         </div> */}
         <div className=' bg-white flex justify-center w-full items-center' onClick={handleLogOut}>
-            <SignOutButton/>
+            <SignOutButton>
+                <LogOut className='h-6 w-6 text-gray-700' />
+            </SignOutButton>
         </div>
     </footer>
   )

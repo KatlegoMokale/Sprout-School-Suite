@@ -302,7 +302,7 @@ export default function SchoolFeeManagement() {
           <p><strong>Paid Amount:</strong> R {studentFee.paidAmount.toFixed(2)}</p>
           <p><strong>Current Balance:</strong> R {studentFee.balance.toFixed(2)}</p>
           <p><strong>Payment Frequency:</strong> {studentFee.paymentFrequency}</p>
-          <p><strong>Next Payment Date:</strong> {new Date(studentFee.paymentDate).toLocaleDateString()}</p>
+          <p><strong>Payment Date:</strong> {studentFee.paymentDate}</p>
         </div>
 
         <div>
@@ -445,7 +445,7 @@ export default function SchoolFeeManagement() {
                       <TableHead>Class</TableHead>
                       <TableHead>Balance</TableHead>
                       <TableHead>Last Paid</TableHead>
-                      <TableHead>Next Payment</TableHead>
+                      <TableHead>Payment Date</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
@@ -468,9 +468,7 @@ export default function SchoolFeeManagement() {
                               : "N/A"}
                           </TableCell>
                           <TableCell>
-                            {studentFee
-                              ? new Date(studentFee.paymentDate).toLocaleDateString()
-                              : "N/A"}
+                            {studentFee?.paymentDate || ""}
                           </TableCell>
                           <TableCell>
                             <span

@@ -31,12 +31,12 @@ export const sidebarLinks = [
       label: "Manage School",
       icon: Clipboard
     },
-    {
-      imgURL: "/icons/transaction.svg",
-      route: "/users",
-      label: "Users",
-      icon: User
-    },
+    // {
+    //   imgURL: "/icons/transaction.svg",
+    //   route: "/users",
+    //   label: "Users",
+    //   icon: User
+    // },
   ];
 
   declare type Student = {

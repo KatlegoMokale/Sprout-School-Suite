@@ -7,6 +7,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSepar
 import Image from 'next/image'
 import { Input } from '@/components/ui/input'
 import { getLoggedInUser } from '@/lib/actions/user.actions'
+import { UserButton } from '@clerk/nextjs'
 
 const HeaderNav = async () => {
   const loggedIn = await getLoggedInUser()
@@ -71,25 +72,7 @@ const HeaderNav = async () => {
                 <Search className='absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground' />
                 <Input type='search' placeholder='Search...' className='w-full rounded-lg pl-8 md:w-[240px] lg:w-[336px]' />
               </div>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="icon" className=' rounded-full'>
-                    {/* <CircleUser/> */}
-                    <div className='text-base justify-center items-center flex'>
-                    {getInitials(loggedIn?.name || '')}
-                    </div>
-                    {/* <Image src="/placeholder-user.jpg" width={36} height={36} alt='Avatar' className='rounded-full' /> */}
-                    </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align='end' className='bg-white w-36 rounded-md p-1 shadow-md'>
-                      <DropdownMenuLabel className='hover:bg-slate-200 hover:cursor-pointer p-2 rounded-md'>My Account</DropdownMenuLabel>
-                      <DropdownMenuSeparator/>
-                      <DropdownMenuLabel className='hover:bg-slate-200 hover:cursor-pointer px-2 py-1 rounded-md'>Settings</DropdownMenuLabel>
-                      <DropdownMenuLabel className='hover:bg-slate-200 hover:cursor-pointer px-2 py-1 rounded-md'>Support</DropdownMenuLabel>
-                      <DropdownMenuSeparator/>
-                      <DropdownMenuLabel className='hover:bg-slate-200 hover:cursor-pointer px-2 py-1 rounded-md'>Log Out</DropdownMenuLabel>
-                    </DropdownMenuContent>
-              </DropdownMenu>
+              <UserButton showName/>
             </header>
       )
     }

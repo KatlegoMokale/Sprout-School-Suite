@@ -64,7 +64,7 @@ const MainNav = () => {
               </Tooltip>
               </TooltipProvider>  
               </nav>
-              <Footer/>
+              {/* <Footer/> */}
     
           </aside>
         </section>
