@@ -1,7 +1,11 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from 'next/server';
 
-const isPublicRoute = createRouteMatcher(['/sign-in(.*)', '/sign-up(.*)']);
+const isPublicRoute = createRouteMatcher([
+  '/sign-in(.*)', 
+  '/sign-up(.*)',
+  '/api/(.*)'  // Add this to allow API routes
+]);
 
 export default clerkMiddleware(async (auth, request) => {
   // Add CORS headers
@@ -11,6 +15,12 @@ export default clerkMiddleware(async (auth, request) => {
   response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
+  // Check if it's an API route
+  if (request.url.includes('/api/')) {
+    return response; // Allow API requests to pass through
+  }
+
+  // Protect non-public routes that aren't API routes
   if (!isPublicRoute(request)) {
     await auth.protect();
   }

@@ -136,7 +136,7 @@ export const newStudentFormSchema = () => {
     p2_relationship: z.string().optional(),
     p2_firstName: z.string().optional(),
     p2_surname: z.string().optional(),
-    p2_email: z.string().email().optional(),
+    p2_email: z.string().optional(),
     p2_phoneNumber: z.string().optional(),
     p2_idNumber: z.string().optional(),
     p2_gender: z.string().optional(),
@@ -150,7 +150,7 @@ export const newStudentFormSchema = () => {
 
 export const newStuffFormSchema = () => z.object({
   //new student form
-
+  
   firstName: z.string().min(3),
   secondName: z.string().optional(),
   surname: z.string().min(3),

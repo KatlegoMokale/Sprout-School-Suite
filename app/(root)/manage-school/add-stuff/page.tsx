@@ -1,64 +1,37 @@
-"use client";
-import { Form } from "@/components/ui/form";
-import React, { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import { set, z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import CustomInput from "@/components/ui/CustomInput";
-import {
-  newStudentFormSchema,
-  newStuffFormSchema,
-  parseStringify,
-} from "@/lib/utils";
-import { DialogContent, DialogDescription } from "@/components/ui/dialog";
-import Link from "next/link";
-import { Check, ChevronLeft } from "lucide-react";
-import { autocomplete } from "@/lib/google";
-import { PlaceAutocompleteResult } from "@googlemaps/google-maps-services-js";
-import {
-  Command,
-  CommandInput,
-  CommandGroup,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+"use client"
 
-import dynamic from "next/dynamic";
-import { error } from "console";
-import { useRouter } from "next/navigation";
-import { newStuff } from "@/lib/actions/user.actions";
+import React, { useEffect, useState } from "react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import * as z from "zod"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { ChevronLeft, Loader2 } from 'lucide-react'
+import { Button } from "@/components/ui/button"
+import { Form } from "@/components/ui/form"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import CustomInput from "@/components/ui/CustomInput"
+import { Select1, SelectContent, SelectItem, SelectTrigger, SelectValue1 } from "@/components/ui/select"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
+import { toast } from "@/hooks/use-toast"
+import { newStuffFormSchema } from "@/lib/utils"
+import { newStuff } from "@/lib/actions/user.actions"
+import { autocomplete } from "@/lib/google"
+import { PlaceAutocompleteResult } from "@googlemaps/google-maps-services-js"
 
-const formSchema = newStuffFormSchema();
+const formSchema = newStuffFormSchema()
 
-const AddStuff = () => {
-  const [formData, setFormData] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
-  const [predictions, setPredictions] = useState<PlaceAutocompleteResult[]>([]);
-  const [input, setInput] = useState("");
-  const [selectedAddress, setSelectedAddress] =
-    useState<PlaceAutocompleteResult | null>(null);
-  const [onSelectedAddress, setOnSelectedAddress] = useState(false);
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+export default function AddStuff() {
+  const [formData, setFormData] = useState({})
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [predictions, setPredictions] = useState<PlaceAutocompleteResult[]>([])
+  const [input, setInput] = useState("")
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false)
+  const router = useRouter()
 
-
-  const stuffFormSchema = newStuffFormSchema();
-  const form = useForm<z.infer<typeof stuffFormSchema>>({
-    resolver: zodResolver(stuffFormSchema),
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
       firstName: "",
       secondName: "",
@@ -71,292 +44,195 @@ const AddStuff = () => {
       position: "",
       startDate: "",
     },
-  });
+  })
 
   useEffect(() => {
     const fetchPredictions = async () => {
-      const predictions = await autocomplete(input);
-      setPredictions(predictions ?? []);
-      console.log("Predictions:", predictions);
-    };
-    fetchPredictions();
-  }, [input]);
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
-      </div>
-    );
-  }
+      if (input.length > 2) {
+        const predictions = await autocomplete(input)
+        setPredictions(predictions ?? [])
+      }
+    }
+    fetchPredictions()
+  }, [input])
 
   const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
-    setSelectedAddress(prediction);
-    setInput(prediction.description); // Update input for display
+    setInput(prediction.description)
+    const addressComponents = prediction.terms
+    const address1 = addressComponents[0].value + " " + addressComponents[1].value
+    const city = addressComponents[2].value
+    form.setValue("address1", address1 + ", " + city)
+  }
 
-    // Extract address components from prediction
-    console.log(prediction.terms);
-    console.log(
-      "Address:" +
-        prediction.terms[0].value +
-        " " +
-        prediction.terms[1].value +
-        " " +
-        prediction.terms[2].value +
-        " " +
-        prediction.terms[3].value
-    );
-    const addressComponents = prediction.terms;
-    const address1 =
-      addressComponents[0].value + " " + addressComponents[1].value;
-    const city = addressComponents[2].value;
-
-    console.log("Address Components:", address1, city);
-
-    // Update form fields
-    form.setValue("address1", address1 + ", " + city);
-
-  };
-
-  {
-    predictions.length > 0 && (
-      <ul>
-        {predictions.map((prediction) => (
-          <li
-            key={prediction.place_id}
-            onClick={() => handlePredictionSelect(prediction)}
-          >
-            {prediction.description}
-          </li>
-        ))}
-      </ul>
-    );
+  const onSubmit = async (data: z.infer<typeof formSchema>) => {
+    setFormData(data)
+    setIsConfirmOpen(true)
   }
 
   const handleConfirmAddStuff = async () => {
-    console.log("Add Stuff onSubmit beginning...");
-    setIsLoading(true);
+    setIsLoading(true)
     try {
-      const addNewStuff = await newStuff(formData as NewStuffParams);
-      console.log("Add new Stuff " + addNewStuff);
-      router.push("/manage-school");
+      const stuffData = formData as z.infer<typeof formSchema>;
+      const newStuffData: NewStuffParams = {
+        ...stuffData,
+        secondName: stuffData.secondName || '' // Provide a default empty string if secondName is undefined
+      };
+      await newStuff(newStuffData)
+      toast({
+        title: "Success",
+        description: "New staff member has been added successfully.",
+      })
+      router.push("/manage-school")
     } catch (error) {
-      console.error("Error submitting form:", error);
-      setError("An error occurred while submitting the form.");
+      console.error("Error submitting form:", error)
+      setError("An error occurred while submitting the form. Please try again.")
+      toast({
+        title: "Error",
+        description: "Failed to add new staff member. Please try again.",
+        variant: "destructive",
+      })
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
-
-  const onSubmit = async (data: z.infer<typeof stuffFormSchema>) => {
-    setIsConfirmOpen(true);
-
-    setFormData(data);
-  };
+  }
 
   return (
-    <div className="flex flex-col gap-4 bg-orange-50">
+    <div className="container mx-auto py-10">
+      <Link href="/manage-school" className="flex items-center text-sm text-muted-foreground hover:text-primary transition-colors mb-6">
+        <ChevronLeft className="mr-2 h-4 w-4" />
+        Back to Manage School
+      </Link>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold">Add New Staff Member</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <CustomInput
+                  control={form.control}
+                  name="firstName"
+                  label="First Name"
+                  placeholder="Enter first name"
+                />
+                <CustomInput
+                  control={form.control}
+                  name="secondName"
+                  label="Second Name"
+                  placeholder="Enter second name"
+                />
+                <CustomInput
+                  control={form.control}
+                  name="surname"
+                  label="Surname"
+                  placeholder="Enter surname"
+                />
+                <CustomInput
+                  control={form.control}
+                  name="dateOfBirth"
+                  label="Date of Birth"
+                  placeholder="Enter date of birth"
+                  type="date"
+                />
+                <CustomInput
+                  control={form.control}
+                  name="idNumber"
+                  label="ID Number"
+                  placeholder="Enter ID number"
+                />
+                <CustomInput
+                  control={form.control}
+                  name="gender"
+                  label="Gender"
+                  placeholder="Select gender"
+                  select={true}
+                  options={[
+                    { value: "Male", label: "Male" },
+                    { value: "Female", label: "Female" },
+                  ]}
+                />
+                <CustomInput
+                  control={form.control}
+                  name="contact"
+                  label="Phone Number"
+                  placeholder="Enter phone number"
+                />
+                <CustomInput
+                  control={form.control}
+                  name="address1"
+                  label="Address"
+                  placeholder="Search for address..."
+                  onChange={(e) => setInput(e.target.value)}
+                />
+                {predictions.length > 0 && (
+                  <div className="col-span-2">
+                    <Select1 onValueChange={(value) => {
+                      const selectedPrediction = predictions.find(p => p.description === value)
+                      if (selectedPrediction) {
+                        handlePredictionSelect(selectedPrediction)
+                      }
+                    }}>
+                      <SelectTrigger>
+                        <SelectValue1 placeholder="Select an address" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {predictions.map((prediction) => (
+                          <SelectItem key={prediction.place_id} value={prediction.description}>
+                            {prediction.description}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select1>
+                  </div>
+                )}
+                <CustomInput
+                  control={form.control}
+                  name="position"
+                  label="Position"
+                  placeholder="Enter position"
+                />
+                <CustomInput
+                  control={form.control}
+                  name="startDate"
+                  label="Start Date"
+                  placeholder="Enter start date"
+                  type="date"
+                />
+              </div>
+              <div className="flex justify-end">
+                <Button type="submit" disabled={isLoading}>
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Adding Staff...
+                    </>
+                  ) : (
+                    "Add Staff Member"
+                  )}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
+
       <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
-        <AlertDialogTrigger asChild>
-          {/* <Button type="submit" disabled={isLoading} className="form-btn">
-          {isLoading ? "Updating..." : "Update"}
-        </Button> */}
-        </AlertDialogTrigger>
         <AlertDialogContent>
-            <AlertDialogTitle>Confirm Adding New Stuff</AlertDialogTitle>
-          <AlertDialogDescription>
-            Are you sure you want to update this stuff member information?
-          </AlertDialogDescription>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Adding New Staff Member</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to add this staff member?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel
-              className=" hover:bg-slate-200"
-              onClick={() => setIsConfirmOpen(false)}
-            >
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-orange-200 hover:bg-orange-300 "
-              onClick={handleConfirmAddStuff}
-            >
-              Confirm
-            </AlertDialogAction>
+            <AlertDialogCancel onClick={() => setIsConfirmOpen(false)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmAddStuff}>Confirm</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-      <Form {...form}>
-        <div className="">
-          <form onSubmit={form.handleSubmit(onSubmit)}>
-            <div className=" gap-6  rounded-lg p-5">
-              <div>
-                <Link href="/manage-school" className="flex items-center gap-1">
-                  <ChevronLeft className="h-4 w-4" />
-                  <p>Back</p>
-                </Link>
-              </div>
-              <div className="p-4 bg-orange-100 rounded-lg container ">
-                <h1 className="py-5">Create new stuff member</h1>
 
-                <div className="grid grid-cols-3 gap-4">
-                  <div className=" col-span-2 grid grid-cols-2 gap-4">
-                    <div className=" col-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="firstName"
-                        placeholder="Enter name"
-                        control={form.control}
-                        label={"First Name"}
-                      />
-                    </div>
-
-                    <div className=" col-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="secondName"
-                        placeholder="Enter Second Name"
-                        control={form.control}
-                        label={"Second Name"}
-                      />
-                    </div>
-
-                    <div className=" col-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="surname"
-                        placeholder="Enter Surname"
-                        control={form.control}
-                        label={"Surname"}
-                      />
-                    </div>
-
-                    <div className=" col-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="dateOfBirth"
-                        placeholder="Enter Date of Birth"
-                        control={form.control}
-                        label={"Date of Birth"}
-                        type="date"
-                      />
-                    </div>
-
-                    <div className=" col-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="idNumber"
-                        placeholder="Enter ID Number"
-                        control={form.control}
-                        label={"ID Number"}
-                      />
-                    </div>
-
-                    <div className=" col-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="gender"
-                        placeholder="Enter gender"
-                        control={form.control}
-                        label={"Gender"}
-                        select={true}
-                        options={[
-                          { label: "Male", value: "Male" },
-                          { label: "Female", value: "Female" },
-                        ]}
-                      />
-                    </div>
-
-                    <div className=" col-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="contact"
-                        placeholder="Enter Phone Number"
-                        control={form.control}
-                        label={"Phone Number"}
-                      />
-                    </div>
-
-                    <div className="col-span-2">
-                      <Command className="">
-                        <CommandInput
-                          placeholder="Search for address..."
-                          className=""
-                          value={input}
-                          onValueChange={(value) => {
-                            setInput(value);
-                            setOnSelectedAddress(false);
-                          }}
-                        />
-                        <CommandList>
-                          {/* <CommandEmpty>No cities found.</CommandEmpty> */}
-                          <CommandGroup>
-                            {predictions.map((prediction) => (
-                              <CommandItem
-                                key={prediction.place_id}
-                                onSelect={(currentValue) => {
-                                  // form.setValue("address1", currentValue);
-                                  // console.log(currentValue);
-                                  // console.log(prediction);
-                                  handlePredictionSelect(prediction);
-                                  setOnSelectedAddress(true);
-                                }}
-                              >
-                                {!onSelectedAddress
-                                  ? prediction.description
-                                  : ""}
-                                {/* {prediction.description} */}
-                                {/* <Check
-                                className={cn(
-                                  "mr-2 h-4 w-4",
-                                  city.place_id === form.getValues("city")
-                                    ? "opacity-100"
-                                    : "opacity-0"
-                                )}
-                              /> */}
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </div>
-                    <div className="col-span-2">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="address1"
-                        placeholder="Enter Address"
-                        control={form.control}
-                        label={"Address"}
-                      />
-                    </div>
-
-                    <div className=" col-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="position"
-                        placeholder="Enter Position"
-                        control={form.control}
-                        label={"Position"}
-                      />
-                    </div>
-
-                    <div className=" col-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="startDate"
-                        placeholder="Enter start date"
-                        control={form.control}
-                        label={"Start Date"}
-                        type="date"
-                      />
-                    </div>
-                  </div>
-                  <div className="profile p-10 bg-gray-300 container items-center justify-center text-gray-600">
-                            <p>
-                              Image upload comming soon...
-                            </p>
-                  </div>
-                </div>
-                <div className="flex justify-center container p-5">
-                <Button type="submit" disabled={isLoading} className="form-btn w-60">
-                  {isLoading ? "Adding..." : "Add Stuff"}
-                </Button>
-              </div>
-              </div>
-            </div>
-            {error && <div className="text-red-500">{error}</div>}
-          </form>
-        </div>
-      </Form>
+      {error && <div className="mt-4 text-red-500">{error}</div>}
     </div>
-  );
-};
-
-export default AddStuff;
+  )
+}

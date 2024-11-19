@@ -6,94 +6,94 @@ import { ID } from "node-appwrite";
 import { parseStringify } from "../utils";
 
 
-export const signIn = async ({email, password}: signInProps) => {
-  try {
-      const cookieStore = await cookies();
-      const { account } = await createAdminClient();
-      const response = await account.createEmailPasswordSession(email, password);
-      const maxAgeSeconds = 3600;
+// export const signIn = async ({email, password}: signInProps) => {
+//   try {
+//       const cookieStore = await cookies();
+//       const { account } = await createAdminClient();
+//       const response = await account.createEmailPasswordSession(email, password);
+//       const maxAgeSeconds = 3600;
       
-      await Promise.resolve(cookieStore.set("appwrite-session", response.secret, { 
-        path: "/",
-        httpOnly: true,
-        sameSite: "strict",
-        secure: true,
-        maxAge: maxAgeSeconds,
-      }));
+//       await Promise.resolve(cookieStore.set("appwrite-session", response.secret, { 
+//         path: "/",
+//         httpOnly: true,
+//         sameSite: "strict",
+//         secure: true,
+//         maxAge: maxAgeSeconds,
+//       }));
 
-      const user = await account.get();
-      return parseStringify(user);
-  } catch (error) {
-    console.error('Error during sign-in:', error);
-    return { success: false, message: error };
-  }
-}
+//       const user = await account.get();
+//       return parseStringify(user);
+//   } catch (error) {
+//     console.error('Error during sign-in:', error);
+//     return { success: false, message: error };
+//   }
+// }
 
 
 
-export const signUp = async (userData: SignUpParams) => {
-    const {email, password, firstName, surname} = userData;
-    try{
-        const { account } = await createAdminClient();
+// export const signUp = async (userData: SignUpParams) => {
+//     const {email, password, firstName, surname} = userData;
+//     try{
+//         const { account } = await createAdminClient();
 
-        const newUserAccount = await account.create(
-            ID.unique(), 
-            email, 
-            password, 
-            `${firstName} ${surname}`
-        );
-        const session = await account.createEmailPasswordSession(email, password);
+//         const newUserAccount = await account.create(
+//             ID.unique(), 
+//             email, 
+//             password, 
+//             `${firstName} ${surname}`
+//         );
+//         const session = await account.createEmailPasswordSession(email, password);
       
-        (await cookies()).set("appwrite-session", session.secret, {
-          path: "/",
-          httpOnly: true,
-          sameSite: "strict",
-          secure: true,
-        });
+//         (await cookies()).set("appwrite-session", session.secret, {
+//           path: "/",
+//           httpOnly: true,
+//           sameSite: "strict",
+//           secure: true,
+//         });
       
-        console.log("Session created:", session);
-        return parseStringify(newUserAccount)
-    } catch (error){
-        console.error('Error', error);
-    }
-}
+//         console.log("Session created:", session);
+//         return parseStringify(newUserAccount)
+//     } catch (error){
+//         console.error('Error', error);
+//     }
+// }
 
-export async function getLoggedInUser() {
-  try {
-    const cookieStore = await cookies();
-    const sessionCookie = await Promise.resolve(cookieStore.get('appwrite-session'));
+// export async function getLoggedInUser() {
+//   try {
+//     const cookieStore = await cookies();
+//     const sessionCookie = await Promise.resolve(cookieStore.get('appwrite-session'));
     
-    if (!sessionCookie) {
-      return null;
-    }
+//     if (!sessionCookie) {
+//       return null;
+//     }
 
-    const client = await createSessionClient();
-    if (!client) {
-      return null;
-    }
+//     const client = await createSessionClient();
+//     if (!client) {
+//       return null;
+//     }
 
-    const user = await client.account.get();
-    return parseStringify(user);
-  } catch (error) {
-    console.log("No active session found");
-    return null;
-  }
-}  
-export const logoutAccount = async () => {
-    try {
-        const client = await createSessionClient();
-        if (!client) {
-            throw new Error('Failed to create session client');
-        }
+//     const user = await client.account.get();
+//     return parseStringify(user);
+//   } catch (error) {
+//     console.log("No active session found");
+//     return null;
+//   }
+// }  
+// export const logoutAccount = async () => {
+//     try {
+//         const client = await createSessionClient();
+//         if (!client) {
+//             throw new Error('Failed to create session client');
+//         }
 
-        (await cookies()).delete('appwrite-session');
+//         (await cookies()).delete('appwrite-session');
 
-        await client.account.deleteSession('current');
-    } catch (error) {
-        console.error('Logout error:', error);
-        return null;
-    }
-}
+//         await client.account.deleteSession('current');
+//     } catch (error) {
+//         console.error('Logout error:', error);
+//         return null;
+//     }
+// }
 
 
 export const newClass = async (classData: NewClassParms) => {
@@ -106,6 +106,7 @@ export const newClass = async (classData: NewClassParms) => {
           },
           body: JSON.stringify(classData),
       });
+      console.log("Response", response);
       if (response.ok) {
           console.log("Class added successfully!");
         } else {
@@ -113,7 +114,7 @@ export const newClass = async (classData: NewClassParms) => {
           throw new Error("Class submission failed.");
         }
   } catch (error) {
-     
+     console.log(error);
   }
 }
 
@@ -162,26 +163,21 @@ export async function updateStudentBalance(studentId: string, amount: number) {
 }
 
 export async function updateStudentAmountPaid(id: string, paidAmount: number) {
-  try {
-      const response = await fetch(`${getBaseUrl()}/api/student-school-fees/${id}`, {
-          method: 'PATCH',
-          headers: {
-              'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ paidAmount }),
-      });
+  const response = await fetch(`${getBaseUrl()}/api/student-school-fees/${id}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ paidAmount }),
+  });
 
-      if (!response.ok) {
-          const errorData = await response.json();
-          console.error("Server response:", errorData);
-          throw new Error(`Failed to update student amount paid: ${errorData.error || response.statusText}`);
-      }
-
-      return await response.json();
-  } catch (error) {
-      console.error("Error in updateStudentAmountPaid:", error);
-      throw error;
+  const data = await response.json();
+  
+  if (!response.ok) {
+    throw new Error(data.error || 'Failed to update student amount paid');
   }
+
+  return data;
 }
 
 export async function updateStudentRegBalance(id: string, balance: number) {

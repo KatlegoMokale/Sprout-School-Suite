@@ -10,11 +10,9 @@ import { Button } from "@/components/ui/button"
 import { Select1, SelectContent, SelectItem, SelectTrigger, SelectValue1 } from "@/components/ui/select"
 import { PiggyBank, ShoppingCart, DollarSign, TrendingUp, TrendingDown, CreditCard, GraduationCap, Users, BookOpen, CalendarIcon } from "lucide-react"
 import Grocery from "@/components/ui/grocery"
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Skeleton } from '@/components/ui/skeleton'
 import PettyCash from "@/components/ui/pettyCash"
 import { IEvent } from "@/lib/utils"
-import { currentUser } from '@clerk/nextjs/server'
 
 interface Transaction {
   $id: string

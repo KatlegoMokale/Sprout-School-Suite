@@ -1,7 +1,5 @@
-import CreateUser from '@/components/ui/createUser'
 import Event from '@/components/ui/event'
 import Grocery from '@/components/ui/grocery'
-import AddNewUser from '@/components/ui/newUser'
 import PettyCash from '@/components/ui/pettyCash'
 import SchoolFeesSetup from '@/components/ui/SchoolFeesSetup'
 import React from 'react'
@@ -14,7 +12,7 @@ import ReactPDF, { PDFViewer } from '@react-pdf/renderer'
 
 const Users = () => {
   return (
-    <div><AddNewUser/></div>
+    <div>Users</div>
     // <SchoolFeesSetup/>
     // <StaffSalaryManagement/>
     // <SchoolFeesSetup/>

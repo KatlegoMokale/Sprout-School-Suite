@@ -6,11 +6,11 @@ import Link from 'next/link'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@radix-ui/react-dropdown-menu'
 import Image from 'next/image'
 import { Input } from '@/components/ui/input'
-import { getLoggedInUser } from '@/lib/actions/user.actions'
+// import { getLoggedInUser } from '@/lib/actions/user.actions'
 import { UserButton } from '@clerk/nextjs'
 
 const HeaderNav = async () => {
-  const loggedIn = await getLoggedInUser()
+  // const loggedIn = await getLoggedInUser()
 
   const getInitials = (name: string) => {
     if (!name) return '';

@@ -1,20 +1,12 @@
-import { logoutAccount } from '@/lib/actions/user.actions'
 import { SignOutButton } from '@clerk/nextjs'
 import { LogOut } from 'lucide-react'
-import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import React, { use } from 'react'
 
 const Footer = () => {
     // const Footer = ({user, type ='desktop'}: FooterProps) => {
     const router = useRouter();
-    const handleLogOut = async () => {
-       const loggedOut = await logoutAccount();
 
-       if(loggedOut){ router.push('/sign-in')
-
-       }
-    }
   return (
     <footer className='footer justify-center items-center'>
         {/* <div className={type==='mobile' ? 'footer_name-mobile' : 'footer_name'}>
@@ -30,7 +22,7 @@ const Footer = () => {
                 {user?.email}
            </h1>
         </div> */}
-        <div className=' bg-white flex justify-center w-full items-center' onClick={handleLogOut}>
+        <div className=' bg-white flex justify-center w-full items-center'>
             <SignOutButton>
                 <LogOut className='h-6 w-6 text-gray-700' />
             </SignOutButton>

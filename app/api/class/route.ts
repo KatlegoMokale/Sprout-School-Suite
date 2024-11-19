@@ -49,12 +49,14 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+
+    console.log("//////////////////////1")
     try {
         const {name, age, teacherId, teacherName} = await request.json();
         const data = {name, age, teacherId, teacherName}
         const response = await createClass(data);
-        return NextResponse.json({message: "Stuff created successfully"}, {status: 201})
+        return NextResponse.json({message: "Class created successfully"}, {status: 201})
     } catch (error) {
-        return NextResponse.json({message: "Failed to create stuff"}, {status: 500})
+        return NextResponse.json({message: "Failed to create class"}, {status: 500})
     }
 }

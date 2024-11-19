@@ -95,6 +95,8 @@ const Classes = () => {
   const onSubmit = async (data: z.infer<typeof newClassFormSchema>) => {
     try {
       setIsLoading(true);
+
+      console.log("Form data ready for Appwrite:", data);
       const adNewClass = await newClass(data);
       console.log("Add new Class " + adNewClass);
     } catch (error) {
