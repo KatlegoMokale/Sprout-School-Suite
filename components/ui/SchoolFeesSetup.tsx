@@ -11,6 +11,7 @@ import { toast } from "@/hooks/use-toast"
 import CustomInput from "@/components/ui/CustomInput"
 import { schoolFeesSchema } from "@/lib/utils"
 import { newSchoolFees } from "@/lib/actions/user.actions"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 
 export default function SchoolFeesSetup() {
@@ -80,6 +81,7 @@ export default function SchoolFeesSetup() {
         <CardTitle>Set Up School Fees</CardTitle>
       </CardHeader>
       <CardContent>
+      <ScrollArea className="h-[calc(100vh-12rem)] pr-4">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <CustomInput
@@ -155,6 +157,7 @@ export default function SchoolFeesSetup() {
             </Button>
           </form>
         </Form>
+      </ScrollArea>
       </CardContent>
     </Card>
   )

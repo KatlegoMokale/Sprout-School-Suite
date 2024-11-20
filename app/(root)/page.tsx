@@ -205,7 +205,8 @@ export default function Dashboard() {
       </div>
 
       {/* Financial Summary */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
+      {/* <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">       */}
+        <div className="hidden gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
         {summaryCards.map((card, index) => (
           <motion.div
             key={card.title}

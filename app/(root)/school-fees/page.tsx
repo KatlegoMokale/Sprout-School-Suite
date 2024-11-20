@@ -47,6 +47,8 @@ import {
   CreditCard,
   Search,
   ChevronLeft,
+  UserRoundPen,
+  Landmark,
 } from "lucide-react";
 import { IClass, IStudent, ITransactions, paymentFormSchema, IStudentFeesSchema } from "@/lib/utils";
 import { newPayment } from "@/lib/actions/user.actions";
@@ -56,6 +58,7 @@ import { updateStudentAmountPaid, updateStudentRegBalance } from "@/lib/actions/
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Dropdown } from "react-day-picker";
 import Link from "next/link";
+import SchoolFeesSetup from "@/components/ui/SchoolFeesSetup";
 
 const newPaymentFormSchema = paymentFormSchema();
 
@@ -343,36 +346,52 @@ export default function SchoolFeeManagement() {
 
   return (
     <div className="px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">School Fee Management</h1>
+      <div className="hidden">
+        <h1 className="text-3xl font-bold mb-8">School Fee Management</h1>
 
-      <div className="grid gap-6 md:grid-cols-3 mb-8">
-        {summaryCards.map((card, index) => (
-          <motion.div
-            key={card.title}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: index * 0.1 }}
-          >
-            <Card className={`${card.color} text-white`}>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-lg font-medium">
-                  {card.title}
-                </CardTitle>
-                <card.icon className="h-5 w-5 opacity-75" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  R {card.amount.toFixed(2)}
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        ))}
+        <div className="grid gap-6 md:grid-cols-3 mb-8">
+          {summaryCards.map((card, index) => (
+            <motion.div
+              key={card.title}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.1 }}
+            >
+              <Card className={`${card.color} text-white`}>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-lg font-medium">
+                    {card.title}
+                  </CardTitle>
+                  <card.icon className="h-5 w-5 opacity-75" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    R {card.amount.toFixed(2)}
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </div>
       </div>
 
       <Card className="mb-8">
         <CardHeader>
-          <CardTitle>Student Fee Management</CardTitle>
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+            <CardTitle>Student Fee Management</CardTitle>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button size="sm">
+                  <Landmark className="h-4 w-4 mr-2" />
+                  Create New School Fees
+                </Button>
+              </DialogTrigger>
+              <DialogContent className=" container">
+                <DialogTitle hidden>New School Fees</DialogTitle>
+                <SchoolFeesSetup />
+              </DialogContent>
+            </Dialog>
+          </div>
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="list">
@@ -401,11 +420,11 @@ export default function SchoolFeeManagement() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Classes</SelectItem>
-                    {classes.map((cls) => 
+                    {classes.map((cls) => (
                       <SelectItem key={cls.$id} value={cls.$id}>
                         {cls.name}
                       </SelectItem>
-                    )}
+                    ))}
                   </SelectContent>
                 </Select1>
                 <Select1
@@ -427,7 +446,9 @@ export default function SchoolFeeManagement() {
                   <Checkbox
                     id="showUnregistered"
                     checked={showUnregistered}
-                    onCheckedChange={(checked) => setShowUnregistered(checked as boolean)}
+                    onCheckedChange={(checked) =>
+                      setShowUnregistered(checked as boolean)
+                    }
                   />
                   <label
                     htmlFor="showUnregistered"
@@ -452,24 +473,28 @@ export default function SchoolFeeManagement() {
                   </TableHeader>
                   <TableBody>
                     {filteredStudents.map((student) => {
-                      const studentFee = studentFees.find(fee => fee.studentId === student.$id);
+                      const studentFee = studentFees.find(
+                        (fee) => fee.studentId === student.$id
+                      );
                       return (
                         <TableRow key={student.$id}>
                           <TableCell>
                             {student.firstName} {student.surname}
                           </TableCell>
                           <TableCell>
-                            {getClassName(student.studentClass || '')}
+                            {getClassName(student.studentClass || "")}
                           </TableCell>
-                          <TableCell>R {(studentFee?.balance || 0).toFixed(2)}</TableCell>
+                          <TableCell>
+                            R {(studentFee?.balance || 0).toFixed(2)}
+                          </TableCell>
                           <TableCell>
                             {getStudentLastPaid(student.$id)
-                              ? new Date(getStudentLastPaid(student.$id)!).toLocaleDateString()
+                              ? new Date(
+                                  getStudentLastPaid(student.$id)!
+                                ).toLocaleDateString()
                               : "N/A"}
                           </TableCell>
-                          <TableCell>
-                            {studentFee?.paymentDate || ""}
-                          </TableCell>
+                          <TableCell>{studentFee?.paymentDate || ""}</TableCell>
                           <TableCell>
                             <span
                               className={`px-2 py-1 rounded-full text-xs ${
@@ -482,9 +507,12 @@ export default function SchoolFeeManagement() {
                             </span>
                           </TableCell>
                           <TableCell>
-                              <Link href={`/school-fees/${student.$id}`} className="w-full">
-                                View Account
-                              </Link>
+                            <Link
+                              href={`/school-fees/${student.$id}`}
+                              className="w-full"
+                            >
+                              View Account
+                            </Link>
                           </TableCell>
                         </TableRow>
                       );
@@ -495,15 +523,22 @@ export default function SchoolFeeManagement() {
             </TabsContent>
             <TabsContent value="payment">
               <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <form
+                  onSubmit={form.handleSubmit(onSubmit)}
+                  className="space-y-4"
+                >
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       {paymentStep === 1 && (
                         <div>
-                          <h2 className="text-xl font-semibold mb-4">Step 1: Select Year</h2>
+                          <h2 className="text-xl font-semibold mb-4">
+                            Step 1: Select Year
+                          </h2>
                           <Select1
                             value={selectedYear.toString()}
-                            onValueChange={(value) => setSelectedYear(parseInt(value))}
+                            onValueChange={(value) =>
+                              setSelectedYear(parseInt(value))
+                            }
                           >
                             <SelectTrigger className="w-full">
                               <SelectValue1 placeholder="Select Year" />
@@ -516,12 +551,19 @@ export default function SchoolFeeManagement() {
                               ))}
                             </SelectContent>
                           </Select1>
-                          <Button className="mt-4" onClick={() => setPaymentStep(2)}>Next</Button>
+                          <Button
+                            className="mt-4"
+                            onClick={() => setPaymentStep(2)}
+                          >
+                            Next
+                          </Button>
                         </div>
                       )}
                       {paymentStep === 2 && (
                         <div>
-                          <h2 className="text-xl font-semibold mb-4">Step 2: Select Student and Transaction Type</h2>
+                          <h2 className="text-xl font-semibold mb-4">
+                            Step 2: Select Student and Transaction Type
+                          </h2>
                           <FormField
                             control={form.control}
                             name="studentId"
@@ -538,7 +580,10 @@ export default function SchoolFeeManagement() {
                                       "firstName",
                                       student?.firstName || ""
                                     );
-                                    form.setValue("surname", student?.surname || "");
+                                    form.setValue(
+                                      "surname",
+                                      student?.surname || ""
+                                    );
                                   }}
                                   value={field.value}
                                 >
@@ -554,7 +599,9 @@ export default function SchoolFeeManagement() {
                                         value={student.$id}
                                       >
                                         {student.firstName} {student.surname} -{" "}
-                                        {getClassName(student.studentClass || '')}
+                                        {getClassName(
+                                          student.studentClass || ""
+                                        )}
                                       </SelectItem>
                                     ))}
                                   </SelectContent>
@@ -571,18 +618,27 @@ export default function SchoolFeeManagement() {
                             select={true}
                             options={[
                               { label: "School Fees", value: "fees" },
-                              { label: "Registration Fee", value: "registration" },
+                              {
+                                label: "Registration Fee",
+                                value: "registration",
+                              },
                             ]}
                           />
                           <div className="flex justify-between mt-4">
-                            <Button onClick={() => setPaymentStep(1)}>Previous</Button>
-                            <Button onClick={() => setPaymentStep(3)}>Next</Button>
+                            <Button onClick={() => setPaymentStep(1)}>
+                              Previous
+                            </Button>
+                            <Button onClick={() => setPaymentStep(3)}>
+                              Next
+                            </Button>
                           </div>
                         </div>
                       )}
                       {paymentStep === 3 && (
                         <div>
-                          <h2 className="text-xl font-semibold mb-4">Step 3: Payment Details</h2>
+                          <h2 className="text-xl font-semibold mb-4">
+                            Step 3: Payment Details
+                          </h2>
                           <CustomInputPayment
                             name="amount"
                             control={form.control}
@@ -610,16 +666,21 @@ export default function SchoolFeeManagement() {
                             type="date"
                           />
                           <div className="flex justify-between mt-4">
-                            <Button onClick={() => setPaymentStep(2)}>Previous</Button>
+                            <Button onClick={() => setPaymentStep(2)}>
+                              Previous
+                            </Button>
                             <Button type="submit" disabled={isLoadingForm}>
-                              {isLoadingForm ? "Processing..." : "Record Payment"}
+                              {isLoadingForm
+                                ? "Processing..."
+                                : "Record Payment"}
                             </Button>
                           </div>
                         </div>
                       )}
                     </div>
                     <div className="border-l pl-4">
-                      {form.watch("studentId") && getStudentInfo(form.watch("studentId"))}
+                      {form.watch("studentId") &&
+                        getStudentInfo(form.watch("studentId"))}
                     </div>
                   </div>
                 </form>
@@ -648,7 +709,7 @@ export default function SchoolFeeManagement() {
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label className="text-right">Class</Label>
                 <div className="col-span-3">
-                  {getClassName(selectedStudent.studentClass || '')}
+                  {getClassName(selectedStudent.studentClass || "")}
                 </div>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
@@ -661,15 +722,23 @@ export default function SchoolFeeManagement() {
                 <Label className="text-right">Last Paid</Label>
                 <div className="col-span-3">
                   {getStudentLastPaid(selectedStudent.$id)
-                    ? new Date(getStudentLastPaid(selectedStudent.$id)!).toLocaleDateString()
+                    ? new Date(
+                        getStudentLastPaid(selectedStudent.$id)!
+                      ).toLocaleDateString()
                     : "N/A"}
                 </div>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label className="text-right">Next Payment</Label>
                 <div className="col-span-3">
-                  {studentFees.find(fee => fee.studentId === selectedStudent.$id)?.paymentDate
-                    ? new Date(studentFees.find(fee => fee.studentId === selectedStudent.$id)!.paymentDate).toLocaleDateString()
+                  {studentFees.find(
+                    (fee) => fee.studentId === selectedStudent.$id
+                  )?.paymentDate
+                    ? new Date(
+                        studentFees.find(
+                          (fee) => fee.studentId === selectedStudent.$id
+                        )!.paymentDate
+                      ).toLocaleDateString()
                     : "N/A"}
                 </div>
               </div>
