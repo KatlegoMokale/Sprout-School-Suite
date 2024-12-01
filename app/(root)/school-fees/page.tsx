@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
@@ -46,8 +46,6 @@ import {
   TrendingUp,
   CreditCard,
   Search,
-  ChevronLeft,
-  UserRoundPen,
   Landmark,
 } from "lucide-react";
 import { IClass, IStudent, ITransactions, paymentFormSchema, IStudentFeesSchema } from "@/lib/utils";
@@ -55,10 +53,11 @@ import { newPayment } from "@/lib/actions/user.actions";
 import CustomInputPayment from "@/components/ui/CustomInputPayment";
 import { Checkbox } from "@/components/ui/checkbox";
 import { updateStudentAmountPaid, updateStudentRegBalance } from "@/lib/actions/user.actions";
-import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
-import { Dropdown } from "react-day-picker";
 import Link from "next/link";
 import SchoolFeesSetup from "@/components/ui/SchoolFeesSetup";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState, store } from "@/lib/store";
+import { fetchStudents } from "@/lib/features/students/studentsSlice";
 
 const newPaymentFormSchema = paymentFormSchema();
 
@@ -77,8 +76,10 @@ const newPaymentFormSchema = paymentFormSchema();
 // };
 
 export default function SchoolFeeManagement() {
+  const dispatch = useDispatch<AppDispatch>();
+  const { students, studentStatus, studentError } = useSelector((state: RootState) => state.students);
   const [isLoadingForm, setIsLoadingForm] = useState(false);
-  const [students, setStudents] = useState<IStudent[]>([]);
+  // const [students, setStudents] = useState<IStudent[]>([]);
   const [filteredStudents, setFilteredStudents] = useState<IStudent[]>([]);
   const [transactions, setTransactions] = useState<ITransactions[]>([]);
   const [classes, setClasses] = useState<IClass[]>([]);
@@ -92,6 +93,7 @@ export default function SchoolFeeManagement() {
   const [registeredYears, setRegisteredYears] = useState<Record<string, number[]>>({});
   const [paymentStep, setPaymentStep] = useState(1);
   const [showUnregistered, setShowUnregistered] = useState(false);
+  // console.log("Store",store.getState())
 
   const form = useForm<z.infer<typeof newPaymentFormSchema>>({
     resolver: zodResolver(newPaymentFormSchema),
@@ -107,30 +109,33 @@ export default function SchoolFeeManagement() {
   });
 
   useEffect(() => {
+    if (studentStatus === 'idle') {
+      dispatch(fetchStudents())
+    }
+  }, [studentStatus, dispatch])
+
+  useEffect(() => {
     const fetchData = async () => {
       try {
-        const [studentsResponse, transactionsResponse, classesResponse, studentFeesResponse] =
+        const [transactionsResponse, classesResponse, studentFeesResponse] =
           await Promise.all([
-            fetch("/api/students"),
             fetch("/api/transactions"),
             fetch("/api/class"),
             fetch("/api/student-school-fees")
           ]);
 
         if (
-          !studentsResponse.ok ||
           !transactionsResponse.ok ||
           !classesResponse.ok ||
           !studentFeesResponse.ok
         )
           throw new Error("Failed to fetch data");
-        const studentsData: IStudent[] = await studentsResponse.json();
         const transactionsData: ITransactions[] = await transactionsResponse.json();
         const classesData: IClass[] = await classesResponse.json();
         const studentFeesData: IStudentFeesSchema[] = await studentFeesResponse.json();
         
-        setStudents(studentsData);
-        setFilteredStudents(studentsData);
+        // setStudents(students);
+        setFilteredStudents(students);
         setTransactions(transactionsData);
         setClasses(classesData);
         setStudentFees(studentFeesData);

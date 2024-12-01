@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useDispatch, useSelector } from 'react-redux' // Import Redux hooks
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
@@ -29,7 +30,7 @@ import {
   SelectValue1,
 } from "@/components/ui/select"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { MoreHorizontal, PlusCircle, Search, UserPlus, UserRoundPen } from "lucide-react"
+import { MoreHorizontal, PlusCircle, Search, UserPlus, UserRoundIcon as UserRoundPen } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -40,13 +41,16 @@ import {
 } from "@/components/ui/dialog"
 import StudentRegistration from "@/components/ui/StudentRegistration"
 import { IClass, IStudent } from "@/lib/utils"
-
+import { RootState, AppDispatch } from '@/lib/store' // Import RootState and AppDispatch
+import { fetchStudents, selectStudents } from '@/lib/features/students/studentsSlice' // Import Redux actions and selectors
+import { fetchClasses, selectClasses } from '@/lib/features/classes/classesSlice' // Import Redux actions and selectors
 
 export default function StudentManagement() {
-  const [students, setStudents] = useState<IStudent[]>([])
-  const [classes, setClasses] = useState<IClass[]>([])
+  const dispatch = useDispatch<AppDispatch>() // Use AppDispatch type for dispatch
+  const { students, studentStatus, studentError } = useSelector((state: RootState) => state.students);
+  const { classes, classesStatus, classesError } = useSelector((state: RootState)=> state.classes) // Get classes from Redux store
   const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [error1, setError] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedClass, setSelectedClass] = useState<string>("all")
@@ -55,30 +59,20 @@ export default function StudentManagement() {
   const recordsPerPage = 10
 
   useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true)
-      try {
-        const [studentsResponse, classesResponse] = await Promise.all([
-          fetch("/api/students"),
-          fetch("/api/class"),
-        ])
-        if (!studentsResponse.ok || !classesResponse.ok) {
-          throw new Error("Failed to fetch data")
-        }
-        const studentsData = await studentsResponse.json()
-        const classesData = await classesResponse.json()
-        setStudents(studentsData)
-        setClasses(classesData)
-      } catch (error) {
-        console.error("Error fetching data:", error)
-        setError("Failed to fetch data. Please try reloading the page.")
-      } finally {
-        setIsLoading(false)
-      }
+    // Fetch students and classes if they haven't been fetched yet
+    if (studentStatus === 'idle') {
+      dispatch(fetchStudents())
     }
-
-    fetchData()
-  }, [])
+    if (classesStatus === 'idle') {
+      dispatch(fetchClasses())
+    }
+    // Set loading state based on the status of both students and classes
+    setIsLoading(studentStatus === 'loading' || classesStatus === 'loading')
+    // Set error if either fetch fails
+    if (studentStatus === 'failed' || classesStatus === 'failed') {
+      setError("Failed to fetch data. Please try reloading the page.")
+    }
+  }, [dispatch, studentStatus, classesStatus])
 
   const handleDeleteStudent = async (studentId: string) => {
     try {
@@ -88,7 +82,8 @@ export default function StudentManagement() {
       if (!response.ok) {
         throw new Error("Failed to delete student")
       }
-      setStudents((prevStudents) => prevStudents.filter((student) => student.$id !== studentId))
+      // After successful deletion, re-fetch students
+      dispatch(fetchStudents())
     } catch (error) {
       console.error("Error deleting student:", error)
     }
