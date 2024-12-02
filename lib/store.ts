@@ -1,6 +1,10 @@
 import { configureStore } from '@reduxjs/toolkit'
 import studentsReducer from './features/students/studentsSlice'
 import classesReducer  from './features/classes/classesSlice'
+import groceryReducer  from './features/grocery/grocerySlice'
+import stuffReducer  from './features/stuff/stuffSlice'
+import transactionReducer  from './features/transactions/transactionsSlice'
+import pettyCashReducer  from './features/pettyCash/pettyCashSlice'
 
 
 
@@ -28,9 +32,12 @@ const preloadedState = loadState()
 
 export const store = configureStore({
   reducer: {
-    students: studentsReducer,
-    // staff: staffReducer,
+     students: studentsReducer,
+     stuff: stuffReducer,
      classes: classesReducer,
+     groceries: groceryReducer,
+     transactions: transactionReducer,
+     pettyCash: pettyCashReducer,
   },
 })
 
