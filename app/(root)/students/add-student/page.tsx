@@ -11,12 +11,15 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CustomInput from "@/components/ui/CustomInput";
 import { IClass, newStudentFormSchema, parseStringify } from "@/lib/utils";
-import { DialogContent, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import Link from "next/link";
 import { Check, ChevronLeft, Loader2 } from "lucide-react";
 import { autocomplete } from "@/lib/google";
 import { PlaceAutocompleteResult } from "@googlemaps/google-maps-services-js";
 import { Command, CommandInput, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
+import { Checkbox } from "@/components/ui/checkbox";import { Select, SelectValue } from "@radix-ui/react-select";
+import { Toaster } from "@/components/ui/toaster";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { useToast } from '@/hooks/use-toast'
 import dynamic from "next/dynamic";
@@ -51,6 +54,7 @@ const NewStudentForm = () => {
   const [input, setInput] = useState("");
   const [selectedAddress, setSelectedAddress] = useState<PlaceAutocompleteResult | null>(null);
   const [onSelectedAddress, setOnSelectedAddress] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   
 
   useEffect(() => {
@@ -165,29 +169,23 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
   });
   
 
-  const onSubmit = async (data: z.infer<typeof studentFormSchema>) => {
-    console.log("Form data:", data);
-    console.log("Submit");
+  const onSubmit = async (data: z.infer<typeof formSchema>) => {
     setIsLoading(true);
     try {
       const addNewStudent = await newStudent(data);
-      console.log("Add new Student "+ addNewStudent);
+      console.log("Add new Student " + addNewStudent);
 
       toast({
         title: "Success!",
         description: "You have successfully added " + data.firstName + " " + data.surname + " to the system.",
-      })
-      form.reset();
-      // router.push('/students');
+      });
+      setIsDialogOpen(true);
     } catch (error) {
       console.error("Error submitting form:", error);
       setError("An error occurred while submitting the form.");
-       
     } finally {
       setIsLoading(false);
     }
-    setFormData(data);
-    console.log("Form data ready for Appwrite:", data);
   };
   
 
@@ -254,6 +252,15 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
 
   const handleClassChange = (value: string) => {
     form.setValue("studentClass", value);
+  };
+
+  const handleAddAnother = () => {
+    form.reset();
+    setIsDialogOpen(false);
+  };
+
+  const handleNavigateBack = () => {
+    router.push('/students');
   };
   
 
@@ -721,9 +728,23 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
             </Button>
         </form>
 
-      </Form>
-      <Toaster />
-        </CardContent>
+      </Form> 
+      </CardContent>
+      {/* <Toaster /> */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Student Added Successfully</DialogTitle>
+          </DialogHeader>
+          <DialogDescription>
+            What would you like to do next?
+          </DialogDescription>
+          <div className="flex justify-end space-x-2 mt-4">
+            <Button onClick={handleAddAnother}>Add Another Student</Button>
+            <Button onClick={handleNavigateBack}>Back to Students List</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
      
       </Card>
      
@@ -734,15 +755,4 @@ export default NewStudentForm;
 
 
 
-// ... in your component
-<DialogContent>
-  <DialogDescription>
-    This is a description of the dialog content. It provides context for screen readers.
-  </DialogDescription>
-  {/* Your existing dialog content */}
-</DialogContent>
-
-import { Checkbox } from "@/components/ui/checkbox";import { Select, SelectValue } from "@radix-ui/react-select";
-import { Toaster } from "@/components/ui/toaster";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
