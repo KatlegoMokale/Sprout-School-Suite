@@ -5,6 +5,7 @@ import groceryReducer  from './features/grocery/grocerySlice'
 import stuffReducer  from './features/stuff/stuffSlice'
 import transactionReducer  from './features/transactions/transactionsSlice'
 import pettyCashReducer  from './features/pettyCash/pettyCashSlice'
+import eventsReducer  from './features/events/eventsSlice'
 
 
 
@@ -38,6 +39,7 @@ export const store = configureStore({
      groceries: groceryReducer,
      transactions: transactionReducer,
      pettyCash: pettyCashReducer,
+     events: eventsReducer,
   },
 })
 

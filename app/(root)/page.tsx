@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, use } from "react"
 import { motion } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -12,109 +12,117 @@ import { PiggyBank, ShoppingCart, DollarSign, TrendingUp, TrendingDown, CreditCa
 import Grocery from "@/components/ui/grocery"
 import { Skeleton } from '@/components/ui/skeleton'
 import PettyCash from "@/components/ui/pettyCash"
-import { IEvent } from "@/lib/utils"
+import { IEvent, IGrocery, IPettyCash, IStudent, IStuff, ITransactions } from "@/lib/utils"
+import { RootState, AppDispatch } from '@/lib/store'
+import { fetchClasses, selectClasses } from "@/lib/features/classes/classesSlice"
+import { fetchEvents, selectEvents } from "@/lib/features/events/eventsSlice"
+import { fetchStudents, selectStudents } from "@/lib/features/students/studentsSlice"
+import { fetchStuff, selectStuff } from "@/lib/features/stuff/stuffSlice"
+import { fetchTransactions, selectTransactions } from "@/lib/features/transactions/transactionsSlice"
+import { fetchPettyCash, selectPettyCash } from "@/lib/features/pettyCash/pettyCashSlice"
+import { fetchGroceries, selectGroceries } from "@/lib/features/grocery/grocerySlice"
+import { useDispatch, useSelector } from "react-redux"
 
-interface Transaction {
-  $id: string
-  firstName: string
-  surname: string
-  studentId: string
-  paymentMethod: string
-  paymentDate: string
-  amount: number
-}
-
-interface Student {
-  $id: string
-  age: number
-}
-
-interface PettyCashItem {
-  $id: string
-  date: string
-  itemName: string
-  price: number
-}
-
-interface GroceryItem {
-  $id: string
-  date: string
-  summery: string
-  totalPaid: number
-}
-
-interface IStuff {
-  $id: string
-  firstName: string
-  secondName: string
-  surname: string
-  dateOfBirth: string
-  idNumber: string
-  contact: string
-  address1: string
-  gender: string
-  position: string
-}
 
 export default function Dashboard() {
-  const [transactions, setTransactions] = useState<Transaction[]>([])
-  const [students, setStudents] = useState<Student[]>([])
-  const [teachers, setTeachers] = useState<IStuff[]>([])
-  const [classes, setClasses] = useState<any[]>([])
-  const [events, setEvents] = useState<IEvent[]>([])
-  const [pettyCash, setPettyCash] = useState<PettyCashItem[]>([])
-  const [grocery, setGrocery] = useState<GroceryItem[]>([])
+  const dispatch = useDispatch<AppDispatch>() 
+  const { students, studentStatus, studentError } = useSelector((state: RootState) => state.students);
+  const { classes, classesStatus, classesError } = useSelector((state: RootState)=> state.classes);
+  const { stuff, stuffStatus, stuffError } = useSelector((state: RootState) => state.stuff)
+  const { transactions, transactionsStatus, transactionsError } = useSelector((state: RootState) => state.transactions)
+  const { events, eventsStatus, eventsError } = useSelector((state: RootState) => state.events)
+  const { pettyCash, pettyCashStatus, pettyCashError } = useSelector((state: RootState) => state.pettyCash)
+  const { grocery, groceryStatus, groceryError } = useSelector((state: RootState) => state.groceries)
+
+  // const [transactions, setTransactions] = useState<ITransactions[]>([])
+  // const [students, setStudents] = useState<IStudent[]>([])
+  // const [teachers, setTeachers] = useState<IStuff[]>([])
+  // const [classes, setClasses] = useState<any[]>([])
+  // const [events, setEvents] = useState<IEvent[]>([])
+  // const [pettyCash, setPettyCash] = useState<IPettyCash[]>([])
+  // const [grocery, setGrocery] = useState<IGrocery[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [sortPeriod, setSortPeriod] = useState("all")
-  
-
-  const fetchData = useCallback(async () => {
-
-    try {
-      setIsLoading(true)
-      const [transactionsRes, studentsRes, teachersRes, classesRes, pettyCashRes, groceryRes, eventsRes] = await Promise.all([
-        fetch('/api/transactions'),
-        fetch('/api/students'),
-        fetch('/api/stuff'),
-        fetch('/api/class'),
-        fetch('/api/pettycash'),
-        fetch('/api/grocery'),
-        fetch('/api/event')
-      ])
-
-      if (!transactionsRes.ok || !studentsRes.ok || !teachersRes.ok || !classesRes.ok || !pettyCashRes.ok || !groceryRes.ok || !eventsRes.ok) {
-        throw new Error("Failed to fetch data")
-      }
-
-      const [transactionsData, studentsData, teachersData, classesData, pettyCashData, groceryData, eventsData] = await Promise.all([
-        transactionsRes.json(),
-        studentsRes.json(),
-        teachersRes.json(),
-        classesRes.json(),
-        pettyCashRes.json(),
-        groceryRes.json(),
-        eventsRes.json()
-      ])
-
-      setTransactions(transactionsData)
-      setStudents(studentsData)
-      setTeachers(teachersData)
-      setClasses(classesData)
-      setPettyCash(pettyCashData)
-      setGrocery(groceryData)
-      setEvents(eventsData)
-    } catch (error) {
-      console.error("Error fetching data:", error)
-      setError("Failed to fetch data. Please try again later.")
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
 
   useEffect(() => {
-    fetchData()
-  }, [fetchData])
+    // Fetch students and classes if they haven't been fetched yet
+    if (studentStatus === 'idle') {
+      dispatch(fetchStudents())
+    }
+    if (classesStatus === 'idle') {
+      dispatch(fetchClasses())
+    }
+    if (stuffStatus === 'idle') {
+      dispatch(fetchStuff())
+    }
+    if (transactionsStatus === 'idle') {
+      dispatch(fetchTransactions())
+    }
+    if (eventsStatus === 'idle') {
+      dispatch(fetchEvents())
+    }
+    if (pettyCashStatus === 'idle') {
+      dispatch(fetchPettyCash())
+    }
+    if (groceryStatus === 'idle') {
+      dispatch(fetchGroceries())
+    }
+    // Set loading state based on the status of both students and classes
+    setIsLoading(studentStatus === 'loading' || classesStatus === 'loading')
+    // Set error if either fetch fails
+    if (studentStatus === 'failed' || classesStatus === 'failed' || stuffStatus === 'failed' || transactionsStatus === 'failed' || eventsStatus === 'failed' || pettyCashStatus === 'failed' || groceryStatus === 'failed') {
+      setError("Failed to fetch data. Please try reloading the page.")
+    }
+  }, [dispatch, studentStatus, classesStatus, stuffStatus, transactionsStatus, eventsStatus, pettyCashStatus, groceryStatus])
+  
+
+  // const fetchData = useCallback(async () => {
+
+  //   try {
+  //     setIsLoading(true)
+  //     const [transactionsRes, studentsRes, teachersRes, classesRes, pettyCashRes, groceryRes, eventsRes] = await Promise.all([
+  //       fetch('/api/transactions'),
+  //       fetch('/api/students'),
+  //       fetch('/api/stuff'),
+  //       fetch('/api/class'),
+  //       fetch('/api/pettycash'),
+  //       fetch('/api/grocery'),
+  //       fetch('/api/event')
+  //     ])
+
+  //     if (!transactionsRes.ok || !studentsRes.ok || !teachersRes.ok || !classesRes.ok || !pettyCashRes.ok || !groceryRes.ok || !eventsRes.ok) {
+  //       throw new Error("Failed to fetch data")
+  //     }
+
+  //     const [transactionsData, studentsData, teachersData, classesData, pettyCashData, groceryData, eventsData] = await Promise.all([
+  //       transactionsRes.json(),
+  //       studentsRes.json(),
+  //       teachersRes.json(),
+  //       classesRes.json(),
+  //       pettyCashRes.json(),
+  //       groceryRes.json(),
+  //       eventsRes.json()
+  //     ])
+
+  //     setTransactions(transactionsData)
+  //     setStudents(studentsData)
+  //     setTeachers(teachersData)
+  //     setClasses(classesData)
+  //     setPettyCash(pettyCashData)
+  //     setGrocery(groceryData)
+  //     setEvents(eventsData)
+  //   } catch (error) {
+  //     console.error("Error fetching data:", error)
+  //     setError("Failed to fetch data. Please try again later.")
+  //   } finally {
+  //     setIsLoading(false)
+  //   }
+  // }, [])
+
+  // useEffect(() => {
+  //   fetchData()
+  // }, [fetchData])
 
   const calculateTotal = (data: any[], key: string) => {
     return data.reduce((total, item) => total + item[key], 0)
@@ -187,7 +195,7 @@ export default function Dashboard() {
         <QuickStatCard
           icon={<Users className="h-6 w-6" />}
           title="Total Teachers"
-          value={isLoading ? <Skeleton className="h-8 w-16" /> : teachers.length}
+          value={isLoading ? <Skeleton className="h-8 w-16" /> : stuff.length}
           color="bg-purple-500"
         />
         <QuickStatCard
@@ -298,7 +306,7 @@ export default function Dashboard() {
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
-                    <PettyCash onSuccess={fetchData} />
+                    {/* <PettyCash onSuccess={fetchData} /> */}
                   </DialogContent>
                 </Dialog>
                 <Dialog>
@@ -309,7 +317,7 @@ export default function Dashboard() {
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
-                    <Grocery onSuccess={fetchData} />
+                    {/* <Grocery onSuccess={fetchData} /> */}
                   </DialogContent>
                 </Dialog>
               </div>
@@ -397,3 +405,4 @@ function QuickStatCard({ icon, title, value, color }: { icon: React.ReactNode, t
     </Card>
   )
 }
+

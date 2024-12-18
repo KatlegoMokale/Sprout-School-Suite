@@ -18,14 +18,14 @@ export const fetchTransactions = createAsyncThunk('transactions/fetchTransaction
 
 interface transactionsState {
   transactions: ITransactions[];
-  transactionstatus: 'idle' | 'loading' | 'succeeded' | 'failed';
-  studentError: SerializedError | null;
+  transactionsStatus: 'idle' | 'loading' | 'succeeded' | 'failed';
+  transactionsError: SerializedError | null;
 }
 
 const initialState: transactionsState = {
   transactions: [],
-  transactionstatus: 'idle',
-  studentError: null,
+  transactionsStatus: 'idle',
+  transactionsError: null,
 }
 
 const transactionsSlice = createSlice({
@@ -35,16 +35,16 @@ const transactionsSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchTransactions.pending, (state) => {
-        state.transactionstatus = 'loading';
-        state.studentError = null; // Clear any previous errors
+        state.transactionsStatus = 'loading';
+        state.transactionsError = null; // Clear any previous errors
       })
       .addCase(fetchTransactions.fulfilled, (state, action: PayloadAction<ITransactions[]>) => {
-        state.transactionstatus = 'succeeded';
+        state.transactionsStatus = 'succeeded';
         state.transactions = action.payload;
       })
       .addCase(fetchTransactions.rejected, (state, action) => {
-        state.transactionstatus = 'failed';
-        state.studentError = action.error; // Keep the full error object
+        state.transactionsStatus = 'failed';
+        state.transactionsError = action.error; // Keep the full error object
       })
   },
 })
@@ -60,12 +60,12 @@ export const selectTransactions = createSelector(
 
 export const selectTransactionsStatus = createSelector(
   selectTransactionsState,
-  (state) => state.transactionstatus
+  (state) => state.transactionsStatus
 );
 
 export const selectTransactionsError = createSelector(
   selectTransactionsState,
-  (state) => state.studentError
+  (state) => state.transactionsError
 );
 
 
