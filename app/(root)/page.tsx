@@ -69,7 +69,7 @@ export default function Dashboard() {
       dispatch(fetchGroceries())
     }
     // Set loading state based on the status of both students and classes
-    setIsLoading(studentStatus === 'loading' || classesStatus === 'loading')
+    setIsLoading(studentStatus === 'loading' || classesStatus === 'loading' || stuffStatus === 'loading' || transactionsStatus === 'loading' || eventsStatus === 'loading' || pettyCashStatus === 'loading' || groceryStatus === 'loading')
     // Set error if either fetch fails
     if (studentStatus === 'failed' || classesStatus === 'failed' || stuffStatus === 'failed' || transactionsStatus === 'failed' || eventsStatus === 'failed' || pettyCashStatus === 'failed' || groceryStatus === 'failed') {
       setError("Failed to fetch data. Please try reloading the page.")

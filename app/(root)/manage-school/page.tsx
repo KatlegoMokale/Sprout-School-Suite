@@ -25,69 +25,83 @@ import { MapPin, Phone, MoreHorizontal, PlusCircle, Search, Filter } from "lucid
 import Link from "next/link"
 import Classes from "@/components/ui/ClassForm"
 import Event from "@/components/ui/event"
-import { IEvent } from "@/lib/utils"
+import { IClass, IEvent, IStuff, positionColors } from "@/lib/utils"
 import { set } from "date-fns"
+import { useDispatch, useSelector } from "react-redux"
+import { RootState, AppDispatch } from '@/lib/store'
+import { fetchClasses, selectClasses } from "@/lib/features/classes/classesSlice"
+import { fetchEvents, selectEvents } from "@/lib/features/events/eventsSlice"
+import { fetchStudents, selectStudents } from "@/lib/features/students/studentsSlice"
+import { fetchStuff, selectStuff } from "@/lib/features/stuff/stuffSlice"
+import { fetchTransactions, selectTransactions } from "@/lib/features/transactions/transactionsSlice"
+import { fetchPettyCash, selectPettyCash } from "@/lib/features/pettyCash/pettyCashSlice"
+import { fetchGroceries, selectGroceries } from "@/lib/features/grocery/grocerySlice"
 
-interface IStaff {
-  $id: string
-  firstName: string
-  surname: string
-  position: string
-  address1: string
-  contact: string
-}
 
-interface IClass {
-  $id: string
-  name: string
-  teacherName: string
-}
-
-const positionColors = {
-  teacher: "bg-emerald-500",
-  cleaner: "bg-amber-500",
-  administrator: "bg-sky-500",
-}
 
 export default function CreativeStaffManagement() {
-  const [staff, setStaff] = useState<IStaff[]>([])
-  const [classes, setClasses] = useState<IClass[]>([])
-  const [events, setEvents] = useState<IEvent[]>([])
+  const dispatch = useDispatch<AppDispatch>() 
+  const { classes, classesStatus, classesError } = useSelector((state: RootState)=> state.classes);
+  const { stuff, stuffStatus, stuffError } = useSelector((state: RootState) => state.stuff)
+  const { events, eventsStatus, eventsError } = useSelector((state: RootState) => state.events)
+  // const [staff, setStaff] = useState<IStuff[]>([])
+  // const [classes, setClasses] = useState<IClass[]>([])
+  // const [events, setEvents] = useState<IEvent[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedPosition, setSelectedPosition] = useState<string | null>(null)
 
   useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true)
-      try {
-        const [staffResponse, classesResponse, eventsResponse] = await Promise.all([
-          fetch("/api/stuff"),
-          fetch("/api/class"),
-          fetch("/api/event"),
-        ])
-        if (!staffResponse.ok || !classesResponse.ok || !eventsResponse.ok) {
-          throw new Error("Failed to fetch data")
-        }
-        const staffData = await staffResponse.json()
-        const classesData = await classesResponse.json()
-        const eventsData = await eventsResponse.json()
-        setStaff(staffData)
-        setClasses(classesData)
-        setEvents(eventsData)
-      } catch (error) {
-        console.error("Error fetching data:", error)
-        setError("Failed to fetch data. Please try reloading the page.")
-      } finally {
-        setIsLoading(false)
-      }
+    // Fetch stuff and classes if they haven't been fetched yet
+    if (classesStatus === 'idle') {
+      dispatch(fetchClasses())
     }
+    if (stuffStatus === 'idle') {
+      dispatch(fetchStuff())
+    }
+    if (eventsStatus === 'idle') {
+      dispatch(fetchEvents())
+    }
+    // Set loading state based on the status of both students and classes
+    setIsLoading(stuffStatus === 'loading' || classesStatus === 'loading' || eventsStatus === 'loading')
+    // Set error if either fetch fails
+    if (classesStatus === 'failed' || stuffStatus === 'failed' || eventsStatus === 'failed') {
+      setError("Failed to fetch data. Please try reloading the page.")
+    }
+  }, [dispatch, classesStatus, stuffStatus, eventsStatus])
+  
 
-    fetchData()
-  }, [])
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     setIsLoading(true)
+  //     try {
+  //       const [staffResponse, classesResponse, eventsResponse] = await Promise.all([
+  //         fetch("/api/stuff"),
+  //         fetch("/api/class"),
+  //         fetch("/api/event"),
+  //       ])
+  //       if (!staffResponse.ok || !classesResponse.ok || !eventsResponse.ok) {
+  //         throw new Error("Failed to fetch data")
+  //       }
+  //       const staffData = await staffResponse.json()
+  //       const classesData = await classesResponse.json()
+  //       const eventsData = await eventsResponse.json()
+  //       setStaff(staffData)
+  //       setClasses(classesData)
+  //       setEvents(eventsData)
+  //     } catch (error) {
+  //       console.error("Error fetching data:", error)
+  //       setError("Failed to fetch data. Please try reloading the page.")
+  //     } finally {
+  //       setIsLoading(false)
+  //     }
+  //   }
 
-  const filteredStaff = staff.filter((member) => {
+  //   fetchData()
+  // }, [])
+
+  const filteredStaff = stuff.filter((member) => {
     const nameMatch = `${member.firstName} ${member.surname}`
       .toLowerCase()
       .includes(searchTerm.toLowerCase())
@@ -257,18 +271,18 @@ export default function CreativeStaffManagement() {
                 </DialogContent>
               </Dialog>
               <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
-                {events.map((eventsData, index) => (
+                {events.map((events, index) => (
                   <motion.div
-                    key={eventsData.$id}
+                    key={events.$id}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.3, delay: index * 0.1 }}
                   >
                     <Card className="bg-gray-50 hover:bg-gray-100 transition-colors duration-200">
                       <CardContent className="p-4">
-                        <h3 className="font-semibold text-lg mb-1">Class {eventsData.eventName}</h3>
-                        <p className="text-sm text-gray-600">Description: {eventsData.description}</p>
-                        <p className="text-sm text-gray-600">Price: R {eventsData.amount}.00</p>
+                        <h3 className="font-semibold text-lg mb-1">Class {events.eventName}</h3>
+                        <p className="text-sm text-gray-600">Description: {events.description}</p>
+                        <p className="text-sm text-gray-600">Price: R {events.amount}.00</p>
                         <p className="text-sm text-gray-600">Total Paid: TBA</p>
                       </CardContent>
                     </Card>

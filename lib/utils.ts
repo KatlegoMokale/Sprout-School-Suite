@@ -257,6 +257,12 @@ export const getBaseUrl = () => {
   return `http://localhost:${process.env.PORT ?? 3000}`; // dev SSR should use localhost
 }
 
+export const positionColors = {
+  teacher: "bg-emerald-500",
+  cleaner: "bg-amber-500",
+  administrator: "bg-sky-500",
+}
+
 export interface IStuff {
   $id: string;
   firstName: string;

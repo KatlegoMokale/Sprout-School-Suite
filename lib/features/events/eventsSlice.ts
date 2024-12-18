@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, createSelector } from '@reduxjs/toolkit'
 import type { PayloadAction, SerializedError } from '@reduxjs/toolkit'
-import { IGrocery } from '@/lib/utils'
+import { IEvent } from '@/lib/utils'
 
 export const fetchEvents = createAsyncThunk('events/fetchEvents', async () => {
   try {
@@ -8,7 +8,7 @@ export const fetchEvents = createAsyncThunk('events/fetchEvents', async () => {
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    return (await response.json()) as IGrocery[];
+    return (await response.json()) as IEvent[];
   } catch (error: any) {
     // Log the full error for debugging
     console.error('Error fetching events:', error);
@@ -17,7 +17,7 @@ export const fetchEvents = createAsyncThunk('events/fetchEvents', async () => {
 })
 
 interface EventsState {
-  events: IGrocery[];
+  events: IEvent[];
   eventsStatus: 'idle' | 'loading' | 'succeeded' | 'failed';
   eventsError: SerializedError | null;
 }
@@ -38,7 +38,7 @@ const eventsSlice = createSlice({
         state.eventsStatus = 'loading';
         state.eventsError = null; // Clear any previous errors
       })
-      .addCase(fetchEvents.fulfilled, (state, action: PayloadAction<IGrocery[]>) => {
+      .addCase(fetchEvents.fulfilled, (state, action: PayloadAction<IEvent[]>) => {
         state.eventsStatus = 'succeeded';
         state.events = action.payload;
       })
