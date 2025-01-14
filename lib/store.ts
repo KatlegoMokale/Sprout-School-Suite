@@ -6,6 +6,7 @@ import stuffReducer  from './features/stuff/stuffSlice'
 import transactionReducer  from './features/transactions/transactionsSlice'
 import pettyCashReducer  from './features/pettyCash/pettyCashSlice'
 import eventsReducer  from './features/events/eventsSlice'
+import studentSchoolFeesReducer  from './features/studentSchoolFees/studentSchoolFeesSlice'
 
 
 
@@ -40,6 +41,7 @@ export const store = configureStore({
      transactions: transactionReducer,
      pettyCash: pettyCashReducer,
      events: eventsReducer,
+     studentSchoolFees: studentSchoolFeesReducer,
   },
 })
 

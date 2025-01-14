@@ -58,6 +58,13 @@ import SchoolFeesSetup from "@/components/ui/SchoolFeesSetup";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState, store } from "@/lib/store";
 import { fetchStudents } from "@/lib/features/students/studentsSlice";
+import { fetchClasses, selectClasses } from "@/lib/features/classes/classesSlice"
+import { fetchEvents, selectEvents } from "@/lib/features/events/eventsSlice"
+import { fetchStuff, selectStuff } from "@/lib/features/stuff/stuffSlice"
+import { fetchTransactions, selectTransactions } from "@/lib/features/transactions/transactionsSlice"
+import { fetchPettyCash, selectPettyCash } from "@/lib/features/pettyCash/pettyCashSlice"
+import { fetchGroceries, selectGroceries } from "@/lib/features/grocery/grocerySlice"
+import { fetchStudentSchoolFees } from "@/lib/features/studentSchoolFees/studentSchoolFeesSlice";
 
 const newPaymentFormSchema = paymentFormSchema();
 
@@ -76,13 +83,21 @@ const newPaymentFormSchema = paymentFormSchema();
 // };
 
 export default function SchoolFeeManagement() {
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useDispatch<AppDispatch>() 
   const { students, studentStatus, studentError } = useSelector((state: RootState) => state.students);
+  const { classes, classesStatus, classesError } = useSelector((state: RootState)=> state.classes);
+  // const { stuff, stuffStatus, stuffError } = useSelector((state: RootState) => state.stuff)
+  const { transactions, transactionsStatus, transactionsError } = useSelector((state: RootState) => state.transactions);
+  // const { events, eventsStatus, eventsError } = useSelector((state: RootState) => state.events)
+  // const { pettyCash, pettyCashStatus, pettyCashError } = useSelector((state: RootState) => state.pettyCash)
+  // const { grocery, groceryStatus, groceryError } = useSelector((state: RootState) => state.groceries)
+  const { studentSchoolFees, studentSchoolFeesStatus, studentSchoolFeesError } = useSelector((state: RootState) => state.studentSchoolFees);
+  
   const [isLoadingForm, setIsLoadingForm] = useState(false);
   // const [students, setStudents] = useState<IStudent[]>([]);
   const [filteredStudents, setFilteredStudents] = useState<IStudent[]>([]);
-  const [transactions, setTransactions] = useState<ITransactions[]>([]);
-  const [classes, setClasses] = useState<IClass[]>([]);
+  // const [transactions, setTransactions] = useState<ITransactions[]>([]);
+  // const [classes, setClasses] = useState<IClass[]>([]);
   const [studentFees, setStudentFees] = useState<IStudentFeesSchema[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -108,60 +123,88 @@ export default function SchoolFeeManagement() {
     },
   });
 
+  useEffect(()=> {
+    if (studentStatus === 'idle') {
+      dispatch(fetchStudents())
+    }
+    if (classesStatus === 'idle') {
+      dispatch(fetchClasses())
+    }
+    if (transactionsStatus === 'idle') {
+      dispatch(fetchTransactions())
+    }
+    if (studentSchoolFeesStatus === 'idle') {
+      dispatch(fetchStudentSchoolFees())
+    }
+
+    setIsLoading(studentStatus === 'loading' || classesStatus === 'loading' || transactionsStatus === 'loading' || studentSchoolFeesStatus === 'loading')
+
+    if(studentStatus === 'failed' || classesStatus === 'failed' || transactionsStatus === 'failed' || studentSchoolFeesStatus === 'failed') {
+      setError("Failed to fetch data. Please try again later.");
+    }
+  },[dispatch, studentStatus, classesStatus, transactionsStatus, studentSchoolFeesStatus])
+
+
+  console.log("studentStatus", studentStatus)
+  console.log("Students", students)
+
+  console.log("Student School Fees Status", studentSchoolFeesStatus)
+  console.log("Student School Fees", studentSchoolFees)
+  
   useEffect(() => {
     if (studentStatus === 'idle') {
       dispatch(fetchStudents())
     }
   }, [studentStatus, dispatch])
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [transactionsResponse, classesResponse, studentFeesResponse] =
-          await Promise.all([
-            fetch("/api/transactions"),
-            fetch("/api/class"),
-            fetch("/api/student-school-fees")
-          ]);
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       const [transactionsResponse, classesResponse, studentFeesResponse] =
+  //         await Promise.all([
+  //           fetch("/api/transactions"),
+  //           fetch("/api/class"),
+  //           fetch("/api/student-school-fees")
+  //         ]);
 
-        if (
-          !transactionsResponse.ok ||
-          !classesResponse.ok ||
-          !studentFeesResponse.ok
-        )
-          throw new Error("Failed to fetch data");
-        const transactionsData: ITransactions[] = await transactionsResponse.json();
-        const classesData: IClass[] = await classesResponse.json();
-        const studentFeesData: IStudentFeesSchema[] = await studentFeesResponse.json();
+  //       if (
+  //         !transactionsResponse.ok ||
+  //         !classesResponse.ok ||
+  //         !studentFeesResponse.ok
+  //       )
+  //         throw new Error("Failed to fetch data");
+  //       const transactionsData: ITransactions[] = await transactionsResponse.json();
+  //       const classesData: IClass[] = await classesResponse.json();
+  //       const studentFeesData: IStudentFeesSchema[] = await studentFeesResponse.json();
         
-        // setStudents(students);
-        setFilteredStudents(students);
-        setTransactions(transactionsData);
-        setClasses(classesData);
-        setStudentFees(studentFeesData);
+  //       // setStudents(students);
+  //       setFilteredStudents(students);
+  //       setTransactions(transactionsData);
+  //       setClasses(classesData);
+  //       setStudentFees(studentFeesData);
 
-        const regYears: Record<string, number[]> = {};
-        studentFeesData.forEach((fee) => {
-          if (!regYears[fee.studentId]) {
-            regYears[fee.studentId] = [];
-          }
-          regYears[fee.studentId].push(new Date(fee.startDate).getFullYear());
-        });
-        setRegisteredYears(regYears);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        toast({
-          title: "Error",
-          description: "Failed to fetch data. Please try again.",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  //       const regYears: Record<string, number[]> = {};
+  //       studentFeesData.forEach((fee) => {
+  //         if (!regYears[fee.studentId]) {
+  //           regYears[fee.studentId] = [];
+  //         }
+  //         regYears[fee.studentId].push(new Date(fee.startDate).getFullYear());
+  //       });
+  //       setRegisteredYears(regYears);
+  //     } catch (error) {
+  //       console.error("Error fetching data:", error);
+  //       toast({
+  //         title: "Error",
+  //         description: "Failed to fetch data. Please try again.",
+  //         variant: "destructive",
+  //       });
+  //     } finally {
+  //       setIsLoading(false);
+  //     }
+  //   };
 
-    fetchData();
-  }, []);
+  //   fetchData();
+  // }, []);
 
   useEffect(() => {
     const filtered = students.filter(student => 
@@ -186,7 +229,7 @@ export default function SchoolFeeManagement() {
   };
 
   const getStudentBalance = (studentId: string) => {
-    const studentFee = studentFees.find(fee => fee.studentId === studentId);
+    const studentFee = studentSchoolFees.find(fee => fee.studentId === studentId);
     return studentFee ? studentFee.balance : 0;
   };
 
@@ -197,14 +240,14 @@ export default function SchoolFeeManagement() {
   };
 
   const isOutstanding = (student: IStudent) => {
-    const studentFee = studentFees.find(fee => fee.studentId === student.$id);
+    const studentFee = studentSchoolFees.find(fee => fee.studentId === student.$id);
     if (!studentFee) return false;
     return new Date(studentFee.paymentDate).getTime() <= Date.now();
   };
 
-  const totalFees = studentFees.reduce((sum, fee) => sum + fee.totalFees, 0);
-  const totalPaid = studentFees.reduce((sum, fee) => sum + fee.paidAmount, 0);
-  const totalOutstanding = studentFees.reduce((sum, fee) => sum + fee.balance, 0);
+  const totalFees = studentSchoolFees.reduce((sum, fee) => sum + fee.totalFees, 0);
+  const totalPaid = studentSchoolFees.reduce((sum, fee) => sum + fee.paidAmount, 0);
+  const totalOutstanding = studentSchoolFees.reduce((sum, fee) => sum + fee.balance, 0);
 
   const summaryCards = [
     {
@@ -232,7 +275,7 @@ export default function SchoolFeeManagement() {
     setError(null);
 
     try {
-      const studentFee = studentFees.find((fee) => fee.studentId === data.studentId);
+      const studentFee = studentSchoolFees.find((fee) => fee.studentId === data.studentId);
       if (!studentFee) {
         throw new Error("Student fee information not found");
       }
@@ -277,7 +320,7 @@ export default function SchoolFeeManagement() {
 
   const getStudentInfo = (studentId: string) => {
     const student = students.find(s => s.$id === studentId);
-    const studentFee = studentFees.find(fee => fee.studentId === studentId);
+    const studentFee = studentSchoolFees.find(fee => fee.studentId === studentId);
     if (!student || !studentFee) return null;
 
     const studentTransactions = transactions.filter(t => t.studentId === studentId);
@@ -478,7 +521,7 @@ export default function SchoolFeeManagement() {
                   </TableHeader>
                   <TableBody>
                     {filteredStudents.map((student) => {
-                      const studentFee = studentFees.find(
+                      const studentFee = studentSchoolFees.find(
                         (fee) => fee.studentId === student.$id
                       );
                       return (
@@ -736,11 +779,11 @@ export default function SchoolFeeManagement() {
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label className="text-right">Next Payment</Label>
                 <div className="col-span-3">
-                  {studentFees.find(
+                  {studentSchoolFees.find(
                     (fee) => fee.studentId === selectedStudent.$id
                   )?.paymentDate
                     ? new Date(
-                        studentFees.find(
+                        studentSchoolFees.find(
                           (fee) => fee.studentId === selectedStudent.$id
                         )!.paymentDate
                       ).toLocaleDateString()
