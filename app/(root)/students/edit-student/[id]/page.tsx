@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import CustomInput from "@/components/ui/CustomInput"
 import { Select1, SelectContent, SelectItem, SelectTrigger, SelectValue1 } from "@/components/ui/select"
 import { toast } from "@/hooks/use-toast"
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTrigger } from "@/components/ui/alert-dialog"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { IClass, newStudentFormSchema, parseStringify } from "@/lib/utils"
 import { updateStudent } from "@/lib/actions/user.actions"
 
@@ -322,6 +322,7 @@ export default function EditStudentForm({ params }: { params: Promise<{ id: stri
         </CardContent>
       </Card>
       <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
+      <AlertDialogTitle className="hidden">Confirm Update</AlertDialogTitle>
         <AlertDialogContent>
           <AlertDialogHeader>Confirm Update</AlertDialogHeader>
           <AlertDialogDescription>

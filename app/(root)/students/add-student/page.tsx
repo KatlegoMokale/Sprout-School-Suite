@@ -35,6 +35,7 @@ import {
   SelectTrigger,
   SelectValue1,
 } from "@/components/ui/select";
+import AddressSearch from "@/components/ui/AddressSearch";
 
 const SearchAddress = dynamic(() => import("@/components/ui/search-address"), {
   ssr: false,
@@ -87,26 +88,12 @@ const NewStudentForm = () => {
 }, []);
 
  // Handle prediction selection
-const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
-  setSelectedAddress(prediction);
-  setInput(prediction.description); // Update input for display
-
-  // Extract address components from prediction
-  console.log(prediction.terms);
-  console.log("Address:" + prediction.terms[0].value + " " + prediction.terms[1].value + " " + prediction.terms[2].value + " " + prediction.terms[3].value);
-  const addressComponents = prediction.terms;
-  const address1 = addressComponents[0].value+ " " + addressComponents[1].value;
-  const city = addressComponents[2].value;
- 
-
-  console.log("Address Components:", address1, city);
-
-  // Update form fields
-  form.setValue("address1", address1 + ", " + city);
-
-  form.setValue("p1_address1", address1 + ", " + city);
-
-
+ // Handle prediction selection
+ const handlePredictionSelect = (prediction: any) => {
+  const address = prediction.Place.Label;
+  setInput(address);
+  form.setValue("address1", address);
+  form.setValue("p1_address1", address);
 };
 
 {predictions.length > 0 && (
@@ -369,35 +356,22 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
                           value={input}
                           onValueChange={(value) => {
                             setInput(value);
+                            fetchPredictions(value);
                             setOnSelectedAddress(false);
                           }}
                         />
                         <CommandList>
                           {/* <CommandEmpty>No cities found.</CommandEmpty> */}
                           <CommandGroup>
-                            {predictions.map((prediction) => (
+                            {predictions.map((prediction: any) => (
                               <CommandItem
-                                key={prediction.place_id}
-                                onSelect={(currentValue) => {
-                                  // form.setValue("address1", currentValue);
-                                  // console.log(currentValue);
-                                  // console.log(prediction);
+                                key={prediction.Place.Label}
+                                onSelect={() => {
                                   handlePredictionSelect(prediction);
                                   setOnSelectedAddress(true);
                                 }}
                               >
-                                {!onSelectedAddress
-                                  ? prediction.description
-                                  : ""}
-                                {/* {prediction.description} */}
-                                {/* <Check
-                                className={cn(
-                                  "mr-2 h-4 w-4",
-                                  city.place_id === form.getValues("city")
-                                    ? "opacity-100"
-                                    : "opacity-0"
-                                )}
-                              /> */}
+                                {!onSelectedAddress ? prediction.Place.Label : ""}
                               </CommandItem>
                             ))}
                           </CommandGroup>
@@ -457,7 +431,6 @@ const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
                         
                       />
                       </div>
-
                       <div className="col-span-1">
                         <div className="form-item">
                           <div className=" text-md  font-semibold text-gray-600 ">

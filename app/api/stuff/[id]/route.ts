@@ -40,9 +40,12 @@ async function updateStuff(id: string, data: {
   secondName: string;
   surname: string;
   dateOfBirth: string;
+  gender: string;
+  email: string;
   idNumber: string;
   contact: string;
-  address1: string
+  address1: string;
+  position: string;
 }){
   try {
     const response = await database.updateDocument(

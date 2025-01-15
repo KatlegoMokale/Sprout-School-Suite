@@ -40,6 +40,7 @@ export default function AddStuff() {
       idNumber: "",
       address1: "",
       contact: "",
+      email: "",
       gender: "",
       position: "",
       startDate: "",
@@ -158,6 +159,14 @@ export default function AddStuff() {
                   label="Phone Number"
                   placeholder="Enter phone number"
                 />
+
+                 <CustomInput
+                  control={form.control}
+                  name="email"
+                  label="Email"
+                  placeholder="Enter email"
+                />
+
                 <CustomInput
                   control={form.control}
                   name="address1"

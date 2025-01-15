@@ -9,10 +9,13 @@ const database = new Databases(client)
 async function createStuff(data: {
     firstName: string;
     secondName: string;
+    surname: string;
     dateOfBirth: string;
+    gender: string;
     idNumber: string;
     position: string;
     contact: string;
+    email: string;
     address1: string;
 }) {
     try {
@@ -53,8 +56,8 @@ export async function GET() {
 
 export async function POST(request: Request) {
     try {
-        const {firstName, secondName, surname, dateOfBirth, idNumber, position, contact, address1} = await request.json();
-        const data = {firstName, secondName, surname, dateOfBirth, idNumber, position, contact, address1}
+        const {firstName, secondName, surname, dateOfBirth, gender, email, idNumber, position, contact, address1} = await request.json();
+        const data = {firstName, secondName, surname, dateOfBirth, gender, email, idNumber, position, contact, address1}
         const response = await createStuff(data);
         return NextResponse.json({message: "Stuff created successfully"}, {status: 201})
     } catch (error) {

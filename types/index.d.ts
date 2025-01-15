@@ -144,11 +144,12 @@ declare type NewStudentParms = {
 
   declare type NewStuffParams = {
     firstName: string;
-    secondName: string;
+    secondName?: string;
     surname: string;
     dateOfBirth: string;
     idNumber: string;
     contact: string;
+    email: string;
     address1: string;
     gender: string;
     position: string;
@@ -216,14 +217,16 @@ declare type NewStudentParms = {
 
   declare type Stuff = {
     $id: string;
-    names: string;
+    firstName: string;
+    secondName: string;
     surname: string;
     idNumber: string;
-    cellNo: string;
+    dateOfBirth: string;
+    gender: string;
+    contact: string;
     email?: string;
-    address: string;
+    address1: string;
     position: string;
-    class?: string;
   }
 
   declare type SignUpUserParms = {

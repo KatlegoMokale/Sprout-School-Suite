@@ -158,6 +158,7 @@ export const newStuffFormSchema = () => z.object({
   dateOfBirth: z.string().min(3),
   idNumber: z.string().min(13).max(13),
   gender: z.string().min(3),
+  email: z.string().email(),
   contact: z.string().min(10).max(10),
   position: z.string().min(3),
   startDate: z.string().min(3),

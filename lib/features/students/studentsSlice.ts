@@ -10,9 +10,8 @@ export const fetchStudents = createAsyncThunk('students/fetchStudents', async ()
     }
     return (await response.json()) as IStudent[];
   } catch (error: any) {
-    // Log the full error for debugging
     console.error('Error fetching students:', error);
-    throw error; // Re-throw the error to be handled by rejected case
+    throw error;
   }
 })
 
@@ -31,12 +30,12 @@ const initialState: StudentsState = {
 const studentsSlice = createSlice({
   name: 'students',
   initialState,
-  reducers: {}, // Add reducers here if needed
+  reducers: {},
   extraReducers: (builder) => {
     builder
       .addCase(fetchStudents.pending, (state) => {
         state.studentStatus = 'loading';
-        state.studentError = null; // Clear any previous errors
+        state.studentError = null;
       })
       .addCase(fetchStudents.fulfilled, (state, action: PayloadAction<IStudent[]>) => {
         state.studentStatus = 'succeeded';
@@ -44,11 +43,10 @@ const studentsSlice = createSlice({
       })
       .addCase(fetchStudents.rejected, (state, action) => {
         state.studentStatus = 'failed';
-        state.studentError = action.error; // Keep the full error object
+        state.studentError = action.error;
       })
   },
 })
-
 
 // Selectors
 const selectStudentsState = (state: { students: StudentsState }) => state.students;
@@ -68,5 +66,9 @@ export const selectStudentsError = createSelector(
   (state) => state.studentError
 );
 
+export const selectStudentById = createSelector(
+  [selectStudents, (state, studentId: string) => studentId],
+  (students, studentId) => students.find(student => student.$id === studentId)
+);
 
 export default studentsSlice.reducer
