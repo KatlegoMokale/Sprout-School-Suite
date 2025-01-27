@@ -196,8 +196,8 @@ const StudentInvoice = ({ params }: { params: Promise<{ id: string }> }) => {
     
     // Add the header content
     doc.setTextColor(255, 255, 255);
-    doc.setFontSize(24);
-    doc.text('Outlay', 14, 25);
+    doc.setFontSize(18);
+    doc.text('Angels World Day Care Centre', 14, 25);
     
     doc.setFontSize(10);
     doc.text('Statement Period', 140, 20);

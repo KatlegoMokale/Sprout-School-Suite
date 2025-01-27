@@ -219,7 +219,7 @@ export default function StudentRegistration() {
         <CardTitle>Student Year Registration</CardTitle>
       </CardHeader>
       <CardContent>
-        <ScrollArea className="h-[calc(100vh-12rem)] pr-4">
+        <ScrollArea className="h-[calc(70vh-12rem)] pr-4">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
@@ -259,7 +259,7 @@ export default function StudentRegistration() {
               {selectedYear && (
                 <div className="space-y-2">
                   <div className="text-sm font-medium">Registration Progress</div>
-                  <Progress value={(registrationProgress.registered / students.length) * 100} className="w-full" />
+                  <Progress value={(registrationProgress.registered / students.length) * 100} className="w-full "  />
                   <div className="text-sm text-muted-foreground">
                     Registered: {registrationProgress.registered} | Not Registered: {registrationProgress.notRegistered}
                   </div>
