@@ -8,6 +8,7 @@ export const fetchStudents = createAsyncThunk('students/fetchStudents', async ()
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
+    console.log('Response:', response);
     return (await response.json()) as IStudent[];
   } catch (error: any) {
     console.error('Error fetching students:', error);
@@ -50,6 +51,7 @@ const studentsSlice = createSlice({
 
 // Selectors
 const selectStudentsState = (state: { students: StudentsState }) => state.students;
+console.log('selectStudentsState:', selectStudentsState);
 
 export const selectStudents = createSelector(
   selectStudentsState,

@@ -1,35 +1,60 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import React, { useState, useEffect, useCallback } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
+import { useDispatch, useSelector } from 'react-redux'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form"
 import { toast } from "@/hooks/use-toast"
 import CustomInput from "@/components/ui/CustomInput"
 import { Select1, SelectContent, SelectItem, SelectTrigger, SelectValue1 } from "@/components/ui/select"
-import { ISchoolFees, ISchoolFeesReg, IStudent, studentFeesSchema } from "@/lib/utils"
+import { ISchoolFees, IStudent, IStudentFeesSchema } from "@/lib/utils"
 import { newStudentRegistration, updateStudentBalance } from "@/lib/actions/user.actions"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Progress } from "@/components/ui/progress"
+import { AppDispatch, RootState } from "@/lib/store"
+import { fetchStudents, selectStudents, selectStudentsStatus } from '@/lib/features/students/studentsSlice'
+import { fetchSchoolFeesSetup, selectSchoolFeesSetup, selectSchoolFeesSetupStatus  } from '@/lib/features/schoolFeesSetup/schoolFeesSetupSlice'
+import { fetchStudentSchoolFees, selectStudentSchoolFees, selectStudentSchoolFeesStatus } from '@/lib/features/studentSchoolFees/studentSchoolFeesSlice'
 
 export default function StudentRegistration() {
+  const dispatch = useDispatch<AppDispatch>()
   const [isLoading, setIsLoading] = useState(false)
-  const [students, setStudents] = useState<IStudent[]>([])
-  const [filteredStudents, setFilteredStudents] = useState<IStudent[]>([])
-  const [schoolFees, setSchoolFees] = useState<ISchoolFees[]>([])
   const [showHiddenFields, setShowHiddenFields] = useState(false)
   const [registeredYears, setRegisteredYears] = useState<Record<string, number[]>>({})
   const [selectedYear, setSelectedYear] = useState<number | null>(null)
+  const [registrationProgress, setRegistrationProgress] = useState({ registered: 0, notRegistered: 0 })
+
+  const students = useSelector(selectStudents)
+  const studentsStatus = useSelector(selectStudentsStatus)
+  const schoolFees = useSelector(selectSchoolFeesSetup)
+  const schoolFeesStatus = useSelector(selectSchoolFeesSetupStatus)
+  const studentSchoolFees = useSelector(selectStudentSchoolFees)
+  const studentSchoolFeesStatus = useSelector(selectStudentSchoolFeesStatus)
 
   const currentYear = new Date().getFullYear()
   const yearRange = Array.from({ length: 11 }, (_, i) => currentYear - 5 + i)
 
-  const StudentFeesSchema = studentFeesSchema()
-  const form = useForm<z.infer<typeof StudentFeesSchema>>({
-    resolver: zodResolver(StudentFeesSchema),
+  const form = useForm<IStudentFeesSchema & { year: string }>({
+    resolver: zodResolver(z.object({
+      $id: z.string().optional(),
+      studentId: z.string().min(1, "Student is required"),
+      schoolFeesRegId: z.string().min(1, "School fees registration is required"),
+      startDate: z.string().min(1, "Start date is required"),
+      endDate: z.string().min(1, "End date is required"),
+      fees: z.number().min(0),
+      totalFees: z.number().min(0),
+      paidAmount: z.number().min(0),
+      balance: z.number().min(0),
+      paymentFrequency: z.string().min(1, "Payment frequency is required"),
+      paymentDate: z.number().min(1, "Payment date is required"),
+      year: z.string().optional(),
+    })),
     defaultValues: {
+      $id: "",
       studentId: "",
       schoolFeesRegId: "",
       startDate: "",
@@ -39,60 +64,58 @@ export default function StudentRegistration() {
       paidAmount: 0,
       balance: 0,
       paymentFrequency: "monthly",
-      paymentDate: 0,
+      paymentDate: 1,
+      year: "",
     },
   })
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [studentsResponse, schoolFeesResponse, registrationsResponse] = await Promise.all([
-          fetch("/api/students"),
-          fetch("/api/school-fees-setup"),
-          fetch("/api/student-school-fees")
-        ])
-        if (!studentsResponse.ok || !schoolFeesResponse.ok || !registrationsResponse.ok) throw new Error("Failed to fetch data")
-        const studentsData = await studentsResponse.json()
-        const schoolFeesData = await schoolFeesResponse.json()
-        const registrationsData = await registrationsResponse.json()
-        setStudents(studentsData)
-        setFilteredStudents(studentsData)
-        setSchoolFees(schoolFeesData)
-        
-        const regYears: Record<string, number[]> = {}
-        registrationsData.forEach((reg: any) => {
-          if (!regYears[reg.studentId]) {
-            regYears[reg.studentId] = []
-          }
-          regYears[reg.studentId].push(new Date(reg.startDate).getFullYear())
-        })
-        setRegisteredYears(regYears)
-      } catch (error) {
-        console.error("Error fetching data:", error)
-        toast({
-          title: "Error",
-          description: "Failed to fetch data. Please try again.",
-          variant: "destructive",
-        })
-      }
+    if (studentsStatus === 'idle') {
+      dispatch(fetchStudents())
     }
+    if (schoolFeesStatus === 'idle') {
+      dispatch(fetchSchoolFeesSetup())
+    }
+    if (studentSchoolFeesStatus === 'idle') {
+      dispatch(fetchStudentSchoolFees())
+    }
+  }, [dispatch, studentsStatus, schoolFeesStatus, studentSchoolFeesStatus])
 
-    fetchData()
-  }, [])
+  useEffect(() => {
+    if (studentSchoolFeesStatus === 'succeeded') {
+      const regYears: Record<string, number[]> = {}
+      studentSchoolFees.forEach((reg) => {
+        if (!regYears[reg.studentId]) {
+          regYears[reg.studentId] = []
+        }
+        regYears[reg.studentId].push(new Date(reg.startDate).getFullYear())
+      })
+      setRegisteredYears(regYears)
+    }
+  }, [studentSchoolFees, studentSchoolFeesStatus])
+
+  const filteredStudents = useCallback(() => {
+    if (selectedYear) {
+      return students.filter(student => !registeredYears[student.$id]?.includes(selectedYear))
+    }
+    return students
+  }, [students, selectedYear, registeredYears])
 
   useEffect(() => {
     if (selectedYear) {
-      const filtered = students.filter(student => !registeredYears[student.$id]?.includes(selectedYear))
-      setFilteredStudents(filtered)
+      const filtered = filteredStudents()
+      const registered = students.length - filtered.length
+      const notRegistered = filtered.length
+      setRegistrationProgress({ registered, notRegistered })
     } else {
-      setFilteredStudents(students)
+      setRegistrationProgress({ registered: 0, notRegistered: 0 })
     }
-  }, [selectedYear, students, registeredYears])
+  }, [selectedYear, students, filteredStudents])
 
-  const onSubmit = async (data: z.infer<typeof StudentFeesSchema>) => {
+  const onSubmit = async (data: IStudentFeesSchema & { year: string }) => {
     setIsLoading(true)
     try {
-      const startYear = new Date(data.startDate).getFullYear()
+      const startYear = parseInt(data.year)
       const studentRegisteredYears = registeredYears[data.studentId] || []
       const myStudent = students.find(student => student.$id === data.studentId)
       let oldBalance = myStudent?.balance || 0;
@@ -122,7 +145,10 @@ export default function StudentRegistration() {
       setShowHiddenFields(false)
 
       if (selectedYear) {
-        setFilteredStudents(prev => prev.filter(student => student.$id !== data.studentId))
+        setRegistrationProgress(prev => ({
+          registered: prev.registered + 1,
+          notRegistered: prev.notRegistered - 1
+        }))
       }
     } catch (error) {
       console.error("Error updating student fees:", error)
@@ -137,11 +163,7 @@ export default function StudentRegistration() {
   }
 
   const calculateFees = useCallback(() => {
-    const startDate = form.getValues("startDate")
-    const endDate = form.getValues("endDate")
-    const paymentFrequency = form.getValues("paymentFrequency")
-    const schoolFeesRegId = form.getValues("schoolFeesRegId")
-    const studentId = form.getValues("studentId")
+    const { startDate, endDate, paymentFrequency, schoolFeesRegId, studentId, year } = form.getValues()
     let registrationFee = 0
     const selectedRegistration = schoolFees.find(fee => fee.$id === schoolFeesRegId)
     if (selectedRegistration) {
@@ -191,15 +213,6 @@ export default function StudentRegistration() {
     setShowHiddenFields(true)
   }, [form, schoolFees, registeredYears])
 
-  useEffect(() => {
-    const subscription = form.watch((value, { name, type }) => {
-    if (name === 'startDate' || name === 'endDate') {
-    calculateFees()
-    }
-    })
-    return () => subscription.unsubscribe()
-  }, [calculateFees, form])
-
   return (
     <Card className="w-full max-w-2xl border-none mx-auto">
       <CardHeader>
@@ -211,7 +224,7 @@ export default function StudentRegistration() {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
                 control={form.control}
-                name="startDate"
+                name="year"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Filter by Year</FormLabel>
@@ -243,6 +256,16 @@ export default function StudentRegistration() {
                 )}
               />
 
+              {selectedYear && (
+                <div className="space-y-2">
+                  <div className="text-sm font-medium">Registration Progress</div>
+                  <Progress value={(registrationProgress.registered / students.length) * 100} className="w-full" />
+                  <div className="text-sm text-muted-foreground">
+                    Registered: {registrationProgress.registered} | Not Registered: {registrationProgress.notRegistered}
+                  </div>
+                </div>
+              )}
+
               <FormField
                 control={form.control}
                 name="studentId"
@@ -260,7 +283,7 @@ export default function StudentRegistration() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {filteredStudents.map(student => (
+                        {filteredStudents().map(student => (
                           <SelectItem key={student.$id} value={student.$id}>
                             {student.firstName} {student.surname} - {student.age}
                           </SelectItem>
@@ -284,7 +307,7 @@ export default function StudentRegistration() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {schoolFees.map(fee => {
+                        {schoolFees.map((fee) => {
                           const isRegistered = registeredYears[form.getValues("studentId")]?.includes(fee.year);
                           return (
                             fee.year === selectedYear ? 
@@ -300,8 +323,7 @@ export default function StudentRegistration() {
                                 </span>
                               )}
                             </SelectItem>
-                            :
-                            <></>
+                            : null
                           );
                         })}
                       </SelectContent>
@@ -316,7 +338,6 @@ export default function StudentRegistration() {
                 control={form.control}
                 label="Start Date"
                 type="date"
-                onChange={() => calculateFees()}
               />
 
               <CustomInput
@@ -325,7 +346,6 @@ export default function StudentRegistration() {
                 control={form.control}
                 label="End Date"
                 type="date"
-                onChange={() => calculateFees()}
               />
 
               <CustomInput
@@ -338,14 +358,11 @@ export default function StudentRegistration() {
                   { value: "monthly", label: "Monthly" },
                   { value: "yearly", label: "Yearly" },
                 ]}
-                onChange={() => calculateFees()}
               />
 
-              {!showHiddenFields && (
-                <Button type="button" onClick={calculateFees} className="w-full">
-                  Continue
-                </Button>
-              )}
+              <Button type="button" onClick={calculateFees} className="w-full">
+                Calculate Fees
+              </Button>
 
               {showHiddenFields && (
                 <>
@@ -391,10 +408,10 @@ export default function StudentRegistration() {
                   />
 
                   <CustomInput
-                    placeholder="Select next payment date"
+                    placeholder="Select payment date"
                     name="paymentDate"
                     control={form.control}
-                    label="Next Payment Date"
+                    label="Payment Date"
                     type="number"
                   />
 

@@ -21,6 +21,7 @@ import { fetchStuff, selectStuff } from "@/lib/features/stuff/stuffSlice"
 import { fetchTransactions, selectTransactions } from "@/lib/features/transactions/transactionsSlice"
 import { fetchPettyCash, selectPettyCash } from "@/lib/features/pettyCash/pettyCashSlice"
 import { fetchGroceries, selectGroceries } from "@/lib/features/grocery/grocerySlice"
+import { fetchSchoolFeesSetup, selectSchoolFeesSetup } from '@/lib/features/schoolFeesSetup/schoolFeesSetupSlice'
 import { useDispatch, useSelector } from "react-redux"
 
 
@@ -33,6 +34,7 @@ export default function Dashboard() {
   const { events, eventsStatus, eventsError } = useSelector((state: RootState) => state.events)
   const { pettyCash, pettyCashStatus, pettyCashError } = useSelector((state: RootState) => state.pettyCash)
   const { grocery, groceryStatus, groceryError } = useSelector((state: RootState) => state.groceries)
+  const { schoolFeesSetup, schoolFeesSetupStatus, schoolFeesSetupError } = useSelector((state: RootState) => state.schoolFeesSetup)
 
   // const [transactions, setTransactions] = useState<ITransactions[]>([])
   // const [students, setStudents] = useState<IStudent[]>([])
@@ -68,13 +70,16 @@ export default function Dashboard() {
     if (groceryStatus === 'idle') {
       dispatch(fetchGroceries())
     }
+    if (schoolFeesSetupStatus === 'idle') {
+      dispatch(fetchSchoolFeesSetup())
+    }
     // Set loading state based on the status of both students and classes
-    setIsLoading(studentStatus === 'loading' || classesStatus === 'loading' || stuffStatus === 'loading' || transactionsStatus === 'loading' || eventsStatus === 'loading' || pettyCashStatus === 'loading' || groceryStatus === 'loading')
+    setIsLoading(studentStatus === 'loading' || classesStatus === 'loading' || stuffStatus === 'loading' || transactionsStatus === 'loading' || eventsStatus === 'loading' || pettyCashStatus === 'loading' || groceryStatus === 'loading' || schoolFeesSetupStatus === 'loading')
     // Set error if either fetch fails
-    if (studentStatus === 'failed' || classesStatus === 'failed' || stuffStatus === 'failed' || transactionsStatus === 'failed' || eventsStatus === 'failed' || pettyCashStatus === 'failed' || groceryStatus === 'failed') {
+    if (studentStatus === 'failed' || classesStatus === 'failed' || stuffStatus === 'failed' || transactionsStatus === 'failed' || eventsStatus === 'failed' || pettyCashStatus === 'failed' || groceryStatus === 'failed' || schoolFeesSetupStatus === 'failed') {
       setError("Failed to fetch data. Please try reloading the page.")
     }
-  }, [dispatch, studentStatus, classesStatus, stuffStatus, transactionsStatus, eventsStatus, pettyCashStatus, groceryStatus])
+  }, [dispatch, studentStatus, classesStatus, stuffStatus, transactionsStatus, eventsStatus, pettyCashStatus, groceryStatus, schoolFeesSetupStatus])
   
 
   // const fetchData = useCallback(async () => {

@@ -17,7 +17,7 @@ import { toast } from "@/hooks/use-toast"
 import { newStuffFormSchema } from "@/lib/utils"
 import { newStuff } from "@/lib/actions/user.actions"
 import { autocomplete } from "@/lib/google"
-import { PlaceAutocompleteResult } from "@googlemaps/google-maps-services-js"
+// import { PlaceAutocompleteResult } from "@googlemaps/google-maps-services-js"
 
 const formSchema = newStuffFormSchema()
 
@@ -25,7 +25,7 @@ export default function AddStuff() {
   const [formData, setFormData] = useState({})
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [predictions, setPredictions] = useState<PlaceAutocompleteResult[]>([])
+  // const [predictions, setPredictions] = useState<PlaceAutocompleteResult[]>([])
   const [input, setInput] = useState("")
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
   const router = useRouter()
@@ -47,23 +47,23 @@ export default function AddStuff() {
     },
   })
 
-  useEffect(() => {
-    const fetchPredictions = async () => {
-      if (input.length > 2) {
-        const predictions = await autocomplete(input)
-        setPredictions(predictions ?? [])
-      }
-    }
-    fetchPredictions()
-  }, [input])
+  // useEffect(() => {
+  //   const fetchPredictions = async () => {
+  //     if (input.length > 2) {
+  //       const predictions = await autocomplete(input)
+  //       setPredictions(predictions ?? [])
+  //     }
+  //   }
+  //   fetchPredictions()
+  // }, [input])
 
-  const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
-    setInput(prediction.description)
-    const addressComponents = prediction.terms
-    const address1 = addressComponents[0].value + " " + addressComponents[1].value
-    const city = addressComponents[2].value
-    form.setValue("address1", address1 + ", " + city)
-  }
+  // const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
+  //   setInput(prediction.description)
+  //   const addressComponents = prediction.terms
+  //   const address1 = addressComponents[0].value + " " + addressComponents[1].value
+  //   const city = addressComponents[2].value
+  //   form.setValue("address1", address1 + ", " + city)
+  // }
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     setFormData(data)
@@ -171,30 +171,10 @@ export default function AddStuff() {
                   control={form.control}
                   name="address1"
                   label="Address"
-                  placeholder="Search for address..."
+                  placeholder="Enter address"
                   onChange={(e) => setInput(e.target.value)}
                 />
-                {predictions.length > 0 && (
-                  <div className="col-span-2">
-                    <Select1 onValueChange={(value) => {
-                      const selectedPrediction = predictions.find(p => p.description === value)
-                      if (selectedPrediction) {
-                        handlePredictionSelect(selectedPrediction)
-                      }
-                    }}>
-                      <SelectTrigger>
-                        <SelectValue1 placeholder="Select an address" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {predictions.map((prediction) => (
-                          <SelectItem key={prediction.place_id} value={prediction.description}>
-                            {prediction.description}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select1>
-                  </div>
-                )}
+                
                 <CustomInput
                   control={form.control}
                   name="position"

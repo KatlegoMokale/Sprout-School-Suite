@@ -1,114 +1,54 @@
 'use client';
 
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import React, { useState, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { useDispatch, useSelector } from 'react-redux';
+import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select1,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue1,
-} from "@/components/ui/select";
+import { Select1, SelectContent, SelectItem, SelectTrigger, SelectValue1 } from "@/components/ui/select";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { toast } from "@/hooks/use-toast";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import {
-  DollarSign,
-  TrendingUp,
-  CreditCard,
-  Search,
-  Landmark,
-} from "lucide-react";
-import { IClass, IStudent, ITransactions, paymentFormSchema, IStudentFeesSchema } from "@/lib/utils";
-import { newPayment } from "@/lib/actions/user.actions";
-import CustomInputPayment from "@/components/ui/CustomInputPayment";
 import { Checkbox } from "@/components/ui/checkbox";
-import { updateStudentAmountPaid, updateStudentRegBalance } from "@/lib/actions/user.actions";
+import { DollarSign, TrendingUp, CreditCard, Search, Landmark } from 'lucide-react';
 import Link from "next/link";
+import { AppDispatch, RootState } from "@/lib/store";
+import { fetchStudents, selectStudents, selectStudentsStatus } from '@/lib/features/students/studentsSlice';
+import { fetchClasses, selectClasses, selectClassesStatus } from '@/lib/features/classes/classesSlice';
+import { fetchTransactions, selectTransactions, selectTransactionsStatus } from '@/lib/features/transactions/transactionsSlice';
+import { fetchStudentSchoolFees, selectStudentSchoolFees, selectStudentSchoolFeesStatus } from '@/lib/features/studentSchoolFees/studentSchoolFeesSlice';
+import { IStudent, IStudentFeesSchema, paymentFormSchema } from "@/lib/utils";
+import { newPayment, updateStudentAmountPaid, updateStudentRegBalance } from "@/lib/actions/user.actions";
+import CustomInputPayment from "@/components/ui/CustomInputPayment";
 import SchoolFeesSetup from "@/components/ui/SchoolFeesSetup";
-import { useDispatch, useSelector } from "react-redux";
-import { AppDispatch, RootState, store } from "@/lib/store";
-import { fetchStudents } from "@/lib/features/students/studentsSlice";
-import { fetchClasses, selectClasses } from "@/lib/features/classes/classesSlice"
-import { fetchEvents, selectEvents } from "@/lib/features/events/eventsSlice"
-import { fetchStuff, selectStuff } from "@/lib/features/stuff/stuffSlice"
-import { fetchTransactions, selectTransactions } from "@/lib/features/transactions/transactionsSlice"
-import { fetchPettyCash, selectPettyCash } from "@/lib/features/pettyCash/pettyCashSlice"
-import { fetchGroceries, selectGroceries } from "@/lib/features/grocery/grocerySlice"
-import { fetchStudentSchoolFees } from "@/lib/features/studentSchoolFees/studentSchoolFeesSlice";
 
 const newPaymentFormSchema = paymentFormSchema();
 
-// const handleInvoiceClick = (e: React.MouseEvent, studentId: string) => {
-//   e.preventDefault();
-//   try {
-//     window.open(`/school-fees/${studentId}`, '_blank');
-//   } catch (error) {
-//     console.error("Error opening invoice:", error);
-//     toast({
-//       title: "Error",
-//       description: "Failed to open invoice. Please try again.",
-//       variant: "destructive",
-//     });
-//   }
-// };
-
 export default function SchoolFeeManagement() {
-  const dispatch = useDispatch<AppDispatch>() 
-  const { students, studentStatus, studentError } = useSelector((state: RootState) => state.students);
-  const { classes, classesStatus, classesError } = useSelector((state: RootState)=> state.classes);
-  // const { stuff, stuffStatus, stuffError } = useSelector((state: RootState) => state.stuff)
-  const { transactions, transactionsStatus, transactionsError } = useSelector((state: RootState) => state.transactions);
-  // const { events, eventsStatus, eventsError } = useSelector((state: RootState) => state.events)
-  // const { pettyCash, pettyCashStatus, pettyCashError } = useSelector((state: RootState) => state.pettyCash)
-  // const { grocery, groceryStatus, groceryError } = useSelector((state: RootState) => state.groceries)
-  const { studentSchoolFees, studentSchoolFeesStatus, studentSchoolFeesError } = useSelector((state: RootState) => state.studentSchoolFees);
-  
+  const dispatch = useDispatch<AppDispatch>();
+  const students = useSelector(selectStudents);
+  const studentsStatus = useSelector(selectStudentsStatus);
+  const classes = useSelector(selectClasses);
+  const classesStatus = useSelector(selectClassesStatus);
+  const transactions = useSelector(selectTransactions);
+  const transactionsStatus = useSelector(selectTransactionsStatus);
+  const studentSchoolFees = useSelector(selectStudentSchoolFees);
+  const studentSchoolFeesStatus = useSelector(selectStudentSchoolFeesStatus);
+
   const [isLoadingForm, setIsLoadingForm] = useState(false);
-  // const [students, setStudents] = useState<IStudent[]>([]);
-  const [filteredStudents, setFilteredStudents] = useState<IStudent[]>([]);
-  // const [transactions, setTransactions] = useState<ITransactions[]>([]);
-  // const [classes, setClasses] = useState<IClass[]>([]);
-  const [studentFees, setStudentFees] = useState<IStudentFeesSchema[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedClass, setSelectedClass] = useState<string | null>(null);
   const [selectedStudent, setSelectedStudent] = useState<IStudent | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
-  const [registeredYears, setRegisteredYears] = useState<Record<string, number[]>>({});
-  const [paymentStep, setPaymentStep] = useState(1);
   const [showUnregistered, setShowUnregistered] = useState(false);
-  // console.log("Store",store.getState())
+  const [paymentStep, setPaymentStep] = useState(1);
 
   const form = useForm<z.infer<typeof newPaymentFormSchema>>({
     resolver: zodResolver(newPaymentFormSchema),
@@ -123,106 +63,40 @@ export default function SchoolFeeManagement() {
     },
   });
 
-  useEffect(()=> {
-    if (studentStatus === 'idle') {
-      dispatch(fetchStudents())
-    }
-    if (classesStatus === 'idle') {
-      dispatch(fetchClasses())
-    }
-    if (transactionsStatus === 'idle') {
-      dispatch(fetchTransactions())
-    }
-    if (studentSchoolFeesStatus === 'idle') {
-      dispatch(fetchStudentSchoolFees())
-    }
-
-    setIsLoading(studentStatus === 'loading' || classesStatus === 'loading' || transactionsStatus === 'loading' || studentSchoolFeesStatus === 'loading')
-
-    if(studentStatus === 'failed' || classesStatus === 'failed' || transactionsStatus === 'failed' || studentSchoolFeesStatus === 'failed') {
-      setError("Failed to fetch data. Please try again later.");
-    }
-  },[dispatch, studentStatus, classesStatus, transactionsStatus, studentSchoolFeesStatus])
-
-
-  console.log("studentStatus", studentStatus)
-  console.log("Students", students)
-
-  console.log("Student School Fees Status", studentSchoolFeesStatus)
-  console.log("Student School Fees", studentSchoolFees)
-  
   useEffect(() => {
-    if (studentStatus === 'idle') {
-      dispatch(fetchStudents())
-    }
-  }, [studentStatus, dispatch])
+    if (studentsStatus === 'idle') dispatch(fetchStudents());
+    if (classesStatus === 'idle') dispatch(fetchClasses());
+    if (transactionsStatus === 'idle') dispatch(fetchTransactions());
+    if (studentSchoolFeesStatus === 'idle') dispatch(fetchStudentSchoolFees());
+  }, [dispatch, studentsStatus, classesStatus, transactionsStatus, studentSchoolFeesStatus]);
 
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     try {
-  //       const [transactionsResponse, classesResponse, studentFeesResponse] =
-  //         await Promise.all([
-  //           fetch("/api/transactions"),
-  //           fetch("/api/class"),
-  //           fetch("/api/student-school-fees")
-  //         ]);
+  const isLoading = studentsStatus === 'loading' || classesStatus === 'loading' || 
+                    transactionsStatus === 'loading' || studentSchoolFeesStatus === 'loading';
 
-  //       if (
-  //         !transactionsResponse.ok ||
-  //         !classesResponse.ok ||
-  //         !studentFeesResponse.ok
-  //       )
-  //         throw new Error("Failed to fetch data");
-  //       const transactionsData: ITransactions[] = await transactionsResponse.json();
-  //       const classesData: IClass[] = await classesResponse.json();
-  //       const studentFeesData: IStudentFeesSchema[] = await studentFeesResponse.json();
-        
-  //       // setStudents(students);
-  //       setFilteredStudents(students);
-  //       setTransactions(transactionsData);
-  //       setClasses(classesData);
-  //       setStudentFees(studentFeesData);
+  const error = studentsStatus === 'failed' || classesStatus === 'failed' || 
+                transactionsStatus === 'failed' || studentSchoolFeesStatus === 'failed' 
+                ? "Failed to fetch data. Please try again later." : null;
 
-  //       const regYears: Record<string, number[]> = {};
-  //       studentFeesData.forEach((fee) => {
-  //         if (!regYears[fee.studentId]) {
-  //           regYears[fee.studentId] = [];
-  //         }
-  //         regYears[fee.studentId].push(new Date(fee.startDate).getFullYear());
-  //       });
-  //       setRegisteredYears(regYears);
-  //     } catch (error) {
-  //       console.error("Error fetching data:", error);
-  //       toast({
-  //         title: "Error",
-  //         description: "Failed to fetch data. Please try again.",
-  //         variant: "destructive",
-  //       });
-  //     } finally {
-  //       setIsLoading(false);
-  //     }
-  //   };
-
-  //   fetchData();
-  // }, []);
-
-  useEffect(() => {
-    const filtered = students.filter(student => 
+  const filteredStudents = useMemo(() => {
+    return students.filter(student => 
       (!selectedClass || student.studentClass === selectedClass) &&
-      `${student.firstName} ${student.surname}`
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) &&
-      (showUnregistered ? !registeredYears[student.$id]?.includes(selectedYear) : registeredYears[student.$id]?.includes(selectedYear))
+      `${student.firstName} ${student.surname}`.toLowerCase().includes(searchTerm.toLowerCase()) &&
+      (showUnregistered 
+        ? !studentSchoolFees.some(fee => fee.studentId === student.$id && new Date(fee.startDate).getFullYear() === selectedYear)
+        : studentSchoolFees.some(fee => fee.studentId === student.$id && new Date(fee.startDate).getFullYear() === selectedYear)
+      )
     );
-    setFilteredStudents(filtered);
-    if (filtered.length === 0) {
+  }, [students, selectedClass, searchTerm, showUnregistered, studentSchoolFees, selectedYear]);
+
+  useEffect(() => {
+    if (filteredStudents.length === 0) {
       toast({
         title: "No Students Found",
         description: `There are no ${showUnregistered ? 'unregistered' : 'registered'} students for the year ${selectedYear}.`,
         variant: "destructive",
       });
     }
-  }, [selectedYear, students, registeredYears, selectedClass, searchTerm, showUnregistered]);
+  }, [filteredStudents, showUnregistered, selectedYear]);
 
   const getClassName = (classId: string) => {
     return classes.find((c) => c.$id === classId)?.name || "Unknown";
@@ -250,30 +124,13 @@ export default function SchoolFeeManagement() {
   const totalOutstanding = studentSchoolFees.reduce((sum, fee) => sum + fee.balance, 0);
 
   const summaryCards = [
-    {
-      title: "Total Fees",
-      amount: totalFees,
-      icon: DollarSign,
-      color: "bg-blue-500",
-    },
-    {
-      title: "Total Paid",
-      amount: totalPaid,
-      icon: TrendingUp,
-      color: "bg-green-500",
-    },
-    {
-      title: "Outstanding",
-      amount: totalOutstanding,
-      icon: CreditCard,
-      color: "bg-yellow-500",
-    },
+    { title: "Total Fees", amount: totalFees, icon: DollarSign, color: "bg-blue-500" },
+    { title: "Total Paid", amount: totalPaid, icon: TrendingUp, color: "bg-green-500" },
+    { title: "Outstanding", amount: totalOutstanding, icon: CreditCard, color: "bg-yellow-500" },
   ];
 
   const onSubmit = async (data: z.infer<typeof newPaymentFormSchema>) => {
     setIsLoadingForm(true);
-    setError(null);
-
     try {
       const studentFee = studentSchoolFees.find((fee) => fee.studentId === data.studentId);
       if (!studentFee) {
@@ -283,21 +140,9 @@ export default function SchoolFeeManagement() {
       const newBalance = studentFee.balance - data.amount;
       const newPaidAmount = studentFee.paidAmount + data.amount;
 
-      // First, update the paid amount and balance
       await updateStudentAmountPaid(studentFee.$id, newPaidAmount);
       await updateStudentRegBalance(studentFee.$id, newBalance);
-
-      // If updates are successful, add the new payment
-      const addNewPayment = await newPayment(data);
-
-      // Update local state
-      setStudentFees(prevFees => 
-        prevFees.map(fee => 
-          fee.$id === studentFee.$id 
-            ? { ...fee, paidAmount: newPaidAmount, balance: newBalance } 
-            : fee
-        )
-      );
+      await newPayment(data);
 
       toast({
         title: "Success",
@@ -307,7 +152,6 @@ export default function SchoolFeeManagement() {
       setPaymentStep(1);
     } catch (error) {
       console.error("Error submitting form:", error);
-      setError("An error occurred while submitting the form. Please try again.");
       toast({
         title: "Error",
         description: "Failed to process payment. Please try again.",
@@ -327,7 +171,6 @@ export default function SchoolFeeManagement() {
 
     return (
       <div className="space-y-6 bg-white p-6 rounded-lg shadow-md">
-    
         <h3 className="text-2xl font-bold border-b pb-2">Account Statement</h3>
         
         <div className="grid grid-cols-2 gap-4">
@@ -389,6 +232,10 @@ export default function SchoolFeeManagement() {
     );
   }
 
+  if (error) {
+    return <div className="text-red-500">{error}</div>;
+  }
+
   const currentYear = new Date().getFullYear();
   const yearRange = Array.from({ length: 11 }, (_, i) => currentYear - 5 + i);
 
@@ -396,7 +243,6 @@ export default function SchoolFeeManagement() {
     <div className="px-4 py-8">
       <div className="hidden">
         <h1 className="text-3xl font-bold mb-8">School Fee Management</h1>
-
         <div className="grid gap-6 md:grid-cols-3 mb-8">
           {summaryCards.map((card, index) => (
             <motion.div
@@ -407,15 +253,11 @@ export default function SchoolFeeManagement() {
             >
               <Card className={`${card.color} text-white`}>
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-lg font-medium">
-                    {card.title}
-                  </CardTitle>
+                  <CardTitle className="text-lg font-medium">{card.title}</CardTitle>
                   <card.icon className="h-5 w-5 opacity-75" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">
-                    R {card.amount.toFixed(2)}
-                  </div>
+                  <div className="text-2xl font-bold">R {card.amount.toFixed(2)}</div>
                 </CardContent>
               </Card>
             </motion.div>
@@ -434,7 +276,7 @@ export default function SchoolFeeManagement() {
                   Create New School Fees
                 </Button>
               </DialogTrigger>
-              <DialogContent className=" container">
+              <DialogContent className="container">
                 <DialogTitle hidden>New School Fees</DialogTitle>
                 <SchoolFeesSetup />
               </DialogContent>
@@ -781,13 +623,7 @@ export default function SchoolFeeManagement() {
                 <div className="col-span-3">
                   {studentSchoolFees.find(
                     (fee) => fee.studentId === selectedStudent.$id
-                  )?.paymentDate
-                    ? new Date(
-                        studentSchoolFees.find(
-                          (fee) => fee.studentId === selectedStudent.$id
-                        )!.paymentDate
-                      ).toLocaleDateString()
-                    : "N/A"}
+                  )?.paymentDate || "N/A"}
                 </div>
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
