@@ -189,6 +189,7 @@ export default function StudentManagement() {
                   <TableHead onClick={() => handleSort('dateOfBirth')} className="cursor-pointer">
                     Date of Birth {sortConfig?.key === 'dateOfBirth' && (sortConfig.direction === 'asc' ? '▲' : '▼')}
                   </TableHead>
+                  <TableHead>Age</TableHead>
                   <TableHead>Class</TableHead>
                   <TableHead>Parent</TableHead>
                   <TableHead>Contact</TableHead>
@@ -219,6 +220,7 @@ export default function StudentManagement() {
                       </TableCell>
                       <TableCell>{student.surname}</TableCell>
                       <TableCell>{student.dateOfBirth}</TableCell>
+                      <TableCell>{student.age}</TableCell>
                       <TableCell>{classes.find((c) => c.$id === student.studentClass)?.name || 'N/A'}</TableCell>
                       <TableCell>{student.p1_firstName} {student.p1_surname}</TableCell>
                       <TableCell>{student.p1_phoneNumber}</TableCell>

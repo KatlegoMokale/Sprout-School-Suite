@@ -208,7 +208,7 @@ export default function CreativeStaffManagement() {
             ))}
           </motion.div>
         </div>
-        <div className="lg:w-1/4 grid grid-rows-2">
+        <div className="lg:w-1/4 flex flex-col">
           <Card className="bg-white shadow-xl rounded-lg overflow-hidden row-span-1">
             <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-4">
               <h2 className="text-2xl font-bold text-white mb-2">Classes</h2>

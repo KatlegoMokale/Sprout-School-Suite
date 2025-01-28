@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, use } from "react"
+import React, { useState, useEffect, useMemo } from "react"
 import { motion } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -8,11 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Select1, SelectContent, SelectItem, SelectTrigger, SelectValue1 } from "@/components/ui/select"
-import { PiggyBank, ShoppingCart, DollarSign, TrendingUp, TrendingDown, CreditCard, GraduationCap, Users, BookOpen, CalendarIcon } from "lucide-react"
-import Grocery from "@/components/ui/grocery"
+import { PiggyBank, ShoppingCart, DollarSign, TrendingUp, TrendingDown, CreditCard, GraduationCap, Users, BookOpen, CalendarIcon, CakeIcon } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
-import PettyCash from "@/components/ui/pettyCash"
-import { IEvent, IGrocery, IPettyCash, IStudent, IStuff, ITransactions } from "@/lib/utils"
 import { RootState, AppDispatch } from '@/lib/store'
 import { fetchClasses, selectClasses } from "@/lib/features/classes/classesSlice"
 import { fetchEvents, selectEvents } from "@/lib/features/events/eventsSlice"
@@ -23,120 +20,58 @@ import { fetchPettyCash, selectPettyCash } from "@/lib/features/pettyCash/pettyC
 import { fetchGroceries, selectGroceries } from "@/lib/features/grocery/grocerySlice"
 import { fetchSchoolFeesSetup, selectSchoolFeesSetup } from '@/lib/features/schoolFeesSetup/schoolFeesSetupSlice'
 import { useDispatch, useSelector } from "react-redux"
-
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
 
 export default function Dashboard() {
-  const dispatch = useDispatch<AppDispatch>() 
-  const { students, studentStatus, studentError } = useSelector((state: RootState) => state.students);
-  const { classes, classesStatus, classesError } = useSelector((state: RootState)=> state.classes);
-  const { stuff, stuffStatus, stuffError } = useSelector((state: RootState) => state.stuff)
-  const { transactions, transactionsStatus, transactionsError } = useSelector((state: RootState) => state.transactions)
-  const { events, eventsStatus, eventsError } = useSelector((state: RootState) => state.events)
-  const { pettyCash, pettyCashStatus, pettyCashError } = useSelector((state: RootState) => state.pettyCash)
-  const { grocery, groceryStatus, groceryError } = useSelector((state: RootState) => state.groceries)
-  const { schoolFeesSetup, schoolFeesSetupStatus, schoolFeesSetupError } = useSelector((state: RootState) => state.schoolFeesSetup)
+  const dispatch = useDispatch<AppDispatch>()
+  const { students, studentStatus } = useSelector((state: RootState) => state.students)
+  const { classes, classesStatus } = useSelector((state: RootState) => state.classes)
+  const { stuff, stuffStatus } = useSelector((state: RootState) => state.stuff)
+  const { transactions, transactionsStatus } = useSelector((state: RootState) => state.transactions)
+  const { events, eventsStatus } = useSelector((state: RootState) => state.events)
+  const { pettyCash, pettyCashStatus } = useSelector((state: RootState) => state.pettyCash)
+  const { grocery, groceryStatus } = useSelector((state: RootState) => state.groceries)
+  const { schoolFeesSetup, schoolFeesSetupStatus } = useSelector((state: RootState) => state.schoolFeesSetup)
 
-  // const [transactions, setTransactions] = useState<ITransactions[]>([])
-  // const [students, setStudents] = useState<IStudent[]>([])
-  // const [teachers, setTeachers] = useState<IStuff[]>([])
-  // const [classes, setClasses] = useState<any[]>([])
-  // const [events, setEvents] = useState<IEvent[]>([])
-  // const [pettyCash, setPettyCash] = useState<IPettyCash[]>([])
-  // const [grocery, setGrocery] = useState<IGrocery[]>([])
+  const [sortPeriod, setSortPeriod] = useState("all")
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [sortPeriod, setSortPeriod] = useState("all")
 
   useEffect(() => {
-    // Fetch students and classes if they haven't been fetched yet
-    if (studentStatus === 'idle') {
-      dispatch(fetchStudents())
+    const fetchAllData = async () => {
+      try {
+        await Promise.all([
+          dispatch(fetchStudents()),
+          dispatch(fetchClasses()),
+          dispatch(fetchStuff()),
+          dispatch(fetchTransactions()),
+          dispatch(fetchEvents()),
+          dispatch(fetchPettyCash()),
+          dispatch(fetchGroceries()),
+          dispatch(fetchSchoolFeesSetup())
+        ])
+      } catch (error) {
+        console.error("Error fetching data:", error)
+        setError("Failed to fetch data. Please try again later.")
+      } finally {
+        setIsLoading(false)
+      }
     }
-    if (classesStatus === 'idle') {
-      dispatch(fetchClasses())
-    }
-    if (stuffStatus === 'idle') {
-      dispatch(fetchStuff())
-    }
-    if (transactionsStatus === 'idle') {
-      dispatch(fetchTransactions())
-    }
-    if (eventsStatus === 'idle') {
-      dispatch(fetchEvents())
-    }
-    if (pettyCashStatus === 'idle') {
-      dispatch(fetchPettyCash())
-    }
-    if (groceryStatus === 'idle') {
-      dispatch(fetchGroceries())
-    }
-    if (schoolFeesSetupStatus === 'idle') {
-      dispatch(fetchSchoolFeesSetup())
-    }
-    // Set loading state based on the status of both students and classes
-    setIsLoading(studentStatus === 'loading' || classesStatus === 'loading' || stuffStatus === 'loading' || transactionsStatus === 'loading' || eventsStatus === 'loading' || pettyCashStatus === 'loading' || groceryStatus === 'loading' || schoolFeesSetupStatus === 'loading')
-    // Set error if either fetch fails
-    if (studentStatus === 'failed' || classesStatus === 'failed' || stuffStatus === 'failed' || transactionsStatus === 'failed' || eventsStatus === 'failed' || pettyCashStatus === 'failed' || groceryStatus === 'failed' || schoolFeesSetupStatus === 'failed') {
-      setError("Failed to fetch data. Please try reloading the page.")
-    }
-  }, [dispatch, studentStatus, classesStatus, stuffStatus, transactionsStatus, eventsStatus, pettyCashStatus, groceryStatus, schoolFeesSetupStatus])
-  
 
-  // const fetchData = useCallback(async () => {
-
-  //   try {
-  //     setIsLoading(true)
-  //     const [transactionsRes, studentsRes, teachersRes, classesRes, pettyCashRes, groceryRes, eventsRes] = await Promise.all([
-  //       fetch('/api/transactions'),
-  //       fetch('/api/students'),
-  //       fetch('/api/stuff'),
-  //       fetch('/api/class'),
-  //       fetch('/api/pettycash'),
-  //       fetch('/api/grocery'),
-  //       fetch('/api/event')
-  //     ])
-
-  //     if (!transactionsRes.ok || !studentsRes.ok || !teachersRes.ok || !classesRes.ok || !pettyCashRes.ok || !groceryRes.ok || !eventsRes.ok) {
-  //       throw new Error("Failed to fetch data")
-  //     }
-
-  //     const [transactionsData, studentsData, teachersData, classesData, pettyCashData, groceryData, eventsData] = await Promise.all([
-  //       transactionsRes.json(),
-  //       studentsRes.json(),
-  //       teachersRes.json(),
-  //       classesRes.json(),
-  //       pettyCashRes.json(),
-  //       groceryRes.json(),
-  //       eventsRes.json()
-  //     ])
-
-  //     setTransactions(transactionsData)
-  //     setStudents(studentsData)
-  //     setTeachers(teachersData)
-  //     setClasses(classesData)
-  //     setPettyCash(pettyCashData)
-  //     setGrocery(groceryData)
-  //     setEvents(eventsData)
-  //   } catch (error) {
-  //     console.error("Error fetching data:", error)
-  //     setError("Failed to fetch data. Please try again later.")
-  //   } finally {
-  //     setIsLoading(false)
-  //   }
-  // }, [])
-
-  // useEffect(() => {
-  //   fetchData()
-  // }, [fetchData])
+    fetchAllData()
+  }, [dispatch])
 
   const calculateTotal = (data: any[], key: string) => {
     return data.reduce((total, item) => total + item[key], 0)
   }
 
-  const totalRevenue = 45231.89 // Placeholder value
-  const totalIncome = calculateTotal(transactions, 'amount')
-  const totalExpenses = calculateTotal(pettyCash, 'price') + calculateTotal(grocery, 'totalPaid')
-  const totalOutstanding = totalRevenue - totalIncome // Placeholder calculation
+  const totalRevenue = useMemo(() => calculateTotal(transactions, 'amount'), [transactions])
+  const totalIncome = totalRevenue
+  const totalExpenses = useMemo(() => calculateTotal(pettyCash, 'price') + calculateTotal(grocery, 'totalPaid'), [pettyCash, grocery])
+  const totalOutstanding = useMemo(() => {
+    const totalFees = schoolFeesSetup.reduce((sum, fee) => sum + fee.yearlyFee, 0)
+    return totalFees - totalIncome
+  }, [schoolFeesSetup, totalIncome])
 
   const summaryCards = [
     { title: "Total Revenue", amount: totalRevenue, icon: DollarSign, color: "bg-green-500" },
@@ -173,6 +108,39 @@ export default function Dashboard() {
   const filteredPettyCash = filterDataByPeriod(pettyCash, sortPeriod)
   const filteredGrocery = filterDataByPeriod(grocery, sortPeriod)
 
+  const currentYear = new Date().getFullYear()
+  const registeredStudents = students.filter(student => 
+    transactions.some(transaction => 
+      transaction.studentId === student.$id && 
+      new Date(transaction.paymentDate).getFullYear() === currentYear
+    )
+  )
+  const unregisteredStudents = students.filter(student => 
+    !transactions.some(transaction => 
+      transaction.studentId === student.$id && 
+      new Date(transaction.paymentDate).getFullYear() === currentYear
+    )
+  )
+
+  const classData = classes.map(cls => ({
+    name: cls.name,
+    students: students.filter(student => student.studentClass === cls.$id).length
+  }))
+
+  const upcomingBirthdays = [...students, ...stuff]
+    .filter(person => {
+      const birthday = new Date(person.dateOfBirth)
+      const today = new Date()
+      const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)
+      birthday.setFullYear(today.getFullYear())
+      return birthday >= today && birthday <= nextWeek
+    })
+    .sort((a, b) => new Date(a.dateOfBirth).getTime() - new Date(b.dateOfBirth).getTime())
+
+  const outstandingFeesPercentage = (totalOutstanding / (totalRevenue + totalOutstanding)) * 100
+
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8']
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -194,32 +162,31 @@ export default function Dashboard() {
         <QuickStatCard
           icon={<GraduationCap className="h-6 w-6" />}
           title="Total Students"
-          value={isLoading ? <Skeleton className="h-8 w-16" /> : students.length}
+          value={students.length}
           color="bg-blue-500"
         />
         <QuickStatCard
           icon={<Users className="h-6 w-6" />}
           title="Total Teachers"
-          value={isLoading ? <Skeleton className="h-8 w-16" /> : stuff.length}
+          value={stuff.length}
           color="bg-purple-500"
         />
         <QuickStatCard
           icon={<BookOpen className="h-6 w-6" />}
           title="Total Classes"
-          value={isLoading ? <Skeleton className="h-8 w-16" /> : classes.length}
+          value={classes.length}
           color="bg-orange-500"
         />
         <QuickStatCard
           icon={<CalendarIcon className="h-6 w-6" />}
           title="Upcoming Events"
-          value={isLoading ? <Skeleton className="h-8 w-16" /> : events.length}
+          value={events.length}
           color="bg-pink-500"
         />
       </div>
 
       {/* Financial Summary */}
-      {/* <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">       */}
-        <div className="hidden gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
         {summaryCards.map((card, index) => (
           <motion.div
             key={card.title}
@@ -238,6 +205,93 @@ export default function Dashboard() {
             </Card>
           </motion.div>
         ))}
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-2 mb-8">
+        {/* Registration Status */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Student Registration Status ({currentYear})</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={[
+                    { name: 'Registered', value: registeredStudents.length },
+                    { name: 'Unregistered', value: unregisteredStudents.length }
+                  ]}
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                >
+                  {
+                    [0, 1].map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))
+                  }
+                </Pie>
+                <Tooltip />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        {/* Class Distribution */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Class Distribution</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={classData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="students" fill="#8884d8" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-2 mb-8">
+        {/* Upcoming Birthdays */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Upcoming Birthdays (Next 7 Days)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-2">
+              {upcomingBirthdays.map((person, index) => (
+                <li key={index} className="flex items-center space-x-2">
+                  <CakeIcon className="h-5 w-5 text-pink-500" />
+                  <span>{person.firstName} {person.surname} - {new Date(person.dateOfBirth).toLocaleDateString()}</span>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+
+        {/* Outstanding Fees */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Outstanding Fees</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-4xl font-bold mb-4">{outstandingFeesPercentage.toFixed(2)}%</div>
+            <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+              <div className="bg-red-600 h-2.5 rounded-full" style={{ width: `${outstandingFeesPercentage}%` }}></div>
+            </div>
+            <p className="mt-2 text-sm text-gray-600">Total Outstanding: R {totalOutstanding.toFixed(2)}</p>
+          </CardContent>
+        </Card>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -311,7 +365,7 @@ export default function Dashboard() {
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
-                    {/* <PettyCash onSuccess={fetchData} /> */}
+                    {/* Petty Cash form would go here */}
                   </DialogContent>
                 </Dialog>
                 <Dialog>
@@ -322,7 +376,7 @@ export default function Dashboard() {
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
-                    {/* <Grocery onSuccess={fetchData} /> */}
+                    {/* Grocery form would go here */}
                   </DialogContent>
                 </Dialog>
               </div>
@@ -357,7 +411,6 @@ export default function Dashboard() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      
                       {filteredPettyCash.map((item) => (
                         <TableRow key={item.$id} className="hover:bg-green-50">
                           <TableCell>{new Date(item.date).toLocaleDateString()}</TableCell>
@@ -410,4 +463,3 @@ function QuickStatCard({ icon, title, value, color }: { icon: React.ReactNode, t
     </Card>
   )
 }
-

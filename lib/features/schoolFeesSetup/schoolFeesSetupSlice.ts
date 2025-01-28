@@ -9,7 +9,6 @@ export const fetchSchoolFeesSetup = createAsyncThunk('schoolFeesSetup/fetchSchoo
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    console.log('Response:', response);
     return (await response.json()) as ISchoolFees[];
   } catch (error: any) {
     console.error('Error fetching schoolFeesSetup:', error);

@@ -11,13 +11,10 @@ import { Button } from "@/components/ui/button"
 import { Form } from "@/components/ui/form"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import CustomInput from "@/components/ui/CustomInput"
-import { Select1, SelectContent, SelectItem, SelectTrigger, SelectValue1 } from "@/components/ui/select"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
 import { toast } from "@/hooks/use-toast"
 import { newStuffFormSchema } from "@/lib/utils"
 import { newStuff } from "@/lib/actions/user.actions"
-import { autocomplete } from "@/lib/google"
-// import { PlaceAutocompleteResult } from "@googlemaps/google-maps-services-js"
 
 const formSchema = newStuffFormSchema()
 
@@ -25,7 +22,6 @@ export default function AddStuff() {
   const [formData, setFormData] = useState({})
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  // const [predictions, setPredictions] = useState<PlaceAutocompleteResult[]>([])
   const [input, setInput] = useState("")
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
   const router = useRouter()
@@ -78,6 +74,7 @@ export default function AddStuff() {
         ...stuffData,
         secondName: stuffData.secondName || '' // Provide a default empty string if secondName is undefined
       };
+      console.log("New Stuff Data:", newStuffData);
       await newStuff(newStuffData)
       toast({
         title: "Success",
