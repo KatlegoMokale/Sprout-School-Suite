@@ -5,11 +5,6 @@ import { cookies } from "next/headers";
 import { ID } from "node-appwrite";
 import { parseStringify } from "../utils";
 
-interface NewStuffResponse {
-  success: boolean;
-  message: string;
-}
-
 
 // export const signIn = async ({email, password}: signInProps) => {
 //   try {
@@ -123,31 +118,24 @@ export const newClass = async (classData: NewClassParms) => {
   }
 }
 
-export const newStuff = async (stuffData: NewStuffParams): Promise<NewStuffResponse> => {
-  console.log("Attempting to add new staff member:", stuffData);
+export const newStuff = async (stuffData: NewStuffParams) => {
+  console.log("stuff", stuffData);
   try {
-    const response = await fetch(`${getBaseUrl()}/api/stuff`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(stuffData),
-    });
-    
-    const responseData = await response.json();
-    console.log("Response from API:", responseData);
-
-    if (response.ok) {
-      console.log("Staff member added successfully!");
-      return { success: true, message: "Staff member added successfully" };
-    } else {
-      console.error("Staff submission failed. Status:", response.status);
-      console.error("Error message:", responseData.message || "Unknown error");
-      return { success: false, message: responseData.message || "Staff submission failed" };
-    }
+      const response = await fetch(`${getBaseUrl()}/api/stuff`, {
+          method: "POST",
+          headers: {
+              "Content-Type": "application.json",
+          },
+          body: JSON.stringify(stuffData),
+      });
+      if (response.ok) {
+          console.log("Stuff added successfully!");
+        } else {
+          console.error("Stuff submission failed.");
+          throw new Error("Stuff submission failed.");
+        }
   } catch (error) {
-    console.error("Error in newStuff function:", error);
-    return { success: false, message: error instanceof Error ? error.message : "An unknown error occurred" };
+    console.log(error);
   }
 }
 
