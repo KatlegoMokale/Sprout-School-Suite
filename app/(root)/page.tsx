@@ -19,8 +19,16 @@ import { fetchTransactions, selectTransactions } from "@/lib/features/transactio
 import { fetchPettyCash, selectPettyCash } from "@/lib/features/pettyCash/pettyCashSlice"
 import { fetchGroceries, selectGroceries } from "@/lib/features/grocery/grocerySlice"
 import { fetchSchoolFeesSetup, selectSchoolFeesSetup } from '@/lib/features/schoolFeesSetup/schoolFeesSetupSlice'
+import { fetchStudentSchoolFees, selectStudentSchoolFees, selectStudentSchoolFeesStatus } from '@/lib/features/studentSchoolFees/studentSchoolFeesSlice'
 import { useDispatch, useSelector } from "react-redux"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
+import { useGetStudentsQuery } from '@/lib/features/api/apiSlice'
+import { IStudentFeesSchema } from "@/lib/utils";
+
+// Add this function before the Dashboard component
+const calculateTotal = (data: any[], field: string): number => {
+  return data.reduce((sum, item) => sum + (Number(item[field]) || 0), 0);
+};
 
 export default function Dashboard() {
   const dispatch = useDispatch<AppDispatch>()
@@ -32,46 +40,93 @@ export default function Dashboard() {
   const { pettyCash, pettyCashStatus } = useSelector((state: RootState) => state.pettyCash)
   const { grocery, groceryStatus } = useSelector((state: RootState) => state.groceries)
   const { schoolFeesSetup, schoolFeesSetupStatus } = useSelector((state: RootState) => state.schoolFeesSetup)
+  const { studentSchoolFees, studentSchoolFeesStatus } = useSelector((state: RootState) => state.studentSchoolFees)
 
   const [sortPeriod, setSortPeriod] = useState("all")
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    const fetchAllData = async () => {
-      try {
-        await Promise.all([
-          dispatch(fetchStudents()),
-          dispatch(fetchClasses()),
-          dispatch(fetchStuff()),
-          dispatch(fetchTransactions()),
-          dispatch(fetchEvents()),
-          dispatch(fetchPettyCash()),
-          dispatch(fetchGroceries()),
-          dispatch(fetchSchoolFeesSetup())
-        ])
-      } catch (error) {
-        console.error("Error fetching data:", error)
-        setError("Failed to fetch data. Please try again later.")
-      } finally {
-        setIsLoading(false)
-      }
-    }
+  const {
+    data: studentsData,
+    isLoading: studentsLoading,
+    error: studentsError
+  } = useGetStudentsQuery({});
 
-    fetchAllData()
-  }, [dispatch])
-
-  const calculateTotal = (data: any[], key: string) => {
-    return data.reduce((total, item) => total + item[key], 0)
-  }
-
-  const totalRevenue = useMemo(() => calculateTotal(transactions, 'amount'), [transactions])
-  const totalIncome = totalRevenue
-  const totalExpenses = useMemo(() => calculateTotal(pettyCash, 'price') + calculateTotal(grocery, 'totalPaid'), [pettyCash, grocery])
+  // Calculate financial data from existing data
+  const totalRevenue = useMemo(() => 
+    transactions.reduce((sum, t) => sum + t.amount, 0), 
+    [transactions]
+  );
+  
+  const totalIncome = totalRevenue;
+  
+  const totalExpenses = useMemo(() => 
+    pettyCash.reduce((sum, p) => sum + p.price, 0) + 
+    grocery.reduce((sum, g) => sum + g.totalPaid, 0), 
+    [pettyCash, grocery]
+  );
+  
   const totalOutstanding = useMemo(() => {
-    const totalFees = schoolFeesSetup.reduce((sum, fee) => sum + fee.yearlyFee, 0)
-    return totalFees - totalIncome
-  }, [schoolFeesSetup, totalIncome])
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear();
+    const currentMonth = currentDate.getMonth() + 1; // 1-12
+
+    console.log('Current Month:', currentMonth);
+    console.log('Student fees:', studentSchoolFees);
+    console.log('Transactions:', transactions);
+
+    // Calculate total outstanding from student fees and transactions
+    const totalOutstanding = studentSchoolFees.reduce((sum: number, fee: IStudentFeesSchema) => {
+      // Only include fees for the current year
+      if (new Date(fee.startDate).getFullYear() === currentYear) {
+        const startDate = new Date(fee.startDate);
+        const startMonth = startDate.getMonth() + 1; // 1-12
+        const startYear = startDate.getFullYear();
+
+        // Calculate number of months from start date to current month
+        const monthsToPay = (currentYear - startYear) * 12 + (currentMonth - startMonth) + 1;
+
+        // Calculate total fees due
+        const monthlyFee = fee.fees;
+        const totalFeesDue = monthlyFee * monthsToPay;
+
+        // Get student's transactions for this year
+        const studentTransactions = transactions.filter(t => 
+          t.studentId === fee.studentId && 
+          new Date(t.paymentDate).getFullYear() === currentYear
+        );
+
+        // Calculate total payments made
+        const totalPayments = studentTransactions.reduce((sum, t) => sum + t.amount, 0);
+
+        // Get student details for logging
+        const student = students.find(s => s.$id === fee.studentId);
+        const studentName = student ? `${student.firstName} ${student.surname}` : 'Unknown Student';
+
+        console.log('Student Details:', {
+          name: studentName,
+          studentId: fee.studentId,
+          monthlyFee,
+          monthsToPay,
+          totalFeesDue,
+          totalPayments,
+          outstanding: totalFeesDue - totalPayments,
+          transactions: studentTransactions.map(t => ({
+            date: new Date(t.paymentDate).toLocaleDateString(),
+            amount: t.amount,
+            type: t.paymentMethod
+          }))
+        });
+
+        return sum + (totalFeesDue - totalPayments);
+      }
+      return sum;
+    }, 0);
+
+    console.log('Total outstanding:', totalOutstanding);
+
+    return totalOutstanding;
+  }, [studentSchoolFees, transactions, students]);
 
   const summaryCards = [
     { title: "Total Revenue", amount: totalRevenue, icon: DollarSign, color: "bg-green-500" },
@@ -137,20 +192,22 @@ export default function Dashboard() {
     })
     .sort((a, b) => new Date(a.dateOfBirth).getTime() - new Date(b.dateOfBirth).getTime())
 
-  const outstandingFeesPercentage = (totalOutstanding / (totalRevenue + totalOutstanding)) * 100
+  const outstandingFeesPercentage = totalOutstanding 
+    ? (totalOutstanding / (totalRevenue + totalOutstanding)) * 100 
+    : 0;
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8']
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-green-500"></div>
-      </div>
-    )
+  useEffect(() => {
+    if (studentSchoolFeesStatus === 'idle') dispatch(fetchStudentSchoolFees());
+  }, [dispatch, studentSchoolFeesStatus]);
+
+  if (studentsLoading) {
+    return <div>Loading...</div>;
   }
 
-  if (error) {
-    return <div className="text-center py-10 text-red-500">{error}</div>
+  if (studentsError) {
+    return <div>Error loading data</div>;
   }
 
   return (
@@ -392,11 +449,11 @@ export default function Dashboard() {
                     <TableBody>
                       <TableRow className="hover:bg-green-50">
                         <TableCell>Grocery</TableCell>
-                        <TableCell className="text-right">R {calculateTotal(filteredGrocery, 'totalPaid').toFixed(2)}</TableCell>
+                        <TableCell className="text-right">R {filteredGrocery.reduce((acc, item) => acc + item.totalPaid, 0).toFixed(2)}</TableCell>
                       </TableRow>
                       <TableRow className="hover:bg-green-50">
                         <TableCell>Petty Cash</TableCell>
-                        <TableCell className="text-right">R {calculateTotal(filteredPettyCash, 'price').toFixed(2)}</TableCell>
+                        <TableCell className="text-right">R {filteredPettyCash.reduce((acc, item) => acc + item.price, 0).toFixed(2)}</TableCell>
                       </TableRow>
                     </TableBody>
                   </Table>

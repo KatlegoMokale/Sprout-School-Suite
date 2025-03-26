@@ -33,6 +33,7 @@ const adjustPaymentDate = (year: number, month: number, day: number): Date => {
 const generateStatementItems = (transactions: ITransactions[], fees: IStudentFeesSchema[], schoolFees: ISchoolFees[]) => {
   const items = [];
   let balance = 0;
+  const currentDate = new Date();
 
   // Sort fees by startDate
   fees.sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
@@ -42,62 +43,67 @@ const generateStatementItems = (transactions: ITransactions[], fees: IStudentFee
     const startDate = new Date(fee.startDate);
     const endDate = new Date(fee.endDate);
 
-    // Find the corresponding school fee
-    const schoolFee = schoolFees.find(sf => sf.$id === fee.schoolFeesRegId);
-    if (schoolFee) {
-      // Add registration fee
-      balance += schoolFee.registrationFee;
-      items.push({
-        date: startDate.toISOString(),
-        description: `Registration Fee`,
-        debit: schoolFee.registrationFee,
-        credit: 0,
-        balance: balance
-      });
-    }
+    // Only process if start date is before or equal to current date
+    if (startDate <= currentDate) {
+      // Find the corresponding school fee
+      const schoolFee = schoolFees.find(sf => sf.$id === fee.schoolFeesRegId);
+      if (schoolFee) {
+        // Add registration fee
+        balance += schoolFee.registrationFee;
+        items.push({
+          date: startDate.toISOString(),
+          description: `Registration Fee`,
+          debit: schoolFee.registrationFee,
+          credit: 0,
+          balance: balance
+        });
+      }
 
-    // Add first monthly fee on startDate
-    balance += fee.fees;
-    items.push({
-      date: startDate.toISOString(),
-      description: `Monthly Fee - ${startDate.toLocaleString('default', { month: 'long' })}`,
-      debit: fee.fees,
-      credit: 0,
-      balance: balance
-    });
-
-    let currentDate = new Date(startDate);
-    currentDate.setMonth(currentDate.getMonth() + 1); // Move to next month for subsequent fees
-
-    while (currentDate <= endDate) {
-      // Adjust the date to be a month earlier
-      const feeDate = adjustPaymentDate(currentDate.getFullYear(), currentDate.getMonth() - 1, fee.paymentDate);
-      
-      // Add monthly fee
+      // Add first monthly fee on startDate
       balance += fee.fees;
       items.push({
-        date: feeDate.toISOString(),
-        description: `Monthly Fee - ${currentDate.toLocaleString('default', { month: 'long' })}`,
+        date: startDate.toISOString(),
+        description: `Monthly Fee - ${startDate.toLocaleString('default', { month: 'long' })}`,
         debit: fee.fees,
         credit: 0,
         balance: balance
       });
 
-      currentDate.setMonth(currentDate.getMonth() + 1);
+      let currentDate = new Date(startDate);
+      currentDate.setMonth(currentDate.getMonth() + 1); // Move to next month for subsequent fees
+
+      while (currentDate <= endDate && currentDate <= new Date()) {
+        // Adjust the date to be a month earlier
+        const feeDate = adjustPaymentDate(currentDate.getFullYear(), currentDate.getMonth() - 1, fee.paymentDate);
+        
+        // Add monthly fee
+        balance += fee.fees;
+        items.push({
+          date: feeDate.toISOString(),
+          description: `Monthly Fee - ${currentDate.toLocaleString('default', { month: 'long' })}`,
+          debit: fee.fees,
+          credit: 0,
+          balance: balance
+        });
+
+        currentDate.setMonth(currentDate.getMonth() + 1);
+      }
     }
   }
 
   // Add transaction items
   for (const transaction of transactions) {
     const transactionDate = new Date(transaction.paymentDate);
-    balance -= transaction.amount;
-    items.push({
-      date: transactionDate.toISOString(),
-      description: `Payment - ${transaction.paymentMethod}`,
-      debit: 0,
-      credit: transaction.amount,
-      balance: balance
-    });
+    if (transactionDate <= currentDate) {
+      balance -= transaction.amount;
+      items.push({
+        date: transactionDate.toISOString(),
+        description: `Payment - ${transaction.paymentMethod}`,
+        debit: 0,
+        credit: transaction.amount,
+        balance: balance
+      });
+    }
   }
 
   // Sort items by date

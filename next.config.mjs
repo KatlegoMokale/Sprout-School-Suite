@@ -4,6 +4,7 @@ const nextConfig = {
     reactStrictMode: true,
     images: {
       unoptimized: true,
+      domains: ['cloud.appwrite.io'],
     },
     env: {
       NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,

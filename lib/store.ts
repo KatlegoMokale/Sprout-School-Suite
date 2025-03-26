@@ -1,4 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit'
+import { setupListeners } from '@reduxjs/toolkit/query'
+import { api } from './features/api/apiSlice'
 import studentsReducer from './features/students/studentsSlice'
 import classesReducer  from './features/classes/classesSlice'
 import groceryReducer  from './features/grocery/grocerySlice'
@@ -8,8 +10,6 @@ import pettyCashReducer  from './features/pettyCash/pettyCashSlice'
 import eventsReducer  from './features/events/eventsSlice'
 import studentSchoolFeesReducer  from './features/studentSchoolFees/studentSchoolFeesSlice'
 import schoolFeesSetupReducer  from './features/schoolFeesSetup/schoolFeesSetupSlice'
-
-
 
 const loadState = () => {
   try {
@@ -31,22 +31,27 @@ const saveState = (state: RootState) => {
     // Ignore write errors
   }
 }
+
 const preloadedState = loadState()
 
 export const store = configureStore({
   reducer: {
-     students: studentsReducer,
-     stuff: stuffReducer,
-     classes: classesReducer,
-     groceries: groceryReducer,
-     transactions: transactionReducer,
-     pettyCash: pettyCashReducer,
-     events: eventsReducer,
-     studentSchoolFees: studentSchoolFeesReducer,
-     schoolFeesSetup: schoolFeesSetupReducer,
-     
+    [api.reducerPath]: api.reducer,
+    students: studentsReducer,
+    stuff: stuffReducer,
+    classes: classesReducer,
+    groceries: groceryReducer,
+    transactions: transactionReducer,
+    pettyCash: pettyCashReducer,
+    events: eventsReducer,
+    studentSchoolFees: studentSchoolFeesReducer,
+    schoolFeesSetup: schoolFeesSetupReducer,
   },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().concat(api.middleware),
 })
+
+setupListeners(store.dispatch)
 
 store.subscribe(() => {
   saveState(store.getState())

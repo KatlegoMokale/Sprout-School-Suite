@@ -16,15 +16,6 @@ import {
 import { DialogContent, DialogDescription } from "@/components/ui/dialog";
 import Link from "next/link";
 import { Check, ChevronLeft } from "lucide-react";
-import { autocomplete } from "@/lib/google";
-import { PlaceAutocompleteResult } from "@googlemaps/google-maps-services-js";
-import {
-  Command,
-  CommandInput,
-  CommandGroup,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -43,72 +34,15 @@ import { AlertDialogTitle } from "@radix-ui/react-alert-dialog";
 const formSchema = newStuffFormSchema();
 
 const EditStuff = ({ params }: { params: Promise<{ id: string }> }) => {
-  const [stuffData, setStuffData] = useState<IStuff[] | null>(null);
-  const [formData, setFormData] = useState({});
+  const [stuffData, setStuffData] = useState<IStuff | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
-  const [predictions, setPredictions] = useState<PlaceAutocompleteResult[]>([]);
-  const [input, setInput] = useState("");
-  const [selectedAddress, setSelectedAddress] =
-    useState<PlaceAutocompleteResult | null>(null);
-  const [onSelectedAddress, setOnSelectedAddress] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [formData, setFormData] = useState<NewStuffParams | null>(null);
+  const router = useRouter();
 
-  useEffect(() => {
-    const fetchPredictions = async () => {
-      const predictions = await autocomplete(input);
-      setPredictions(predictions ?? []);
-      console.log("Predictions:", predictions);
-    };
-    fetchPredictions();
-  }, [input]);
-
-  const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
-    setSelectedAddress(prediction);
-    setInput(prediction.description); // Update input for display
-
-    // Extract address components from prediction
-    console.log(prediction.terms);
-    console.log(
-      "Address:" +
-        prediction.terms[0].value +
-        " " +
-        prediction.terms[1].value +
-        " " +
-        prediction.terms[2].value +
-        " " +
-        prediction.terms[3].value
-    );
-    const addressComponents = prediction.terms;
-    const address1 =
-      addressComponents[0].value + " " + addressComponents[1].value;
-    const city = addressComponents[2].value;
-
-    console.log("Address Components:", address1, city);
-
-    // Update form fields
-    form.setValue("address1", address1 + ", " + city);
-  };
-
-  {
-    predictions.length > 0 && (
-      <ul>
-        {predictions.map((prediction) => (
-          <li
-            key={prediction.place_id}
-            onClick={() => handlePredictionSelect(prediction)}
-          >
-            {prediction.description}
-          </li>
-        ))}
-      </ul>
-    );
-  }
-
-  const stuffFormSchema = newStuffFormSchema();
-  const form = useForm<z.infer<typeof stuffFormSchema>>({
-    resolver: zodResolver(stuffFormSchema),
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
   });
 
   useEffect(() => {
@@ -157,7 +91,7 @@ const EditStuff = ({ params }: { params: Promise<{ id: string }> }) => {
     }
   };
 
-  const onSubmit = async (data: z.infer<typeof stuffFormSchema>) => {
+  const onSubmit = async (data: z.infer<typeof formSchema>) => {
     setIsConfirmOpen(true);
     const stuffData: NewStuffParams = {
       firstName: data.firstName,
@@ -192,9 +126,6 @@ const EditStuff = ({ params }: { params: Promise<{ id: string }> }) => {
     <div className="flex flex-col gap-4 container mx-auto py-10">
       <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
         <AlertDialogTrigger asChild>
-          {/* <Button type="submit" disabled={isLoading} className="form-btn">
-          {isLoading ? "Updating..." : "Update"}
-        </Button> */}
         </AlertDialogTrigger>
         <AlertDialogTitle className="hidden">Confirm</AlertDialogTitle>
         <AlertDialogContent>
@@ -218,6 +149,7 @@ const EditStuff = ({ params }: { params: Promise<{ id: string }> }) => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      
       <Form {...form}>
         <div>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
@@ -291,47 +223,6 @@ const EditStuff = ({ params }: { params: Promise<{ id: string }> }) => {
                 label={"Email"}
               />
 
-              <div className="col-span-2">
-                <Command className="">
-                  <CommandInput
-                    placeholder="Search for address..."
-                    className=""
-                    value={input}
-                    onValueChange={(value) => {
-                      setInput(value);
-                      setOnSelectedAddress(false);
-                    }}
-                  />
-                  <CommandList>
-                    {/* <CommandEmpty>No cities found.</CommandEmpty> */}
-                    <CommandGroup>
-                      {predictions.map((prediction) => (
-                        <CommandItem
-                          key={prediction.place_id}
-                          onSelect={(currentValue) => {
-                            // form.setValue("address1", currentValue);
-                            // console.log(currentValue);
-                            // console.log(prediction);
-                            handlePredictionSelect(prediction);
-                            setOnSelectedAddress(true);
-                          }}
-                        >
-                          {!onSelectedAddress ? prediction.description : ""}
-                          {/* {prediction.description} */}
-                          {/* <Check
-                                className={cn(
-                                  "mr-2 h-4 w-4",
-                                  city.place_id === form.getValues("city")
-                                    ? "opacity-100"
-                                    : "opacity-0"
-                                )}
-                              /> */}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </div>
               <div className="col-span-2">
                 <CustomInput
                   name="address1"

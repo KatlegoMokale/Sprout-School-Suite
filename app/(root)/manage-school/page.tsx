@@ -21,7 +21,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { MapPin, Phone, MoreHorizontal, PlusCircle, Search, Filter } from "lucide-react"
+import { MapPin, Phone, MoreHorizontal, PlusCircle, Search, Filter, Trash2, Edit } from "lucide-react"
 import Link from "next/link"
 import Classes from "@/components/ui/ClassForm"
 import Event from "@/components/ui/event"
@@ -36,6 +36,17 @@ import { fetchStuff, selectStuff } from "@/lib/features/stuff/stuffSlice"
 import { fetchTransactions, selectTransactions } from "@/lib/features/transactions/transactionsSlice"
 import { fetchPettyCash, selectPettyCash } from "@/lib/features/pettyCash/pettyCashSlice"
 import { fetchGroceries, selectGroceries } from "@/lib/features/grocery/grocerySlice"
+import { toast } from "@/hooks/use-toast"
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog"
 
 
 
@@ -51,6 +62,8 @@ export default function CreativeStaffManagement() {
   const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedPosition, setSelectedPosition] = useState<string | null>(null)
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [itemToDelete, setItemToDelete] = useState<{ id: string; type: 'class' | 'event' } | null>(null)
 
   useEffect(() => {
     // Fetch stuff and classes if they haven't been fetched yet
@@ -108,6 +121,40 @@ export default function CreativeStaffManagement() {
     const positionMatch = !selectedPosition || member.position.toLowerCase() === selectedPosition.toLowerCase()
     return nameMatch && positionMatch
   })
+
+  const handleDelete = async () => {
+    if (!itemToDelete) return
+
+    try {
+      const response = await fetch(`/api/${itemToDelete.type}/${itemToDelete.id}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) throw new Error('Failed to delete item')
+
+      toast({
+        title: "Success",
+        description: `${itemToDelete.type.charAt(0).toUpperCase() + itemToDelete.type.slice(1)} deleted successfully`,
+      })
+
+      // Refresh the data
+      if (itemToDelete.type === 'class') {
+        dispatch(fetchClasses())
+      } else {
+        dispatch(fetchEvents())
+      }
+
+      setIsDeleteDialogOpen(false)
+      setItemToDelete(null)
+    } catch (error) {
+      console.error('Error deleting item:', error)
+      toast({
+        title: "Error",
+        description: `Failed to delete ${itemToDelete.type}`,
+        variant: "destructive",
+      })
+    }
+  }
 
   if (isLoading) return <div className="flex items-center justify-center h-screen">
     <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-emerald-500"></div>
@@ -230,7 +277,7 @@ export default function CreativeStaffManagement() {
                   <Classes />
                 </DialogContent>
               </Dialog>
-              <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
+              <div className="space-y-4">
                 {classes.map((classData, index) => (
                   <motion.div
                     key={classData.$id}
@@ -240,8 +287,37 @@ export default function CreativeStaffManagement() {
                   >
                     <Card className="bg-gray-50 hover:bg-gray-100 transition-colors duration-200">
                       <CardContent className="p-4">
-                        <h3 className="font-semibold text-lg mb-1">Class {classData.name}</h3>
-                        <p className="text-sm text-gray-600">Teacher: {classData.teacherName}</p>
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h3 className="font-semibold text-lg mb-1">Class {classData.name}</h3>
+                            <p className="text-sm text-gray-600">Teacher: {classData.teacherName}</p>
+                          </div>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                <MoreHorizontal className="h-4 w-4" />
+                                <span className="sr-only">Open menu</span>
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem asChild>
+                                <Link href={`/manage-school/class/${classData.$id}`}>
+                                  <Edit className="h-4 w-4 mr-2" />
+                                  Edit
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  setItemToDelete({ id: classData.$id, type: 'class' })
+                                  setIsDeleteDialogOpen(true)
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4 mr-2 text-red-500" />
+                                Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
                       </CardContent>
                     </Card>
                   </motion.div>
@@ -249,41 +325,70 @@ export default function CreativeStaffManagement() {
               </div>
             </CardContent>
           </Card>
-          <Card className="bg-white shadow-xl rounded-lg overflow-hidden mt-4">
-          <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-4">
+          <Card className="bg-white shadow-xl rounded-lg overflow-hidden mt-6">
+            <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-4">
               <h2 className="text-2xl font-bold text-white mb-2">Events</h2>
               <p className="text-blue-100">Overview of all Events</p>
             </div>
             <CardContent className="p-4">
-            <Dialog>
+              <Dialog>
                 <DialogTrigger asChild>
                   <Button className="w-full mb-4 bg-purple-500 hover:bg-purple-600 text-white">
                     <PlusCircle className="h-4 w-4 mr-2" />
                     Create New Event
                   </Button>
                 </DialogTrigger>
-                <DialogContent className=" bg-white">
+                <DialogContent className="bg-white">
                   <DialogHeader className="hidden">
                     <DialogTitle>Create New Event</DialogTitle>
-                    <DialogDescription>Add a new class to the system.</DialogDescription>
+                    <DialogDescription>Add a new event to the system.</DialogDescription>
                   </DialogHeader>
-                  <Event/>
+                  <Event />
                 </DialogContent>
               </Dialog>
-              <div className="space-y-4 max-h-96 overflow-y-auto pr-2">
-                {events.map((events, index) => (
+              <div className="space-y-4">
+                {events.map((event: IEvent, index) => (
                   <motion.div
-                    key={events.$id}
+                    key={event.$id}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.3, delay: index * 0.1 }}
                   >
                     <Card className="bg-gray-50 hover:bg-gray-100 transition-colors duration-200">
                       <CardContent className="p-4">
-                        <h3 className="font-semibold text-lg mb-1">Class {events.eventName}</h3>
-                        <p className="text-sm text-gray-600">Description: {events.description}</p>
-                        <p className="text-sm text-gray-600">Price: R {events.amount}.00</p>
-                        <p className="text-sm text-gray-600">Total Paid: TBA</p>
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h3 className="font-semibold text-lg mb-1">{event.eventName}</h3>
+                            <p className="text-sm text-gray-600">Description: {event.description}</p>
+                            <p className="text-sm text-gray-600">Price: R {event.amount}.00</p>
+                            <p className="text-sm text-gray-600">Date: {new Date(event.date).toLocaleDateString()}</p>
+                          </div>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                <MoreHorizontal className="h-4 w-4" />
+                                <span className="sr-only">Open menu</span>
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem asChild>
+                                <Link href={`/manage-school/event/${event.$id}`}>
+                                  <Edit className="h-4 w-4 mr-2" />
+                                  Edit
+                                </Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  setItemToDelete({ id: event.$id, type: 'event' })
+                                  setIsDeleteDialogOpen(true)
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4 mr-2 text-red-500" />
+                                Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
                       </CardContent>
                     </Card>
                   </motion.div>
@@ -293,6 +398,28 @@ export default function CreativeStaffManagement() {
           </Card>
         </div>
       </div>
+
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the {itemToDelete?.type}.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => {
+              setIsDeleteDialogOpen(false)
+              setItemToDelete(null)
+            }}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-red-500 hover:bg-red-600">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

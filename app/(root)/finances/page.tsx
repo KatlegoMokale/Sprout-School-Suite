@@ -11,6 +11,7 @@ import { Select1, SelectContent, SelectItem, SelectTrigger, SelectValue1 } from 
 import { PiggyBank, ShoppingCart, DollarSign, TrendingUp, TrendingDown, CreditCard, Calendar } from "lucide-react"
 import PettyCash from "@/components/ui/pettyCash"
 import Grocery from "@/components/ui/grocery"
+import PinLock from "@/components/ui/PinLock"
 
 interface Transaction {
   $id: string
@@ -42,6 +43,7 @@ interface GroceryItem {
 }
 
 export default function FinancialDashboard() {
+  const [isUnlocked, setIsUnlocked] = useState(false)
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [students, setStudents] = useState<Student[]>([])
   const [pettyCash, setPettyCash] = useState<PettyCashItem[]>([])
@@ -131,6 +133,10 @@ export default function FinancialDashboard() {
   const filteredPettyCash = filterDataByPeriod(pettyCash, sortPeriod)
   const filteredGrocery = filterDataByPeriod(grocery, sortPeriod)
 
+  const handleUnlock = () => {
+    setIsUnlocked(true)
+  }
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -144,188 +150,190 @@ export default function FinancialDashboard() {
   }
 
   return (
-    <div className="px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">Financial Dashboard</h1>
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        {summaryCards.map((card, index) => (
-          <motion.div
-            key={card.title}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: index * 0.1 }}
-          >
-            <Card className={`${card.color} text-white`}>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-lg font-medium">{card.title}</CardTitle>
-                <card.icon className="h-5 w-5 opacity-75" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">R {card.amount.toFixed(2)}</div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        ))}
-      </div>
+    <PinLock onUnlock={handleUnlock}>
+      <div className="px-4 py-8">
+        <h1 className="text-3xl font-bold mb-8">Financial Dashboard</h1>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          {summaryCards.map((card, index) => (
+            <motion.div
+              key={card.title}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.1 }}
+            >
+              <Card className={`${card.color} text-white`}>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-lg font-medium">{card.title}</CardTitle>
+                  <card.icon className="h-5 w-5 opacity-75" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">R {card.amount.toFixed(2)}</div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
+        </div>
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-2 overflow-hidden">
-          <CardHeader className="bg-gray-50 border-b">
-            <div className="flex justify-between items-center">
-              <CardTitle className="text-xl font-semibold">Recent Transactions</CardTitle>
-              <Select1 value={sortPeriod} onValueChange={setSortPeriod}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue1 placeholder="Sort by period" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Time</SelectItem>
-                  <SelectItem value="day">Today</SelectItem>
-                  <SelectItem value="week">This Week</SelectItem>
-                  <SelectItem value="month">This Month</SelectItem>
-                  <SelectItem value="year">This Year</SelectItem>
-                </SelectContent>
-              </Select1>
-            </div>
-          </CardHeader>
-          <CardContent className="p-0">
-            <div className="max-h-[400px] overflow-auto">
-              <Table>
-                <TableHeader className="bg-gray-50 sticky top-0">
-                  <TableRow>
-                    <TableHead className="w-[180px]">Student</TableHead>
-                    <TableHead>Age</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead className="text-right">Amount</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  <AnimatePresence>
-                    {filteredTransactions.map((transaction, index) => (
-                      <motion.tr
-                        key={transaction.$id}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.2, delay: index * 0.05 }}
-                        className="hover:bg-gray-50"
-                      >
-                        <TableCell className="font-medium">{transaction.firstName} {transaction.surname}</TableCell>
-                        <TableCell>
-                          {students.find(student => student.$id === transaction.studentId)?.age || 'N/A'}
-                        </TableCell>
-                        <TableCell>{transaction.paymentMethod}</TableCell>
-                        <TableCell>{new Date(transaction.paymentDate).toLocaleDateString()}</TableCell>
-                        <TableCell className="text-right">R {transaction.amount.toFixed(2)}</TableCell>
-                      </motion.tr>
-                    ))}
-                  </AnimatePresence>
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="mt-8 grid gap-6 lg:grid-cols-3">
+          <Card className="lg:col-span-2 overflow-hidden">
+            <CardHeader className="bg-gray-50 border-b">
+              <div className="flex justify-between items-center">
+                <CardTitle className="text-xl font-semibold">Recent Transactions</CardTitle>
+                <Select1 value={sortPeriod} onValueChange={setSortPeriod}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue1 placeholder="Sort by period" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Time</SelectItem>
+                    <SelectItem value="day">Today</SelectItem>
+                    <SelectItem value="week">This Week</SelectItem>
+                    <SelectItem value="month">This Month</SelectItem>
+                    <SelectItem value="year">This Year</SelectItem>
+                  </SelectContent>
+                </Select1>
+              </div>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="max-h-[400px] overflow-auto">
+                <Table>
+                  <TableHeader className="bg-gray-50 sticky top-0">
+                    <TableRow>
+                      <TableHead className="w-[180px]">Student</TableHead>
+                      <TableHead>Age</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead className="text-right">Amount</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <AnimatePresence>
+                      {filteredTransactions.map((transaction, index) => (
+                        <motion.tr
+                          key={transaction.$id}
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.2, delay: index * 0.05 }}
+                          className="hover:bg-gray-50"
+                        >
+                          <TableCell className="font-medium">{transaction.firstName} {transaction.surname}</TableCell>
+                          <TableCell>
+                            {students.find(student => student.$id === transaction.studentId)?.age || 'N/A'}
+                          </TableCell>
+                          <TableCell>{transaction.paymentMethod}</TableCell>
+                          <TableCell>{new Date(transaction.paymentDate).toLocaleDateString()}</TableCell>
+                          <TableCell className="text-right">R {transaction.amount.toFixed(2)}</TableCell>
+                        </motion.tr>
+                      ))}
+                    </AnimatePresence>
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
 
-        <Card className="overflow-hidden">
-          <CardHeader className="bg-gray-50 border-b">
-            <CardTitle className="text-xl font-semibold">Expenses</CardTitle>
-          </CardHeader>
-          <CardContent className="p-4">
-            <Tabs defaultValue="all">
-              <TabsList className="grid w-full grid-cols-3 mb-4">
-                <TabsTrigger value="all">All</TabsTrigger>
-                <TabsTrigger value="pettyCash">Petty Cash</TabsTrigger>
-                <TabsTrigger value="grocery">Grocery</TabsTrigger>
-              </TabsList>
-              <div className="mb-4 flex justify-between">
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button size="sm" variant="outline">
-                      <PiggyBank className="h-4 w-4 mr-2" />
-                      Petty Cash
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <PettyCash onSuccess={fetchData} />
-                  </DialogContent>
-                </Dialog>
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button size="sm" variant="outline">
-                      <ShoppingCart className="h-4 w-4 mr-2" />
-                      Grocery
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <Grocery onSuccess={fetchData} />
-                  </DialogContent>
-                </Dialog>
-              </div>
-              <div className="max-h-[300px] overflow-auto">
-                <TabsContent value="all">
-                  <Table>
-                    <TableHeader className="bg-gray-50 sticky top-0">
-                      <TableRow>
-                        <TableHead>Type</TableHead>
-                        <TableHead className="text-right">Total</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      <TableRow className="hover:bg-gray-50">
-                        <TableCell>Grocery</TableCell>
-                        <TableCell className="text-right">R {calculateTotal(filteredGrocery, 'totalPaid').toFixed(2)}</TableCell>
-                      </TableRow>
-                      <TableRow className="hover:bg-gray-50">
-                        <TableCell>Petty Cash</TableCell>
-                        <TableCell className="text-right">R {calculateTotal(filteredPettyCash, 'price').toFixed(2)}</TableCell>
-                      </TableRow>
-                    </TableBody>
-                  </Table>
-                </TabsContent>
-                <TabsContent value="pettyCash">
-                  <Table>
-                    <TableHeader className="bg-gray-50 sticky top-0">
-                      <TableRow>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Description</TableHead>
-                        <TableHead className="text-right">Amount</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredPettyCash.map((item) => (
-                        <TableRow key={item.$id} className="hover:bg-gray-50">
-                          <TableCell>{new Date(item.date).toLocaleDateString()}</TableCell>
-                          <TableCell>{item.itemName}</TableCell>
-                          <TableCell className="text-right">R {item.price.toFixed(2)}</TableCell>
+          <Card className="overflow-hidden">
+            <CardHeader className="bg-gray-50 border-b">
+              <CardTitle className="text-xl font-semibold">Expenses</CardTitle>
+            </CardHeader>
+            <CardContent className="p-4">
+              <Tabs defaultValue="all">
+                <TabsList className="grid w-full grid-cols-3 mb-4">
+                  <TabsTrigger value="all">All</TabsTrigger>
+                  <TabsTrigger value="pettyCash">Petty Cash</TabsTrigger>
+                  <TabsTrigger value="grocery">Grocery</TabsTrigger>
+                </TabsList>
+                <div className="mb-4 flex justify-between">
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button size="sm" variant="outline">
+                        <PiggyBank className="h-4 w-4 mr-2" />
+                        Petty Cash
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <PettyCash onSuccess={fetchData} />
+                    </DialogContent>
+                  </Dialog>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button size="sm" variant="outline">
+                        <ShoppingCart className="h-4 w-4 mr-2" />
+                        Grocery
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <Grocery onSuccess={fetchData} />
+                    </DialogContent>
+                  </Dialog>
+                </div>
+                <div className="max-h-[300px] overflow-auto">
+                  <TabsContent value="all">
+                    <Table>
+                      <TableHeader className="bg-gray-50 sticky top-0">
+                        <TableRow>
+                          <TableHead>Type</TableHead>
+                          <TableHead className="text-right">Total</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TabsContent>
-                <TabsContent value="grocery">
-                  <Table>
-                    <TableHeader className="bg-gray-50 sticky top-0">
-                      <TableRow>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Summary</TableHead>
-                        <TableHead className="text-right">Amount</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredGrocery.map((item) => (
-                        <TableRow key={item.$id} className="hover:bg-gray-50">
-                          <TableCell>{new Date(item.date).toLocaleDateString()}</TableCell>
-                          <TableCell>{item.summery}</TableCell>
-                          <TableCell className="text-right">R {item.totalPaid.toFixed(2)}</TableCell>
+                      </TableHeader>
+                      <TableBody>
+                        <TableRow className="hover:bg-gray-50">
+                          <TableCell>Grocery</TableCell>
+                          <TableCell className="text-right">R {calculateTotal(filteredGrocery, 'totalPaid').toFixed(2)}</TableCell>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TabsContent>
-              </div>
-            </Tabs>
-          </CardContent>
-        </Card>
+                        <TableRow className="hover:bg-gray-50">
+                          <TableCell>Petty Cash</TableCell>
+                          <TableCell className="text-right">R {calculateTotal(filteredPettyCash, 'price').toFixed(2)}</TableCell>
+                        </TableRow>
+                      </TableBody>
+                    </Table>
+                  </TabsContent>
+                  <TabsContent value="pettyCash">
+                    <Table>
+                      <TableHeader className="bg-gray-50 sticky top-0">
+                        <TableRow>
+                          <TableHead>Date</TableHead>
+                          <TableHead>Description</TableHead>
+                          <TableHead className="text-right">Amount</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredPettyCash.map((item) => (
+                          <TableRow key={item.$id} className="hover:bg-gray-50">
+                            <TableCell>{new Date(item.date).toLocaleDateString()}</TableCell>
+                            <TableCell>{item.itemName}</TableCell>
+                            <TableCell className="text-right">R {item.price.toFixed(2)}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TabsContent>
+                  <TabsContent value="grocery">
+                    <Table>
+                      <TableHeader className="bg-gray-50 sticky top-0">
+                        <TableRow>
+                          <TableHead>Date</TableHead>
+                          <TableHead>Summary</TableHead>
+                          <TableHead className="text-right">Amount</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredGrocery.map((item) => (
+                          <TableRow key={item.$id} className="hover:bg-gray-50">
+                            <TableCell>{new Date(item.date).toLocaleDateString()}</TableCell>
+                            <TableCell>{item.summery}</TableCell>
+                            <TableCell className="text-right">R {item.totalPaid.toFixed(2)}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TabsContent>
+                </div>
+              </Tabs>
+            </CardContent>
+          </Card>
+        </div>
       </div>
-    </div>
+    </PinLock>
   )
 }

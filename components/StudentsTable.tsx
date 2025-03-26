@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/select"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { MoreHorizontal, PlusCircle, Search } from "lucide-react"
+import { useGetStudentsQuery, useGetClassesQuery } from '@/lib/features/api/apiSlice'
 
 interface IStudent {
   $id: string
@@ -50,94 +51,63 @@ interface IClass {
 }
 
 export default function StudentManagement() {
-  const [students, setStudents] = useState<IStudent[]>([])
-  const [classes, setClasses] = useState<IClass[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [currentPage, setCurrentPage] = useState(1)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [selectedClass, setSelectedClass] = useState<string>("all")
-  const [sortConfig, setSortConfig] = useState<{ key: keyof IStudent; direction: 'asc' | 'desc' } | null>(null)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [sortKey, setSortKey] = useState<keyof IStudent | null>(null)
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc')
 
-  const recordsPerPage = 10
-
-  useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true)
-      try {
-        const [studentsResponse, classesResponse] = await Promise.all([
-          fetch("/api/students"),
-          fetch("/api/class"),
-        ])
-        if (!studentsResponse.ok || !classesResponse.ok) {
-          throw new Error("Failed to fetch data")
-        }
-        const studentsData = await studentsResponse.json()
-        const classesData = await classesResponse.json()
-        setStudents(studentsData)
-        setClasses(classesData)
-      } catch (error) {
-        console.error("Error fetching data:", error)
-        setError("Failed to fetch data. Please try reloading the page.")
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    fetchData()
-  }, [])
+  const { data: students = [], isLoading: studentsLoading, error: studentsError } = useGetStudentsQuery(undefined, {
+    pollingInterval: 30000, // Refetch every 30 seconds
+  })
+  const { data: classes = [], isLoading: classesLoading } = useGetClassesQuery(undefined, {
+    pollingInterval: 30000,
+  })
 
   const handleDeleteStudent = async (studentId: string) => {
     try {
       const response = await fetch(`/api/students/${studentId}`, {
-        method: "DELETE",
-      })
+        method: 'DELETE',
+      });
       if (!response.ok) {
-        throw new Error("Failed to delete student")
+        throw new Error('Failed to delete student');
       }
-      setStudents((prevStudents) => prevStudents.filter((student) => student.$id !== studentId))
+      // RTK Query will automatically refetch the data due to cache invalidation
     } catch (error) {
-      console.error("Error deleting student:", error)
+      console.error('Error deleting student:', error);
     }
   }
 
-  const filteredStudents = students.filter((student) => {
-    const searchMatch = `${student.firstName} ${student.secondName} ${student.surname}`
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase())
-    const classMatch = selectedClass === "all" || student.studentClass === selectedClass
-    return searchMatch && classMatch
-  })
-
-  const sortedStudents = [...filteredStudents].sort((a, b) => {
-    if (!sortConfig) return 0
-    const { key, direction } = sortConfig
-    if (a[key] < b[key]) return direction === 'asc' ? -1 : 1
-    if (a[key] > b[key]) return direction === 'asc' ? 1 : -1
-    return 0
-  })
-
-  const indexOfLastRecord = currentPage * recordsPerPage
-  const indexOfFirstRecord = indexOfLastRecord - recordsPerPage
-  const currentRecords = sortedStudents.slice(indexOfFirstRecord, indexOfLastRecord)
-
-  const totalPages = Math.ceil(sortedStudents.length / recordsPerPage)
-
   const handleSort = (key: keyof IStudent) => {
-    setSortConfig((prevConfig) => {
-      if (prevConfig?.key === key) {
-        return { key, direction: prevConfig.direction === 'asc' ? 'desc' : 'asc' }
-      }
-      return { key, direction: 'asc' }
-    })
+    if (sortKey === key) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortKey(key);
+      setSortDirection('asc');
+    }
   }
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
-      </div>
-    );
+  const filteredStudents = students.filter((student: IStudent) =>
+    student.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    student.surname.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    student.studentClass.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const sortedStudents = [...filteredStudents].sort((a, b) => {
+    if (!sortKey) return 0;
+    const aValue = a[sortKey];
+    const bValue = b[sortKey];
+    if (sortDirection === 'asc') {
+      return aValue < bValue ? -1 : 1;
+    } else {
+      return aValue > bValue ? -1 : 1;
+    }
+  });
+
+  if (studentsLoading || classesLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (studentsError) {
+    return <div>Error loading students</div>;
   }
 
   return (
@@ -151,24 +121,11 @@ export default function StudentManagement() {
                 <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   placeholder="Search students..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-8"
                 />
               </div>
-              <Select1 value={selectedClass} onValueChange={setSelectedClass}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue1 placeholder="Filter by class" />
-                </SelectTrigger>
-                <SelectContent className="bg-white">
-                  <SelectItem value="all">All Classes</SelectItem>
-                  {classes.map((classItem) => (
-                    <SelectItem className=" hover:bg-green-200" key={classItem.$id} value={classItem.$id}>
-                      {classItem.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select1>
               <Link href="/students/add-student">
                 <Button size="sm">
                   <PlusCircle className="h-4 w-4 mr-2" />
@@ -184,13 +141,13 @@ export default function StudentManagement() {
               <TableHeader>
                 <TableRow>
                   <TableHead onClick={() => handleSort('firstName')} className="cursor-pointer">
-                    Name {sortConfig?.key === 'firstName' && (sortConfig.direction === 'asc' ? '▲' : '▼')}
+                    Name {sortKey === 'firstName' && (sortDirection === 'asc' ? '▲' : '▼')}
                   </TableHead>
                   <TableHead onClick={() => handleSort('surname')} className="cursor-pointer">
-                    Surname {sortConfig?.key === 'surname' && (sortConfig.direction === 'asc' ? '▲' : '▼')}
+                    Surname {sortKey === 'surname' && (sortDirection === 'asc' ? '▲' : '▼')}
                   </TableHead>
                   <TableHead onClick={() => handleSort('dateOfBirth')} className="cursor-pointer">
-                    Date of Birth {sortConfig?.key === 'dateOfBirth' && (sortConfig.direction === 'asc' ? '▲' : '▼')}
+                    Date of Birth {sortKey === 'dateOfBirth' && (sortDirection === 'asc' ? '▲' : '▼')}
                   </TableHead>
                   <TableHead>Class</TableHead>
                   <TableHead>Parent</TableHead>
@@ -200,7 +157,7 @@ export default function StudentManagement() {
               </TableHeader>
               <TableBody>
                 <AnimatePresence>
-                  {currentRecords.map((student) => (
+                  {sortedStudents.map((student) => (
                     <motion.tr
                       key={student.$id}
                       initial={{ opacity: 0 }}
@@ -222,7 +179,7 @@ export default function StudentManagement() {
                       </TableCell>
                       <TableCell>{student.surname}</TableCell>
                       <TableCell>{student.dateOfBirth}</TableCell>
-                      <TableCell>{classes.find((c) => c.$id === student.studentClass)?.name || 'N/A'}</TableCell>
+                      <TableCell>{classes.find((c: { $id: string }) => c.$id === student.studentClass)?.name || 'N/A'}</TableCell>
                       <TableCell>{student.p1_firstName} {student.p1_surname}</TableCell>
                       <TableCell>{student.p1_phoneNumber}</TableCell>
                       <TableCell className="text-right">
@@ -251,29 +208,6 @@ export default function StudentManagement() {
             </Table>
           </div>
         </CardContent>
-        <CardFooter className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            Showing {indexOfFirstRecord + 1} to {Math.min(indexOfLastRecord, sortedStudents.length)} of {sortedStudents.length} students
-          </p>
-          <div className="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-            >
-              Previous
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-              disabled={currentPage === totalPages}
-            >
-              Next
-            </Button>
-          </div>
-        </CardFooter>
       </Card>
     </div>
   )
