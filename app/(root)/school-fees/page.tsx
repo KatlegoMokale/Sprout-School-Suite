@@ -9,7 +9,7 @@ import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,7 +17,7 @@ import { Select1, SelectContent, SelectItem, SelectTrigger, SelectValue1 } from 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { toast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
-import { DollarSign, TrendingUp, CreditCard, Search, Landmark } from 'lucide-react';
+import { DollarSign, TrendingUp, CreditCard, Search, Landmark, Calendar } from 'lucide-react';
 import Link from "next/link";
 import { AppDispatch, RootState } from "@/lib/store";
 import { fetchStudents, selectStudents, selectStudentsStatus } from '@/lib/features/students/studentsSlice';
@@ -241,8 +241,34 @@ export default function SchoolFeeManagement() {
 
   return (
     <div className="px-4 py-8">
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-3xl font-bold">School Fee Management</h1>
+        <div className="flex items-center gap-4">
+          <Link href="/school-fees/view">
+            <Button variant="outline" className="flex items-center gap-2">
+              <Calendar className="h-4 w-4" />
+              View School Fees
+            </Button>
+          </Link>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button className="flex items-center gap-2">
+                <DollarSign className="h-4 w-4" />
+                Create New School Fees
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="bg-white">
+              <DialogHeader>
+                <DialogTitle>Create New School Fees</DialogTitle>
+                <DialogDescription>Set up new school fees for a class.</DialogDescription>
+              </DialogHeader>
+              <SchoolFeesSetup />
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>
+
       <div className="hidden">
-        <h1 className="text-3xl font-bold mb-8">School Fee Management</h1>
         <div className="grid gap-6 md:grid-cols-3 mb-8">
           {summaryCards.map((card, index) => (
             <motion.div
@@ -269,18 +295,6 @@ export default function SchoolFeeManagement() {
         <CardHeader>
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <CardTitle>Student Fee Management</CardTitle>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button size="sm">
-                  <Landmark className="h-4 w-4 mr-2" />
-                  Create New School Fees
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="container">
-                <DialogTitle hidden>New School Fees</DialogTitle>
-                <SchoolFeesSetup />
-              </DialogContent>
-            </Dialog>
           </div>
         </CardHeader>
         <CardContent>

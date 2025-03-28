@@ -43,6 +43,8 @@ interface CustomInput<T extends Record<string, any>> {
     value: string;
     label: string;
   }[];
+  icon?: React.ComponentType<{ className?: string }>;
+  className?: string;
 }
 
 const CustomInput = <T extends Record<string, any>>({
@@ -56,38 +58,40 @@ const CustomInput = <T extends Record<string, any>>({
   value,
   onChange,
   readonly,
+  icon: Icon,
+  className,
 }: CustomInput<T>) => {
   return (
     <FormField
       control={control}
       name={name}
       render={({ field }) => (
-        <div className="form-item ">
-          <FormLabel className=" text-md  font-semibold text-gray-600 ">
+        <div className={`form-item ${className || ''}`}>
+          <FormLabel className="text-md font-semibold text-gray-600">
             {label}
           </FormLabel>
           <div className="flex w-full flex-col">
             {select === true && options ? (
               <Select1 onValueChange={field.onChange} value={field.value}>
-              <FormControl className="p-2 bg-white text-gray-600">
-                <SelectTrigger className="bg-white w-full">
-                  <SelectValue1 placeholder={placeholder}>
-                    {field.value || placeholder}
-                  </SelectValue1>
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent className="bg-white gap-2 rounded-lg">
-                {options.map((option) => (
-                  <SelectItem
-                    className="hover:bg-orange-200 text-14 font-semibold rounded-lg hover:animate-in p-2 cursor-pointer"
-                    key={option.value}
-                    value={option.value}
-                  >
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select1>
+                <FormControl className="p-2 bg-white text-gray-600">
+                  <SelectTrigger className="bg-white w-full">
+                    <SelectValue1 placeholder={placeholder}>
+                      {field.value || placeholder}
+                    </SelectValue1>
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent className="bg-white gap-2 rounded-lg">
+                  {options.map((option) => (
+                    <SelectItem
+                      className="hover:bg-orange-200 text-14 font-semibold rounded-lg hover:animate-in p-2 cursor-pointer"
+                      key={option.value}
+                      value={option.value}
+                    >
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select1>
             ) : type === "search" ? (
               <div>
                 <SearchAddress
@@ -96,33 +100,38 @@ const CustomInput = <T extends Record<string, any>>({
               </div>
             ) : (
               <FormControl>
-                <Input
-                  className="input-class"
-                  placeholder={placeholder}
-                  type={type !== undefined ? type : "text"}
-                  onChange={(e) => {
-                    const newValue = e.target.value;
-                    if (type === "number") {
-                      const numericValue = newValue.replace(/[^0-9]/g, '');
-                      field.onChange(Number(numericValue));
-                    } else {
-                      field.onChange(newValue);
-                    }
-                    if (onChange) {
-                      onChange(e);
-                    }
-                  }}
-                  onKeyPress={(e) => {
-                    if (type === "number") {
-                      const isNumber = /[0-9]/.test(e.key);
-                      if (!isNumber) {
-                        e.preventDefault();
+                <div className="relative">
+                  {Icon && (
+                    <Icon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+                  )}
+                  <Input
+                    className={`input-class ${Icon ? 'pl-10' : ''} ${className || ''}`}
+                    placeholder={placeholder}
+                    type={type !== undefined ? type : "text"}
+                    onChange={(e) => {
+                      const newValue = e.target.value;
+                      if (type === "number") {
+                        const numericValue = newValue.replace(/[^0-9]/g, '');
+                        field.onChange(Number(numericValue));
+                      } else {
+                        field.onChange(newValue);
                       }
-                    }
-                  }}
-                  value={field.value || value || ""}
-                  readOnly={readonly !== undefined ? readonly : false}
-                />
+                      if (onChange) {
+                        onChange(e);
+                      }
+                    }}
+                    onKeyPress={(e) => {
+                      if (type === "number") {
+                        const isNumber = /[0-9]/.test(e.key);
+                        if (!isNumber) {
+                          e.preventDefault();
+                        }
+                      }
+                    }}
+                    value={field.value || value || ""}
+                    readOnly={readonly !== undefined ? readonly : false}
+                  />
+                </div>
               </FormControl>
             )}
 

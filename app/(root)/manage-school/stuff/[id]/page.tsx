@@ -30,6 +30,9 @@ import { toast } from "@/hooks/use-toast"
 import { useRouter } from "next/navigation";
 import { newStuff, updateStuff } from "@/lib/actions/user.actions";
 import { AlertDialogTitle } from "@radix-ui/react-alert-dialog";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "@/lib/store";
+import { fetchStuff } from "@/lib/features/stuff/stuffSlice";
 
 const formSchema = newStuffFormSchema();
 
@@ -40,6 +43,7 @@ const EditStuff = ({ params }: { params: Promise<{ id: string }> }) => {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [formData, setFormData] = useState<NewStuffParams | null>(null);
   const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -82,6 +86,7 @@ const EditStuff = ({ params }: { params: Promise<{ id: string }> }) => {
         title: "Success",
         description: "Stuff information has been updated.",
       })
+      await dispatch(fetchStuff())
       router.push("/manage-school");
     } catch (error) {
       console.error("Error submitting form:", error);
@@ -90,6 +95,11 @@ const EditStuff = ({ params }: { params: Promise<{ id: string }> }) => {
       setIsLoading(false);
     }
   };
+
+  const handleGoBack = async () => {
+    await dispatch(fetchStuff())
+    router.push("/manage-school")
+  }
 
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     setIsConfirmOpen(true);
@@ -154,7 +164,10 @@ const EditStuff = ({ params }: { params: Promise<{ id: string }> }) => {
         <div>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <div>
-              <Link href="/manage-school" className="flex items-center gap-1">
+              <Link href="/manage-school" className="flex items-center gap-1" onClick={(e) => {
+                e.preventDefault()
+                handleGoBack()
+              }}>
                 <ChevronLeft className="h-4 w-4" />
                 <p>Back</p>
               </Link>
@@ -248,10 +261,19 @@ const EditStuff = ({ params }: { params: Promise<{ id: string }> }) => {
               />
 
               <Button type="submit" disabled={isLoading} className="form-btn">
-                {isLoading ? "Updating..." : "Update"}
+                {isLoading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white mr-2" />
+                    Updating...
+                  </>
+                ) : (
+                  <>
+                    <Check className="h-4 w-4 mr-2" />
+                    Update Staff Member
+                  </>
+                )}
               </Button>
             </div>
-            {error && <div className="text-red-500">{error}</div>}
           </form>
         </div>
       </Form>

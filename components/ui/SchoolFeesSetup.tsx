@@ -12,7 +12,7 @@ import CustomInput from "@/components/ui/CustomInput"
 import { schoolFeesSchema } from "@/lib/utils"
 import { newSchoolFees } from "@/lib/actions/user.actions"
 import { ScrollArea } from "@/components/ui/scroll-area"
-
+import { DollarSign, Calendar, Users, Percent } from 'lucide-react'
 
 export default function SchoolFeesSetup() {
   const [isLoading, setIsLoading] = useState(false);
@@ -36,12 +36,12 @@ export default function SchoolFeesSetup() {
   })
 
   const calculateFees = useCallback((monthlyFee: number) => {
-    const yearlyFee = monthlyFee * 10; // 12 months - 2 months discount // 3 months - 1 month discount
+    const yearlyFee = monthlyFee * 10; // 12 months - 2 months discount
     const yearlyFeeNormal = monthlyFee * 12; // 12 months Full price Monthly
     setYearlyFee(yearlyFee);
     setYearlyFeeNormal(yearlyFeeNormal);
     form.setValue("yearlyFee", yearlyFee);
-    }, [form]);
+  }, [form]);
 
   useEffect(() => {
     const subscription = form.watch((value, { name }) => {
@@ -52,7 +52,6 @@ export default function SchoolFeesSetup() {
     return () => subscription.unsubscribe();
   }, [calculateFees, form]);
 
-
   const onSubmit = async (data: z.infer<typeof SchoolFeesFormData>) => {
     setIsLoading(true)
     try {
@@ -62,6 +61,7 @@ export default function SchoolFeesSetup() {
         title: "Success",
         description: "School fees have been set up for the year.",
       })
+      form.reset();
     } catch (error) {
       console.error("Error setting up school fees:", error)
       toast({
@@ -76,20 +76,17 @@ export default function SchoolFeesSetup() {
   }
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle>Set Up School Fees</CardTitle>
-      </CardHeader>
-      <CardContent>
-      <ScrollArea className="h-[calc(100vh-12rem)] pr-4">
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+    <div className="max-w-2xl mx-auto">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <div className="grid grid-cols-2 gap-4">
             <CustomInput
               name="year"
               control={form.control}
               label="Year"
               placeholder="Enter year"
               type="number"
+              icon={Calendar}
             />
             <CustomInput
               name="registrationFee"
@@ -97,68 +94,88 @@ export default function SchoolFeesSetup() {
               label="Registration Fee"
               placeholder="Enter registration fee"
               type="number"
+              icon={DollarSign}
             />
-              <div className="flex items-center space-x-2">
-                        <CustomInput
-                          label="Age Start"
-                          name="ageStart"
-                          control={form.control}
-                          type="number"
-                          placeholder="Start"
-                        />
-                        <span>-</span>
-                        <CustomInput
-                          name="ageEnd"
-                          label="Age End"
-                          control={form.control}
-                          type="number"
-                          placeholder="End"
-                        />
-                        <CustomInput
-                          name="ageUnit"
-                          label="Age Unit"
-                          placeholder="Age Unit"
-                          control={form.control}
-                          select={true}
-                          options={[
-                            { value: "months", label: "Months" },
-                            { value: "years", label: "Years" },
-                          ]}
-                        />
-              </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Age Range</label>
+            <div className="flex items-center gap-2">
+              <CustomInput
+                label="Start"
+                name="ageStart"
+                control={form.control}
+                type="number"
+                placeholder="Start"
+                className="flex-1"
+              />
+              <span className="text-muted-foreground">to</span>
+              <CustomInput
+                name="ageEnd"
+                label="End"
+                control={form.control}
+                type="number"
+                placeholder="End"
+                className="flex-1"
+              />
+              <CustomInput
+                name="ageUnit"
+                label="Unit"
+                placeholder="Unit"
+                control={form.control}
+                select={true}
+                options={[
+                  { value: "months", label: "Months" },
+                  { value: "years", label: "Years" },
+                ]}
+                className="w-32"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
             <CustomInput
               name="monthlyFee"
               control={form.control}
               label="Monthly Fee"
               placeholder="Enter monthly fee"
               type="number"
+              icon={DollarSign}
             />
-            <CustomInput
-              name="yearlyFee"
-              control={form.control}
-              label="Yearly Fee"
-              placeholder="Enter yearly fee"
-              type="number"
-            />
-            <div className="mt-4 p-4 bg-gray-100 rounded-md">
-              <h3 className="text-lg font-semibold mb-2">Calculated Fees</h3>
-              <p>Yearly Fee (once-off): R {yearlyFee.toFixed(2)}</p>
-              <p>Yearly Fee Monthly: R {yearlyFeeNormal.toFixed(2)}</p>
-            </div>
             <CustomInput
               name="siblingDiscountPrice"
               control={form.control}
-              label="Sibling Discount Percentage"
-              placeholder="Enter sibling discount percentage"
+              label="Sibling Discount %"
+              placeholder="Enter discount percentage"
               type="number"
+              icon={Percent}
             />
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Setting up..." : "Set Up School Fees"}
-            </Button>
-          </form>
-        </Form>
-      </ScrollArea>
-      </CardContent>
-    </Card>
+          </div>
+
+          <Card className="bg-muted/50">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base font-medium flex items-center gap-2">
+                <DollarSign className="h-4 w-4" />
+                Calculated Fees
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Yearly Fee (once-off)</span>
+                <span className="font-medium">ZAR {yearlyFee.toFixed(2)}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Yearly Fee (monthly)</span>
+                <span className="font-medium">ZAR {yearlyFeeNormal.toFixed(2)}</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading ? "Setting up..." : "Set Up School Fees"}
+          </Button>
+        </form>
+      </Form>
+    </div>
   )
 }

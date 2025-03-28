@@ -260,8 +260,10 @@ export const getBaseUrl = () => {
 
 export const positionColors = {
   teacher: "bg-emerald-500",
-  cleaner: "bg-amber-500",
-  administrator: "bg-sky-500",
+  assistant: "bg-orange-500",
+  cook: "bg-purple-500",
+  cleaner: "bg-cyan-500",
+  administrator: "bg-blue-500",
 }
 
 export interface IStuff {

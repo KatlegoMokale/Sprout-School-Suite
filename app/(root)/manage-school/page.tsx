@@ -21,7 +21,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { MapPin, Phone, MoreHorizontal, PlusCircle, Search, Filter, Trash2, Edit } from "lucide-react"
+import { MapPin, Phone, MoreHorizontal, PlusCircle, Search, Filter, Trash2, Edit, LayoutGrid, Table as TableIcon } from "lucide-react"
 import Link from "next/link"
 import Classes from "@/components/ui/ClassForm"
 import Event from "@/components/ui/event"
@@ -37,6 +37,7 @@ import { fetchTransactions, selectTransactions } from "@/lib/features/transactio
 import { fetchPettyCash, selectPettyCash } from "@/lib/features/pettyCash/pettyCashSlice"
 import { fetchGroceries, selectGroceries } from "@/lib/features/grocery/grocerySlice"
 import { toast } from "@/hooks/use-toast"
+import StaffTable from "@/components/ui/StaffTable"
 import {
   AlertDialog,
   AlertDialogContent,
@@ -48,25 +49,20 @@ import {
   AlertDialogAction,
 } from "@/components/ui/alert-dialog"
 
-
-
 export default function CreativeStaffManagement() {
   const dispatch = useDispatch<AppDispatch>() 
   const { classes, classesStatus, classesError } = useSelector((state: RootState)=> state.classes);
   const { stuff, stuffStatus, stuffError } = useSelector((state: RootState) => state.stuff)
   const { events, eventsStatus, eventsError } = useSelector((state: RootState) => state.events)
-  // const [staff, setStaff] = useState<IStuff[]>([])
-  // const [classes, setClasses] = useState<IClass[]>([])
-  // const [events, setEvents] = useState<IEvent[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedPosition, setSelectedPosition] = useState<string | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
-  const [itemToDelete, setItemToDelete] = useState<{ id: string; type: 'class' | 'event' } | null>(null)
+  const [itemToDelete, setItemToDelete] = useState<{ id: string; type: 'class' | 'event' | 'stuff' } | null>(null)
+  const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid')
 
   useEffect(() => {
-    // Fetch stuff and classes if they haven't been fetched yet
     if (classesStatus === 'idle') {
       dispatch(fetchClasses())
     }
@@ -76,51 +72,25 @@ export default function CreativeStaffManagement() {
     if (eventsStatus === 'idle') {
       dispatch(fetchEvents())
     }
-    // Set loading state based on the status of both students and classes
     setIsLoading(stuffStatus === 'loading' || classesStatus === 'loading' || eventsStatus === 'loading')
-    // Set error if either fetch fails
     if (classesStatus === 'failed' || stuffStatus === 'failed' || eventsStatus === 'failed') {
       setError("Failed to fetch data. Please try reloading the page.")
     }
   }, [dispatch, classesStatus, stuffStatus, eventsStatus])
-  
 
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     setIsLoading(true)
-  //     try {
-  //       const [staffResponse, classesResponse, eventsResponse] = await Promise.all([
-  //         fetch("/api/stuff"),
-  //         fetch("/api/class"),
-  //         fetch("/api/event"),
-  //       ])
-  //       if (!staffResponse.ok || !classesResponse.ok || !eventsResponse.ok) {
-  //         throw new Error("Failed to fetch data")
-  //       }
-  //       const staffData = await staffResponse.json()
-  //       const classesData = await classesResponse.json()
-  //       const eventsData = await eventsResponse.json()
-  //       setStaff(staffData)
-  //       setClasses(classesData)
-  //       setEvents(eventsData)
-  //     } catch (error) {
-  //       console.error("Error fetching data:", error)
-  //       setError("Failed to fetch data. Please try reloading the page.")
-  //     } finally {
-  //       setIsLoading(false)
-  //     }
-  //   }
-
-  //   fetchData()
-  // }, [])
-
-  const filteredStaff = stuff.filter((member) => {
-    const nameMatch = `${member.firstName} ${member.surname}`
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase())
-    const positionMatch = !selectedPosition || member.position.toLowerCase() === selectedPosition.toLowerCase()
-    return nameMatch && positionMatch
-  })
+  const filteredStaff = stuff
+    .filter((member) => {
+      const nameMatch = `${member.firstName} ${member.surname}`
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase())
+      const positionMatch = !selectedPosition || member.position.toLowerCase() === selectedPosition.toLowerCase()
+      return nameMatch && positionMatch
+    })
+    .sort((a, b) => {
+      const nameA = `${a.firstName} ${a.surname}`.toLowerCase()
+      const nameB = `${b.firstName} ${b.surname}`.toLowerCase()
+      return nameA.localeCompare(nameB)
+    })
 
   const handleDelete = async () => {
     if (!itemToDelete) return
@@ -140,8 +110,10 @@ export default function CreativeStaffManagement() {
       // Refresh the data
       if (itemToDelete.type === 'class') {
         dispatch(fetchClasses())
-      } else {
+      } else if (itemToDelete.type === 'event') {
         dispatch(fetchEvents())
+      } else if (itemToDelete.type === 'stuff') {
+        dispatch(fetchStuff())
       }
 
       setIsDeleteDialogOpen(false)
@@ -162,17 +134,45 @@ export default function CreativeStaffManagement() {
   if (error) return <div className="text-center py-10 text-red-500">{error}</div>
 
   return (
-    <div className=" p-5 ">
+    <div className="p-5">
       <div className="flex flex-col lg:flex-row gap-8">
         <div className="lg:w-3/4">
           <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
             <h1 className="text-4xl font-bold text-gray-800">Staff Directory</h1>
-            <Link href="/manage-school/add-stuff">
-              <Button size="lg" className="bg-emerald-500 hover:bg-emerald-600 text-white">
-                <PlusCircle className="h-5 w-5 mr-2" />
-                Add New Staff
-              </Button>
-            </Link>
+            <div className="flex gap-2">
+              <div className="flex rounded-md  p-1">
+                <Button
+                  variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                  size="icon"
+                  onClick={() => setViewMode('grid')}
+                  className={`rounded-r-none transition-colors ${
+                    viewMode === 'grid' 
+                      ? '  shadow-sm hover:bg-white' 
+                      : 'hover:bg-gray-200'
+                  }`}
+                >
+                  <LayoutGrid className={`h-4 w-4 ${viewMode === 'grid' ? 'text-emerald-500' : 'text-gray-500'}`} />
+                </Button>
+                <Button
+                  variant={viewMode === 'table' ? 'default' : 'ghost'}
+                  size="icon"
+                  onClick={() => setViewMode('table')}
+                  className={`rounded-l-none transition-colors ${
+                    viewMode === 'table' 
+                      ? 'bg-white shadow-sm hover:bg-white' 
+                      : 'hover:bg-gray-200'
+                  }`}
+                >
+                  <TableIcon className={`h-4 w-4 ${viewMode === 'table' ? 'text-emerald-500' : 'text-gray-500'}`} />
+                </Button>
+              </div>
+              <Link href="/manage-school/add-stuff">
+                <Button size="lg" className="bg-emerald-500 hover:bg-emerald-600 text-white">
+                  <PlusCircle className="h-5 w-5 mr-2" />
+                  Add New Staff
+                </Button>
+              </Link>
+            </div>
           </div>
           <div className="flex flex-col sm:flex-row gap-4 mb-6">
             <div className="relative flex-grow">
@@ -195,65 +195,82 @@ export default function CreativeStaffManagement() {
               <DropdownMenuContent>
                 <DropdownMenuItem onSelect={() => setSelectedPosition(null)}>All Positions</DropdownMenuItem>
                 <DropdownMenuItem onSelect={() => setSelectedPosition("teacher")}>Teachers</DropdownMenuItem>
-                <DropdownMenuItem onSelect={() => setSelectedPosition("cleaner")}>Cleaners</DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => setSelectedPosition("assistant")}>Assistants</DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => setSelectedPosition("cook")}>Cook</DropdownMenuItem>
                 <DropdownMenuItem onSelect={() => setSelectedPosition("administrator")}>Administrators</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          <motion.div 
-            className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-          >
-            {filteredStaff.map((member, index) => (
-              <motion.div
-                key={member.$id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.1 }}
-              >
-                <Card className="overflow-hidden transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
-                  <CardContent className="p-0">
-                    <div className={`h-2 ${positionColors[member.position.toLowerCase() as keyof typeof positionColors] || 'bg-gray-500'}`} />
-                    <div className="p-4">
-                      <div className="flex items-center justify-between mb-4">
-                        <Avatar className="h-16 w-16">
-                          <AvatarImage src="/assets/placeholderprofile.svg" alt="Profile picture" />
-                          <AvatarFallback className="text-lg">{member.firstName[0]}{member.surname[0]}</AvatarFallback>
-                        </Avatar>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                              <MoreHorizontal className="h-4 w-4" />
-                              <span className="sr-only">Open menu</span>
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                            <DropdownMenuItem asChild>
-                              <Link href={`/manage-school/stuff/${member.$id}`}>Edit</Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem>Delete</DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+
+          {viewMode === 'grid' ? (
+            <motion.div 
+              className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5 }}
+            >
+              {filteredStaff.map((member, index) => (
+                <motion.div
+                  key={member.$id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: index * 0.1 }}
+                >
+                  <Card className="overflow-hidden transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
+                    <CardContent className="p-0">
+                      <div className={`h-2 ${positionColors[member.position.toLowerCase() as keyof typeof positionColors] || 'bg-gray-500'}`} />
+                      <div className="p-4">
+                        <div className="flex items-center justify-between mb-4">
+                          <Avatar className="h-16 w-16">
+                            <AvatarImage src="/assets/placeholderprofile.svg" alt="Profile picture" />
+                            <AvatarFallback className="text-lg">{member.firstName[0]}{member.surname[0]}</AvatarFallback>
+                          </Avatar>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                <MoreHorizontal className="h-4 w-4" />
+                                <span className="sr-only">Open menu</span>
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                              <DropdownMenuItem asChild>
+                                <Link href={`/manage-school/stuff/${member.$id}`}>Edit</Link>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => {
+                                setItemToDelete({ id: member.$id, type: 'stuff' })
+                                setIsDeleteDialogOpen(true)
+                              }}>
+                                Delete
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
+                        <h2 className="text-xl font-semibold mb-1">{member.firstName} {member.surname}</h2>
+                        <p className="text-sm font-medium text-gray-600 mb-3">{member.position}</p>
+                        <div className="flex items-center text-sm text-gray-500 mb-2">
+                          <MapPin className="h-4 w-4 mr-2 text-red-500" />
+                          <span className="truncate">{member.address1}</span>
+                        </div>
+                        <div className="flex items-center text-sm text-gray-500">
+                          <Phone className="h-4 w-4 mr-2 text-green-500" />
+                          <span>{member.contact}</span>
+                        </div>
                       </div>
-                      <h2 className="text-xl font-semibold mb-1">{member.firstName} {member.surname}</h2>
-                      <p className="text-sm font-medium text-gray-600 mb-3">{member.position}</p>
-                      <div className="flex items-center text-sm text-gray-500 mb-2">
-                        <MapPin className="h-4 w-4 mr-2 text-red-500" />
-                        <span className="truncate">{member.address1}</span>
-                      </div>
-                      <div className="flex items-center text-sm text-gray-500">
-                        <Phone className="h-4 w-4 mr-2 text-green-500" />
-                        <span>{member.contact}</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </motion.div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </motion.div>
+          ) : (
+            <StaffTable 
+              staff={filteredStaff} 
+              onDelete={(id) => {
+                setItemToDelete({ id, type: 'stuff' })
+                setIsDeleteDialogOpen(true)
+              }}
+            />
+          )}
         </div>
         <div className="lg:w-1/4 flex flex-col">
           <Card className="bg-white shadow-xl rounded-lg overflow-hidden row-span-1">
@@ -404,19 +421,12 @@ export default function CreativeStaffManagement() {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the {itemToDelete?.type}.
+              This action cannot be undone. This will permanently delete the selected item.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => {
-              setIsDeleteDialogOpen(false)
-              setItemToDelete(null)
-            }}>
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-red-500 hover:bg-red-600">
-              Delete
-            </AlertDialogAction>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

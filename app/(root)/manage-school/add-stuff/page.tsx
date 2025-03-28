@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { ChevronLeft, Loader2 } from 'lucide-react'
+import { ChevronLeft, Loader2, Plus, ArrowLeft } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Form } from "@/components/ui/form"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -17,6 +17,9 @@ import { toast } from "@/hooks/use-toast"
 import { newStuffFormSchema } from "@/lib/utils"
 import { newStuff } from "@/lib/actions/user.actions"
 import { autocomplete } from "@/lib/google"
+import { useDispatch } from "react-redux"
+import { AppDispatch } from "@/lib/store"
+import { fetchStuff } from "@/lib/features/stuff/stuffSlice"
 // import { PlaceAutocompleteResult } from "@googlemaps/google-maps-services-js"
 
 const formSchema = newStuffFormSchema()
@@ -28,7 +31,9 @@ export default function AddStuff() {
   // const [predictions, setPredictions] = useState<PlaceAutocompleteResult[]>([])
   const [input, setInput] = useState("")
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
+  const [isSuccessOpen, setIsSuccessOpen] = useState(false)
   const router = useRouter()
+  const dispatch = useDispatch<AppDispatch>()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -76,14 +81,15 @@ export default function AddStuff() {
       const stuffData = formData as z.infer<typeof formSchema>;
       const newStuffData: NewStuffParams = {
         ...stuffData,
-        secondName: stuffData.secondName || '' // Provide a default empty string if secondName is undefined
+        secondName: stuffData.secondName || ''
       };
       await newStuff(newStuffData)
       toast({
         title: "Success",
         description: "New staff member has been added successfully.",
       })
-      // router.push("/manage-school")
+      setIsConfirmOpen(false)
+      setIsSuccessOpen(true)
     } catch (error) {
       console.error("Error submitting form:", error)
       setError("An error occurred while submitting the form. Please try again.")
@@ -95,6 +101,18 @@ export default function AddStuff() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const handleAddAnother = () => {
+    setIsSuccessOpen(false)
+    form.reset()
+    setFormData({})
+    setInput("")
+  }
+
+  const handleGoBack = async () => {
+    await dispatch(fetchStuff())
+    router.push("/manage-school")
   }
 
   return (
@@ -217,6 +235,27 @@ export default function AddStuff() {
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => setIsConfirmOpen(false)}>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirmAddStuff}>Confirm</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={isSuccessOpen} onOpenChange={setIsSuccessOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Staff Member Added Successfully</AlertDialogTitle>
+            <AlertDialogDescription>
+              Would you like to add another staff member or return to the manage school page?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex gap-2">
+            <AlertDialogAction onClick={handleAddAnother} className="flex items-center gap-2">
+              <Plus className="h-4 w-4" />
+              Add Another
+            </AlertDialogAction>
+            <AlertDialogAction onClick={handleGoBack} className="flex items-center gap-2">
+              <ArrowLeft className="h-4 w-4" />
+              Go Back
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

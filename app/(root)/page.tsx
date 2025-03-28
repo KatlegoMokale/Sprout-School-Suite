@@ -52,6 +52,33 @@ export default function Dashboard() {
     error: studentsError
   } = useGetStudentsQuery({});
 
+  // Add useEffect hooks to fetch all required data
+  useEffect(() => {
+    const fetchAllData = async () => {
+      try {
+        setIsLoading(true);
+        await Promise.all([
+          dispatch(fetchStudents()),
+          dispatch(fetchClasses()),
+          dispatch(fetchEvents()),
+          dispatch(fetchStuff()),
+          dispatch(fetchTransactions()),
+          dispatch(fetchPettyCash()),
+          dispatch(fetchGroceries()),
+          dispatch(fetchSchoolFeesSetup()),
+          dispatch(fetchStudentSchoolFees())
+        ]);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setError("Failed to fetch data. Please try again later.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchAllData();
+  }, [dispatch]);
+
   // Calculate financial data from existing data
   const totalRevenue = useMemo(() => 
     transactions.reduce((sum, t) => sum + t.amount, 0), 
@@ -191,6 +218,21 @@ export default function Dashboard() {
       return birthday >= today && birthday <= nextWeek
     })
     .sort((a, b) => new Date(a.dateOfBirth).getTime() - new Date(b.dateOfBirth).getTime())
+    .map(person => {
+      const birthday = new Date(person.dateOfBirth)
+      const today = new Date()
+      const currentYear = today.getFullYear()
+      const birthYear = birthday.getFullYear()
+      const age = currentYear - birthYear
+      const day = birthday.getDate()
+      const month = birthday.toLocaleString('default', { month: 'short' })
+      return {
+        ...person,
+        turningAge: age + 1,
+        day,
+        month
+      }
+    })
 
   const outstandingFeesPercentage = totalOutstanding 
     ? (totalOutstanding / (totalRevenue + totalOutstanding)) * 100 
@@ -329,7 +371,7 @@ export default function Dashboard() {
               {upcomingBirthdays.map((person, index) => (
                 <li key={index} className="flex items-center space-x-2">
                   <CakeIcon className="h-5 w-5 text-pink-500" />
-                  <span>{person.firstName} {person.surname} - {new Date(person.dateOfBirth).toLocaleDateString()}</span>
+                  <span>{person.firstName} {person.surname} - {person.day} {person.month} (Turning {person.turningAge})</span>
                 </li>
               ))}
             </ul>
