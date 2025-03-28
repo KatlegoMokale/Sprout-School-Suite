@@ -38,12 +38,18 @@ export default function AddStuff() {
       surname: "",
       dateOfBirth: "",
       idNumber: "",
-      address1: "",
+      gender: "male",
+      position: "",
       contact: "",
       email: "",
-      gender: "",
-      position: "",
-      startDate: "",
+      address: {
+        street: "",
+        city: "",
+        province: "",
+        postalCode: "",
+        country: ""
+      },
+      status: "active"
     },
   })
 
@@ -74,16 +80,31 @@ export default function AddStuff() {
     setIsLoading(true)
     try {
       const stuffData = formData as z.infer<typeof formSchema>;
-      const newStuffData: NewStuffParams = {
-        ...stuffData,
-        secondName: stuffData.secondName || '' // Provide a default empty string if secondName is undefined
+      const newStuffData = {
+        firstName: stuffData.firstName,
+        secondName: stuffData.secondName || '',
+        surname: stuffData.surname,
+        dateOfBirth: stuffData.dateOfBirth,
+        idNumber: stuffData.idNumber,
+        contact: stuffData.contact,
+        email: stuffData.email,
+        address: {
+          street: stuffData.address?.street || '',
+          city: stuffData.address?.city || '',
+          province: stuffData.address?.province || '',
+          postalCode: stuffData.address?.postalCode || '',
+          country: stuffData.address?.country || ''
+        },
+        gender: stuffData.gender,
+        position: stuffData.position,
+        status: stuffData.status
       };
       await newStuff(newStuffData)
       toast({
         title: "Success",
         description: "New staff member has been added successfully.",
       })
-      // router.push("/manage-school")
+      router.push("/manage-school")
     } catch (error) {
       console.error("Error submitting form:", error)
       setError("An error occurred while submitting the form. Please try again.")
@@ -149,8 +170,8 @@ export default function AddStuff() {
                   placeholder="Select gender"
                   select={true}
                   options={[
-                    { value: "Male", label: "Male" },
-                    { value: "Female", label: "Female" },
+                    { value: "male", label: "Male" },
+                    { value: "female", label: "Female" },
                   ]}
                 />
                 <CustomInput
@@ -159,22 +180,42 @@ export default function AddStuff() {
                   label="Phone Number"
                   placeholder="Enter phone number"
                 />
-
-                 <CustomInput
+                <CustomInput
                   control={form.control}
                   name="email"
                   label="Email"
                   placeholder="Enter email"
                 />
-
                 <CustomInput
                   control={form.control}
-                  name="address1"
-                  label="Address"
-                  placeholder="Enter address"
-                  onChange={(e) => setInput(e.target.value)}
+                  name="address.street"
+                  label="Street Address"
+                  placeholder="Enter street address"
                 />
-                
+                <CustomInput
+                  control={form.control}
+                  name="address.city"
+                  label="City"
+                  placeholder="Enter city"
+                />
+                <CustomInput
+                  control={form.control}
+                  name="address.province"
+                  label="Province"
+                  placeholder="Enter province"
+                />
+                <CustomInput
+                  control={form.control}
+                  name="address.postalCode"
+                  label="Postal Code"
+                  placeholder="Enter postal code"
+                />
+                <CustomInput
+                  control={form.control}
+                  name="address.country"
+                  label="Country"
+                  placeholder="Enter country"
+                />
                 <CustomInput
                   control={form.control}
                   name="position"
@@ -183,10 +224,14 @@ export default function AddStuff() {
                 />
                 <CustomInput
                   control={form.control}
-                  name="startDate"
-                  label="Start Date"
-                  placeholder="Enter start date"
-                  type="date"
+                  name="status"
+                  label="Status"
+                  placeholder="Select status"
+                  select={true}
+                  options={[
+                    { value: "active", label: "Active" },
+                    { value: "inactive", label: "Inactive" },
+                  ]}
                 />
               </div>
               <div className="flex justify-end">

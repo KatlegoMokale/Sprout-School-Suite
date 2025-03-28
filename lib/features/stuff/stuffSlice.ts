@@ -4,25 +4,33 @@ import { IStuff } from '@/lib/utils'
 
 export const fetchStuff = createAsyncThunk('stuff/fetchStuff', async () => {
   try {
+    console.log('Fetching staff data...');
     const response = await fetch('/api/stuff');
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    return (await response.json()) as IStuff[];
+    const data = await response.json();
+    console.log('Received staff data:', data);
+    if (!data) {
+      throw new Error('No data received from server');
+    }
+    if (!Array.isArray(data)) {
+      throw new Error('Received invalid data format');
+    }
+    return data as IStuff[];
   } catch (error: any) {
-    // Log the full error for debugging
-    console.error('Error fetching stuff:', error);
-    throw error; // Re-throw the error to be handled by rejected case
+    console.error('Error fetching staff:', error);
+    throw error;
   }
 })
 
-interface stuffState {
+interface StuffState {
   stuff: IStuff[];
   stuffStatus: 'idle' | 'loading' | 'succeeded' | 'failed';
   stuffError: SerializedError | null;
 }
 
-const initialState: stuffState = {
+const initialState: StuffState = {
   stuff: [],
   stuffStatus: 'idle',
   stuffError: null,
@@ -31,31 +39,46 @@ const initialState: stuffState = {
 const stuffSlice = createSlice({
   name: 'stuff',
   initialState,
-  reducers: {}, // Add reducers here if needed
+  reducers: {
+    clearStuff: (state) => {
+      state.stuff = [];
+      state.stuffStatus = 'idle';
+      state.stuffError = null;
+    }
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchStuff.pending, (state) => {
+        console.log('Staff fetch pending...');
         state.stuffStatus = 'loading';
-        state.stuffError = null; // Clear any previous errors
+        state.stuffError = null;
       })
       .addCase(fetchStuff.fulfilled, (state, action: PayloadAction<IStuff[]>) => {
+        console.log('Staff fetch succeeded:', action.payload);
         state.stuffStatus = 'succeeded';
-        state.stuff = action.payload;
+        state.stuff = action.payload || [];
+        state.stuffError = null;
       })
       .addCase(fetchStuff.rejected, (state, action) => {
+        console.error('Staff fetch failed:', action.error);
         state.stuffStatus = 'failed';
-        state.stuffError = action.error; // Keep the full error object
+        state.stuffError = action.error;
+        state.stuff = [];
       })
   },
 })
 
+export const { clearStuff } = stuffSlice.actions;
 
 // Selectors
-const selectStuffState = (state: { stuff: stuffState }) => state.stuff;
+const selectStuffState = (state: { stuff: StuffState }) => state.stuff;
 
 export const selectStuff = createSelector(
   selectStuffState,
-  (state) => state.stuff
+  (state) => {
+    console.log('Selecting staff:', state.stuff);
+    return state.stuff || [];
+  }
 );
 
 export const selectStuffStatus = createSelector(
@@ -67,6 +90,5 @@ export const selectStuffError = createSelector(
   selectStuffState,
   (state) => state.stuffError
 );
-
 
 export default stuffSlice.reducer

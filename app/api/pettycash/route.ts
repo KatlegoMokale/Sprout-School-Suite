@@ -1,26 +1,23 @@
-import client from "@/lib/appwrite_client";
-import { Databases, ID, Query } from "appwrite";
 import { NextResponse } from "next/server";
+import { connectToDatabase } from "@/lib/mongodb";
+import PettyCash from "@/lib/models/PettyCash";
 
-const database = new Databases(client)
-
-//Create PettyCash
-
+// Create PettyCash
 async function createPettyCash(data: {
     itemName: string;
     quantity: number;
     price: number;
     store: string;
-    catergory: string;
+    category: string;
     date: string;
 }) {
     try {
-        const response = await database.createDocument(
-            process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
-            "pettyCash",
-            ID.unique(),
-            data
-        );
+        await connectToDatabase();
+        const pettyCash = new PettyCash({
+            ...data,
+            date: new Date(data.date)
+        });
+        const response = await pettyCash.save();
         return response;
     } catch (error) {
         console.error("Error creating PettyCash:", error);
@@ -28,13 +25,13 @@ async function createPettyCash(data: {
     }
 }
 
-async function fetchPettyCash(){
+async function fetchPettyCash() {
     try {
-        const response = await database.listDocuments(
-            process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
-            "pettyCash", [Query.orderDesc("$createdAt")]
-        );
-        return response.documents;
+        await connectToDatabase();
+        const pettyCash = await PettyCash.find()
+            .sort({ date: -1 })
+            .exec();
+        return pettyCash;
     } catch (error) {
         console.error("Error fetching PettyCash", error);
         throw new Error("Failed to fetch PettyCash");
@@ -43,20 +40,19 @@ async function fetchPettyCash(){
 
 export async function GET() {
     try {
-        const grocery = await fetchPettyCash();
-        return NextResponse.json(grocery, {status: 200});
+        const pettyCash = await fetchPettyCash();
+        return NextResponse.json(pettyCash, { status: 200 });
     } catch (error) {
-        return NextResponse.json({message:"Error fetching PettyCash"}, {status: 500})
+        return NextResponse.json({ message: "Error fetching PettyCash" }, { status: 500 });
     }
 }
 
 export async function POST(request: Request) {
     try {
-        const {itemName, quantity, price, store, catergory, date} = await request.json();
-        const data = {itemName, quantity, price, store, catergory, date}
-        const response = await createPettyCash(data);
-        return NextResponse.json({message: "POST PettyCash created successfully--"}, {status: 201})
+        const body = await request.json();
+        const pettyCash = await createPettyCash(body);
+        return NextResponse.json(pettyCash, { status: 201 });
     } catch (error) {
-        return NextResponse.json({message: "POST: Failed to create PettyCash--"}, {status: 500})
+        return NextResponse.json({ message: "Error creating PettyCash" }, { status: 500 });
     }
 }

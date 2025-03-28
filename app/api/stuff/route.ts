@@ -1,14 +1,11 @@
-import client from "@/lib/appwrite_client";
-import { Databases, ID, Query } from "appwrite";
 import { NextResponse } from "next/server";
+import { connectToDatabase } from "@/lib/mongodb";
+import Staff from "@/lib/models/Staff";
 
-const database = new Databases(client)
-
-//Create stuff
-
-async function createStuff(data: {
+// Create staff
+async function createStaff(data: {
     firstName: string;
-    secondName: string;
+    secondName?: string;
     surname: string;
     dateOfBirth: string;
     gender: string;
@@ -16,51 +13,65 @@ async function createStuff(data: {
     position: string;
     contact: string;
     email: string;
-    address1: string;
+    address?: any;
+    status?: string;
 }) {
     try {
-        const response = await database.createDocument(
-            process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
-            "66fcfb0e001b2b36c05c",
-            ID.unique(),
-            data
-        );
+        console.log('Creating staff with data:', data);
+        await connectToDatabase();
+        const staff = new Staff({
+            ...data,
+            status: data.status || 'active'
+        });
+        const response = await staff.save();
+        console.log('Staff created successfully:', response);
         return response;
     } catch (error) {
-        console.error("Error creating stuff:", error);
-        throw new Error("Failed to create stuff");
+        console.error("Error creating Staff:", error);
+        throw new Error("Failed to create Staff");
     }
 }
 
-async function fetchStuff(){
+async function fetchStaff() {
     try {
-        const response = await database.listDocuments(
-            process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
-            "66fcfb0e001b2b36c05c", [Query.orderDesc("$createdAt")]
-        );
-        return response.documents;
+        console.log('Fetching staff...');
+        await connectToDatabase();
+        console.log('Connected to database, querying staff collection...');
+        const staff = await Staff.find()
+            .sort({ firstName: 1 })
+            .lean()
+            .exec();
+        console.log('Fetched staff count:', staff.length);
+        console.log('Fetched staff data:', JSON.stringify(staff, null, 2));
+        return staff;
     } catch (error) {
-        console.error("Error fetching stuff", error);
-        throw new Error("Failed to fetch Stuff");
+        console.error("Error fetching Staff:", error);
+        throw new Error("Failed to fetch Staff");
     }
 }
 
 export async function GET() {
     try {
-        const stuff = await fetchStuff();
-        return NextResponse.json(stuff, {status: 200});
+        console.log('GET /api/stuff called');
+        const staff = await fetchStaff();
+        console.log('Sending staff response:', JSON.stringify(staff, null, 2));
+        return NextResponse.json(staff, { status: 200 });
     } catch (error) {
-        return NextResponse.json({message:"Error fetching stuff"}, {status: 500})
+        console.error('GET /api/stuff error:', error);
+        return NextResponse.json({ message: "Error fetching Staff" }, { status: 500 });
     }
 }
 
 export async function POST(request: Request) {
     try {
-        const {firstName, secondName, surname, dateOfBirth, gender, email, idNumber, position, contact, address1} = await request.json();
-        const data = {firstName, secondName, surname, dateOfBirth, gender, email, idNumber, position, contact, address1}
-        const response = await createStuff(data);
-        return NextResponse.json({message: "Stuff created successfully"}, {status: 201})
+        console.log('POST /api/stuff called');
+        const body = await request.json();
+        console.log('POST request body:', body);
+        const staff = await createStaff(body);
+        console.log('Staff created successfully:', staff);
+        return NextResponse.json(staff, { status: 201 });
     } catch (error) {
-        return NextResponse.json({message: "Failed to create stuff"}, {status: 500})
+        console.error('POST /api/stuff error:', error);
+        return NextResponse.json({ message: "Error creating Staff" }, { status: 500 });
     }
 }

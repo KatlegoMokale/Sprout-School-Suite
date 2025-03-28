@@ -143,7 +143,7 @@ export default function StudentManagement() {
                 <SelectContent className="bg-white">
                   <SelectItem value="all">All Classes</SelectItem>
                   {classes.map((classItem) => (
-                    <SelectItem className=" hover:bg-green-200" key={classItem.$id} value={classItem.$id}>
+                    <SelectItem className=" hover:bg-green-200" key={classItem._id} value={classItem._id}>
                       {classItem.name}
                     </SelectItem>
                   ))}
@@ -200,7 +200,7 @@ export default function StudentManagement() {
                 <AnimatePresence>
                   {currentRecords.map((student) => (
                     <motion.tr
-                      key={student.$id}
+                      key={student._id}
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
@@ -214,14 +214,14 @@ export default function StudentManagement() {
                           </Avatar>
                           <div>
                             <p className="font-medium">{student.firstName} {student.secondName}</p>
-                            <p className="text-sm text-muted-foreground">ID: {student.$id}</p>
+                            <p className="text-sm text-muted-foreground">ID: {student._id}</p>
                           </div>
                         </div>
                       </TableCell>
                       <TableCell>{student.surname}</TableCell>
                       <TableCell>{student.dateOfBirth}</TableCell>
                       <TableCell>{student.age}</TableCell>
-                      <TableCell>{classes.find((c) => c.$id === student.studentClass)?.name || 'N/A'}</TableCell>
+                      <TableCell>{classes.find((c) => c._id === student.studentClass)?.name || 'N/A'}</TableCell>
                       <TableCell>{student.p1_firstName} {student.p1_surname}</TableCell>
                       <TableCell>{student.p1_phoneNumber}</TableCell>
                       <TableCell className="text-right">
@@ -234,9 +234,9 @@ export default function StudentManagement() {
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem asChild>
-                              <Link href={`/students/edit-student/${student.$id}`}>Edit</Link>
+                              <Link href={`/students/edit-student/${student._id}`}>Edit</Link>
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleDeleteStudent(student.$id)}>
+                            <DropdownMenuItem onClick={() => handleDeleteStudent(student._id)}>
                               Delete
                             </DropdownMenuItem>
                             <DropdownMenuItem>Add Payment</DropdownMenuItem>

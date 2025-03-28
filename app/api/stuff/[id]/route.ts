@@ -1,108 +1,106 @@
-import client from "@/lib/appwrite_client";
-import { Databases } from "appwrite";
+import { connectToDatabase } from "@/lib/mongodb";
+import Staff from "@/lib/models/Staff";
 import { NextResponse } from "next/server";
 
-const database = new Databases(client);
-
-//Fetch Stuff
-async function fetchStuff(id: string) {
-  try {
-    const class1 = await database.getDocument(
-      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
-      "66fcfb0e001b2b36c05c",
-      id
-    );
-    return class1;
-  } catch (error) {
-    console.error("Error fetching class:", error);
-    throw new Error("Failed to fetch class");
-  }
+//Fetch Staff
+async function fetchStaff(id: string) {
+    try {
+        console.log('Fetching staff with ID:', id);
+        await connectToDatabase();
+        const staff = await Staff.findById(id);
+        if (!staff) {
+            throw new Error("Staff not found");
+        }
+        console.log('Found staff:', staff);
+        return staff;
+    } catch (error) {
+        console.error("Error fetching Staff:", error);
+        throw new Error("Failed to fetch Staff");
+    }
 }
 
-//Delete Stuff
-async function deleteStuff(id: string) {
-  try {
-    const response = await database.deleteDocument(
-      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
-      "66fcfb0e001b2b36c05c",
-      id
-    );
-    return response;
-  } catch (error) {
-    console.error("Error deleting class:", error);
-    throw new Error("Failed to delete class");
-  }
+//Delete Staff
+async function deleteStaff(id: string) {
+    try {
+        console.log('Deleting staff with ID:', id);
+        await connectToDatabase();
+        const staff = await Staff.findByIdAndDelete(id);
+        if (!staff) {
+            throw new Error("Staff not found");
+        }
+        console.log('Deleted staff:', staff);
+        return staff;
+    } catch (error) {
+        console.error("Error deleting Staff:", error);
+        throw new Error("Failed to delete Staff");
+    }
 }
 
-//Update Stuff
-async function updateStuff(id: string, data: {
-  firstName: string;
-  secondName: string;
-  surname: string;
-  dateOfBirth: string;
-  gender: string;
-  email: string;
-  idNumber: string;
-  contact: string;
-  address1: string;
-  position: string;
-}){
-  try {
-    const response = await database.updateDocument(
-      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
-      "66fcfb0e001b2b36c05c",
-      id,
-      data
-    );
-    return response;
-  } catch (error) {
-    console.error("Error updating stuff:", error);
-    throw new Error("Failed to update stuff");
-  }
+//Update Staff
+async function updateStaff(id: string, data: any) {
+    try {
+        console.log('Updating staff with ID:', id);
+        console.log('Update data:', data);
+        await connectToDatabase();
+        const staff = await Staff.findByIdAndUpdate(
+            id,
+            { ...data, updatedAt: new Date() },
+            { new: true }
+        );
+        if (!staff) {
+            throw new Error("Staff not found");
+        }
+        console.log('Updated staff:', staff);
+        return staff;
+    } catch (error) {
+        console.error("Error updating Staff:", error);
+        throw new Error("Failed to update Staff");
+    }
 }
 
 export async function GET(
-  req: Request
+    request: Request,
+    context: { params: { id: string } }
 ) {
-  try {
-    const url = new URL(req.url);
-    const id = url.pathname.split('/').pop() as string; // Extract id from URL
-    const stuff = await fetchStuff(id);
-    return NextResponse.json({stuff});
-  } catch (error) {
-    return NextResponse.json(
-      { error: "Failed to fetch stuff" },
-      { status: 500 }
-    );
-  }
+    try {
+        const { id } = await context.params;
+        console.log('GET /api/stuff/[id] called with ID:', id);
+        const staff = await fetchStaff(id);
+        return NextResponse.json(staff, { status: 200 });
+    } catch (error) {
+        console.error('GET /api/stuff/[id] error:', error);
+        return NextResponse.json({ message: "Error fetching Staff" }, { status: 500 });
+    }
 }
 
-export async function DELETE(req: Request) {
-  try {
-    const url = new URL(req.url);
-    const id = url.pathname.split('/').pop() as string; // Extract id from URL
-    await deleteStuff(id);
-    return NextResponse.json({message: "Stuff deleted successfully"});
-  } catch (error) {
-    console.error("Error deleting stuff:", error);
-    return NextResponse.json(
-      { error: "Failed to delete stuff" },
-      { status: 500 }
-    );
-  }
+export async function DELETE(
+    request: Request,
+    context: { params: { id: string } }
+) {
+    try {
+        const { id } = await context.params;
+        console.log('DELETE /api/stuff/[id] called with ID:', id);
+        const staff = await deleteStaff(id);
+        return NextResponse.json(staff, { status: 200 });
+    } catch (error) {
+        console.error('DELETE /api/stuff/[id] error:', error);
+        return NextResponse.json({ message: "Error deleting Staff" }, { status: 500 });
+    }
 }
 
-export async function PUT(req: Request) {
-  try {
-    const url = new URL(req.url);
-    const id = url.pathname.split('/').pop() as string; // Extract id from URL
-    const stuff = await req.json();
-    await updateStuff(id, stuff);
-    return NextResponse.json({message : "Stuff updated successfully"});
-  } catch (error) {
-    return NextResponse.json(
-      { error: "Failed to update student" },
-      { status: 500 }
-    );
-  }
+export async function PATCH(
+    request: Request,
+    context: { params: { id: string } }
+) {
+    try {
+        const { id } = await context.params;
+        console.log('PATCH /api/stuff/[id] called with ID:', id);
+        const body = await request.json();
+        console.log('PATCH request body:', body);
+        const staff = await updateStaff(id, body);
+        return NextResponse.json(staff, { status: 200 });
+    } catch (error) {
+        console.error('PATCH /api/stuff/[id] error:', error);
+        return NextResponse.json({ message: "Error updating Staff" }, { status: 500 });
+    }
 }

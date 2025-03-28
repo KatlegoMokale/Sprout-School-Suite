@@ -1,24 +1,21 @@
-import client from "@/lib/appwrite_client";
-import { Databases, ID, Query } from "appwrite";
 import { NextResponse } from "next/server";
+import { connectToDatabase } from "@/lib/mongodb";
+import Grocery from "@/lib/models/Grocery";
 
-const database = new Databases(client)
-
-//Create grocery
-
+// Create grocery
 async function createGrocery(data: {
-    summery: string;
-    totalPaid:  number;
+    summary: string;
+    totalPaid: number;
     store: string;
     date: string;
 }) {
     try {
-        const response = await database.createDocument(
-            process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
-            "Grocery",
-            ID.unique(),
-            data
-        );
+        await connectToDatabase();
+        const grocery = new Grocery({
+            ...data,
+            date: new Date(data.date)
+        });
+        const response = await grocery.save();
         return response;
     } catch (error) {
         console.error("Error creating Grocery:", error);
@@ -26,13 +23,13 @@ async function createGrocery(data: {
     }
 }
 
-async function fetchGrocery(){
+async function fetchGrocery() {
     try {
-        const response = await database.listDocuments(
-            process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
-            "Grocery", [Query.orderDesc("$createdAt")]
-        );
-        return response.documents;
+        await connectToDatabase();
+        const grocery = await Grocery.find()
+            .sort({ date: -1 })
+            .exec();
+        return grocery;
     } catch (error) {
         console.error("Error fetching Grocery", error);
         throw new Error("Failed to fetch Grocery");
@@ -42,19 +39,18 @@ async function fetchGrocery(){
 export async function GET() {
     try {
         const grocery = await fetchGrocery();
-        return NextResponse.json(grocery, {status: 200});
+        return NextResponse.json(grocery, { status: 200 });
     } catch (error) {
-        return NextResponse.json({message:"Error fetching Grocery"}, {status: 500})
+        return NextResponse.json({ message: "Error fetching Grocery" }, { status: 500 });
     }
 }
 
 export async function POST(request: Request) {
     try {
-        const {summery, totalPaid, store, date } = await request.json();
-        const data = {summery, totalPaid, store, date}
-        const response = await createGrocery(data);
-        return NextResponse.json({message: "POST grocery created successfully--"}, {status: 201})
+        const body = await request.json();
+        const grocery = await createGrocery(body);
+        return NextResponse.json(grocery, { status: 201 });
     } catch (error) {
-        return NextResponse.json({message: "POST: Failed to create grocery--"}, {status: 500})
+        return NextResponse.json({ message: "Error creating Grocery" }, { status: 500 });
     }
 }

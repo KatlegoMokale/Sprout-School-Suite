@@ -1,17 +1,18 @@
-import client from "@/lib/appwrite_client";
-import { Databases } from "appwrite";
 import { NextResponse } from "next/server";
-
-const database = new Databases(client);
+import connectToDatabase from "@/lib/mongodb";
+import Student from "@/lib/models/Student";
 
 //Fetch Student
 async function fetchStudent(id: string) {
   try {
-    const student = await database.getDocument(
-      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
-      "students",
-      id
-    );
+    if (!id) {
+      throw new Error("Student ID is required");
+    }
+    await connectToDatabase();
+    const student = await Student.findById(id);
+    if (!student) {
+      throw new Error("Student not found");
+    }
     return student;
   } catch (error) {
     console.error("Error fetching student:", error);
@@ -22,12 +23,15 @@ async function fetchStudent(id: string) {
 //Delete Student
 async function deleteStudent(id: string) {
   try {
-    const response = await database.deleteDocument(
-      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
-      "students",
-      id
-    );
-    return response;
+    if (!id) {
+      throw new Error("Student ID is required");
+    }
+    await connectToDatabase();
+    const student = await Student.findByIdAndDelete(id);
+    if (!student) {
+      throw new Error("Student not found");
+    }
+    return student;
   } catch (error) {
     console.error("Error deleting student:", error);
     throw new Error("Failed to delete student");
@@ -71,15 +75,66 @@ async function updateStudent(id: string, data: {
   p2_phoneNumber: string;
   p2_email: string;
   p2_workNumber: string;
-}){
+}) {
   try {
-    const response = await database.updateDocument(
-      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
-      "students",
-      id,
-      data
-    );
-    return response;
+    if (!id) {
+      throw new Error("Student ID is required");
+    }
+    await connectToDatabase();
+    
+    const studentData = {
+      firstName: data.firstName,
+      secondName: data.secondName,
+      surname: data.surname,
+      address: {
+        street: data.address1,
+        city: data.city,
+        province: data.province,
+        postalCode: data.postalCode
+      },
+      dateOfBirth: data.dateOfBirth,
+      gender: data.gender,
+      age: data.age,
+      homeLanguage: data.homeLanguage,
+      allergies: data.allergies,
+      medicalAidNumber: data.medicalAidNumber,
+      medicalAidScheme: data.medicalAidScheme,
+      studentClass: data.studentClass,
+      parent1: {
+        relationship: data.p1_relationship,
+        firstName: data.p1_firstName,
+        surname: data.p1_surname,
+        address: {
+          street: data.p1_address1,
+          city: data.p1_city,
+          province: data.p1_province,
+          postalCode: data.p1_postalCode
+        },
+        phoneNumber: data.p1_phoneNumber,
+        email: data.p1_email,
+        workNumber: data.p1_workNumber
+      },
+      parent2: data.p2_firstName ? {
+        relationship: data.p2_relationship,
+        firstName: data.p2_firstName,
+        surname: data.p2_surname,
+        address: {
+          street: data.p2_address1,
+          city: data.p2_city,
+          province: data.p2_province,
+          postalCode: data.p2_postalCode
+        },
+        phoneNumber: data.p2_phoneNumber,
+        email: data.p2_email,
+        workNumber: data.p2_workNumber
+      } : undefined
+    };
+
+    const student = await Student.findByIdAndUpdate(id, studentData, { new: true });
+    if (!student) {
+      throw new Error("Student not found");
+    }
+    return student;
   } catch (error) {
     console.error("Error updating student:", error);
     throw new Error("Failed to update student");
@@ -88,13 +143,24 @@ async function updateStudent(id: string, data: {
 
 async function updateStudentBalance(id: string, balance: number) {
   try {
-    const response = await database.updateDocument(
-      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
-      "students",
+    if (!id) {
+      throw new Error("Student ID is required");
+    }
+    await connectToDatabase();
+    const student = await Student.findByIdAndUpdate(
       id,
-      { balance: balance } // Pass as an object with the field name
+      { 
+        $set: { 
+          balance,
+          lastPaid: new Date()
+        }
+      },
+      { new: true }
     );
-    return response;
+    if (!student) {
+      throw new Error("Student not found");
+    }
+    return student;
   } catch (error) {
     console.error("Error updating student balance:", error);
     throw new Error("Failed to update student balance");
@@ -104,55 +170,20 @@ async function updateStudentBalance(id: string, balance: number) {
 export async function PATCH(req: Request) {
   try {
     const url = new URL(req.url);
-    const id = url.pathname.split('/').pop() as string; // Extract id from URL
-
+    const id = url.pathname.split('/').pop();
     if (!id) {
       return NextResponse.json(
         { error: "Student ID is required" },
         { status: 400 }
       );
     }
-
-    const body = await req.json();
-    const { balance } = body;
-    console.log('Received PATCH request:', { id, balance });
-
-    let response;
-    try {
-      if (balance !== undefined) {
-        console.log('Updating balance:', balance);
-        response = await updateStudentBalance(id, balance);
-      } else {
-        return NextResponse.json(
-          { error: "Balance must be provided" },
-          { status: 400 }
-        );
-      }
-    } catch (updateError: any) {
-      // Handle Appwrite specific errors
-      if (updateError.code === 404) {
-        return NextResponse.json(
-          { error: "Student fee record not found" },
-          { status: 404 }
-        );
-      }
-      throw updateError;
-    }
-
-    return NextResponse.json({
-      message: "Student balance updated successfully",
-      data: response
-    });
-  } catch (error: any) {
-    console.error('Error in PATCH /api/student-school-fees/[id]:', error);
-    // Return appropriate status codes based on the error
-    const statusCode = error.code === 404 ? 404 : 500;
+    const { balance } = await req.json();
+    const student = await updateStudentBalance(id, balance);
+    return NextResponse.json(student);
+  } catch (error) {
     return NextResponse.json(
-      {
-        error: error.message || "Failed to update student payment details",
-        details: error.response || null
-      },
-      { status: statusCode }
+      { error: "Failed to update student balance" },
+      { status: 500 }
     );
   }
 }
@@ -162,9 +193,15 @@ export async function GET(
 ) {
   try {
     const url = new URL(req.url);
-    const id = url.pathname.split('/').pop() as string; // Extract id from URL
+    const id = url.pathname.split('/').pop();
+    if (!id) {
+      return NextResponse.json(
+        { error: "Student ID is required" },
+        { status: 400 }
+      );
+    }
     const student = await fetchStudent(id);
-    return NextResponse.json({student});
+    return NextResponse.json({ student });
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to fetch student" },
@@ -176,11 +213,16 @@ export async function GET(
 export async function DELETE(req: Request) {
   try {
     const url = new URL(req.url);
-    const id = url.pathname.split('/').pop() as string; // Extract id from URL
-    await deleteStudent(id);
-    return NextResponse.json({message: "Student deleted successfully"});
+    const id = url.pathname.split('/').pop();
+    if (!id) {
+      return NextResponse.json(
+        { error: "Student ID is required" },
+        { status: 400 }
+      );
+    }
+    const student = await deleteStudent(id);
+    return NextResponse.json(student);
   } catch (error) {
-    console.error("Error deleting student:", error);
     return NextResponse.json(
       { error: "Failed to delete student" },
       { status: 500 }
@@ -191,10 +233,16 @@ export async function DELETE(req: Request) {
 export async function PUT(req: Request) {
   try {
     const url = new URL(req.url);
-    const id = url.pathname.split('/').pop() as string; // Extract id from URL
-    const student = await req.json();
-    await updateStudent(id, student);
-    return NextResponse.json({message : "Student updated successfully"});
+    const id = url.pathname.split('/').pop();
+    if (!id) {
+      return NextResponse.json(
+        { error: "Student ID is required" },
+        { status: 400 }
+      );
+    }
+    const data = await req.json();
+    const student = await updateStudent(id, data);
+    return NextResponse.json(student);
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to update student" },

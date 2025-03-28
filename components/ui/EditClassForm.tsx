@@ -17,6 +17,9 @@ const formSchema = z.object({
   age: z.string().min(1, "Age is required"),
   teacherId: z.string().min(1, "Teacher ID is required"),
   teacherName: z.string().min(1, "Teacher name is required"),
+  capacity: z.number().min(1, "Capacity must be at least 1"),
+  currentEnrollment: z.number().min(0, "Current enrollment cannot be negative"),
+  status: z.enum(['active', 'inactive']).default('active')
 })
 
 export default function EditClassForm({ params }: { params: { id: string } }) {
@@ -31,6 +34,9 @@ export default function EditClassForm({ params }: { params: { id: string } }) {
       age: "",
       teacherId: "",
       teacherName: "",
+      capacity: 25,
+      currentEnrollment: 0,
+      status: "active"
     },
   })
 
@@ -41,13 +47,16 @@ export default function EditClassForm({ params }: { params: { id: string } }) {
         const response = await fetch(`/api/class/${params.id}`)
         if (!response.ok) throw new Error("Failed to fetch class")
         const data = await response.json()
-        const classData = data.class1
+        console.log("Class Data:", data)
 
         form.reset({
-          name: classData.name,
-          age: classData.age,
-          teacherId: classData.teacherId,
-          teacherName: classData.teacherName,
+          name: data.name || "",
+          age: data.age || "",
+          teacherId: data.teacherId || "",
+          teacherName: data.teacherName || "",
+          capacity: data.capacity || 25,
+          currentEnrollment: data.currentEnrollment || 0,
+          status: data.status || "active"
         })
       } catch (error) {
         console.error("Error fetching class:", error)
@@ -64,7 +73,7 @@ export default function EditClassForm({ params }: { params: { id: string } }) {
     setIsLoading(true)
     try {
       const response = await fetch(`/api/class/${params.id}`, {
-        method: "PUT",
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
@@ -136,6 +145,31 @@ export default function EditClassForm({ params }: { params: { id: string } }) {
               name="teacherName"
               label="Teacher Name"
               placeholder="Enter teacher name"
+            />
+            <CustomInput
+              control={form.control}
+              name="capacity"
+              label="Class Capacity"
+              placeholder="Enter class capacity"
+              type="number"
+            />
+            <CustomInput
+              control={form.control}
+              name="currentEnrollment"
+              label="Current Enrollment"
+              placeholder="Enter current enrollment"
+              type="number"
+            />
+            <CustomInput
+              control={form.control}
+              name="status"
+              label="Status"
+              placeholder="Select status"
+              select={true}
+              options={[
+                { value: "active", label: "Active" },
+                { value: "inactive", label: "Inactive" },
+              ]}
             />
             <Button type="submit" disabled={isLoading}>
               {isLoading ? "Updating..." : "Update Class"}

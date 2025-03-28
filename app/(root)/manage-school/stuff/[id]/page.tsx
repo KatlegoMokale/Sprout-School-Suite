@@ -9,9 +9,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CustomInput from "@/components/ui/CustomInput";
 import {
   IStuff,
-  newStudentFormSchema,
   newStuffFormSchema,
   parseStringify,
+  studentFormSchema,
 } from "@/lib/utils";
 import { DialogContent, DialogDescription } from "@/components/ui/dialog";
 import Link from "next/link";
@@ -32,6 +32,8 @@ import { newStuff, updateStuff } from "@/lib/actions/user.actions";
 import { AlertDialogTitle } from "@radix-ui/react-alert-dialog";
 
 const formSchema = newStuffFormSchema();
+const schema = studentFormSchema();
+type FormData = z.infer<typeof schema>;
 
 const EditStuff = ({ params }: { params: Promise<{ id: string }> }) => {
   const [stuffData, setStuffData] = useState<IStuff | null>(null);
@@ -41,8 +43,69 @@ const EditStuff = ({ params }: { params: Promise<{ id: string }> }) => {
   const [formData, setFormData] = useState<NewStuffParams | null>(null);
   const router = useRouter();
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<FormData>({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      firstName: "",
+      secondName: "",
+      surname: "",
+      dateOfBirth: "",
+      age: "",
+      gender: "",
+      address: {
+        street: "",
+        city: "",
+        province: "",
+        postalCode: "",
+        country: "South Africa"
+      },
+      homeLanguage: "",
+      allergies: "",
+      medicalAidNumber: "",
+      medicalAidScheme: "",
+      studentClass: "",
+      studentStatus: "active",
+      balance: 0,
+      lastPaid: "",
+      parent1: {
+        relationship: "",
+        firstName: "",
+        surname: "",
+        email: "",
+        phoneNumber: "",
+        idNumber: "",
+        gender: "",
+        dateOfBirth: "",
+        address: {
+          street: "",
+          city: "",
+          province: "",
+          postalCode: "",
+          country: "South Africa"
+        },
+        occupation: "",
+        workNumber: ""
+      },
+      parent2: {
+        relationship: "",
+        firstName: "",
+        surname: "",
+        email: "",
+        phoneNumber: "",
+        idNumber: "",
+        gender: "",
+        dateOfBirth: "",
+        address: {
+          street: "",
+          city: "",
+          province: "",
+          postalCode: "",
+          country: "South Africa"
+        },
+        occupation: "",
+        workNumber: ""
+      }
+    }
   });
 
   useEffect(() => {
@@ -50,20 +113,48 @@ const EditStuff = ({ params }: { params: Promise<{ id: string }> }) => {
       setIsLoading(true);
       try {
         const unwrappedParams = await params;
-        const [stuffResponse] = await Promise.all([
-          fetch(`/api/stuff/${unwrappedParams.id}`),
-        ]);
-        if (!stuffResponse.ok) throw new Error("Failed to fetch stuff");
-        const stuffData = await stuffResponse.json();
+        const response = await fetch(`/api/stuff/${unwrappedParams.id}`);
+        if (!response.ok) throw new Error("Failed to fetch staff");
+        const staffData = await response.json();
+        console.log("Staff Data:", staffData);
 
-        setStuffData(stuffData.stuff);
-        console.log("Stuff Data:", stuffData.stuff);
+        if (!staffData) throw new Error("No staff data received");
 
-        Object.entries(stuffData.stuff).forEach(([key, value]) => {
-          form.setValue(key as any, value as any);
+        setStuffData(staffData);
+
+        // Set form values
+        const formValues = {
+          firstName: staffData.firstName || '',
+          secondName: staffData.secondName || '',
+          surname: staffData.surname || '',
+          dateOfBirth: staffData.dateOfBirth || '',
+          idNumber: staffData.idNumber || '',
+          email: staffData.email || '',
+          contact: staffData.contact || '',
+          gender: staffData.gender || 'male',
+          position: staffData.position || '',
+          address: {
+            street: staffData.address?.street || '',
+            city: staffData.address?.city || '',
+            province: staffData.address?.province || '',
+            postalCode: staffData.address?.postalCode || '',
+            country: staffData.address?.country || ''
+          },
+          status: staffData.status || 'active'
+        };
+
+        // Set each form field
+        Object.entries(formValues).forEach(([key, value]) => {
+          if (key === 'address') {
+            Object.entries(value as Record<string, string>).forEach(([addressKey, addressValue]) => {
+              form.setValue(`address.${addressKey}` as any, addressValue);
+            });
+          } else {
+            form.setValue(key as any, value);
+          }
         });
       } catch (error) {
-        console.error("Error fetching stuff:", error);
+        console.error("Error fetching staff:", error);
         setError("Failed to fetch data. Please try again.");
       } finally {
         setIsLoading(false);
@@ -73,41 +164,63 @@ const EditStuff = ({ params }: { params: Promise<{ id: string }> }) => {
   }, [params, form]);
 
   const handleConfirmAddStuff = async () => {
-    console.log("Add Stuff onSubmit beginning...");
+    console.log("Update Staff beginning...");
     setIsLoading(true);
     try {
-      const unwrappedParams = await params
-      await updateStuff(formData as NewStuffParams, unwrappedParams.id);
+      const unwrappedParams = await params;
+      if (!formData) throw new Error("No form data");
+      
+      const response = await fetch(`/api/stuff/${unwrappedParams.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) throw new Error("Failed to update staff");
+
       toast({
         title: "Success",
-        description: "Stuff information has been updated.",
-      })
+        description: "Staff information has been updated.",
+      });
       router.push("/manage-school");
     } catch (error) {
-      console.error("Error submitting form:", error);
-      setError("An error occurred while submitting the form.");
+      console.error("Error updating staff:", error);
+      setError("An error occurred while updating staff information.");
+      toast({
+        title: "Error",
+        description: "Failed to update staff member. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
-  const onSubmit = async (data: z.infer<typeof formSchema>) => {
+  const onSubmit = async (data: z.infer<typeof schema>) => {
     setIsConfirmOpen(true);
     const stuffData: NewStuffParams = {
       firstName: data.firstName,
-      secondName: data.secondName,
+      secondName: data.secondName || '',
       surname: data.surname,
       dateOfBirth: data.dateOfBirth,
       idNumber: data.idNumber,
-      address1: data.address1,
       email: data.email,
       contact: data.contact,
       gender: data.gender,
       position: data.position,
-      startDate: data.startDate,
+      address: {
+        street: data.address?.street || '',
+        city: data.address?.city || '',
+        province: data.address?.province || '',
+        postalCode: data.address?.postalCode || '',
+        country: data.address?.country || ''
+      },
+      status: data.status
     };
     setFormData(stuffData);
-    console.log("Form Data:", formData);
+    console.log("Form Data:", stuffData);
   };
 
   if (isLoading) {
@@ -158,35 +271,35 @@ const EditStuff = ({ params }: { params: Promise<{ id: string }> }) => {
                 <ChevronLeft className="h-4 w-4" />
                 <p>Back</p>
               </Link>
-              <h1 className="pt-5">Edit Stuff</h1>
+              <h1 className="pt-5">Edit Staff</h1>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <CustomInput
                 name="firstName"
                 placeholder="Enter name"
                 control={form.control}
-                label={"First Name"}
+                label="First Name"
               />
 
               <CustomInput
                 name="secondName"
                 placeholder="Enter Second Name"
                 control={form.control}
-                label={"Second Name"}
+                label="Second Name"
               />
 
               <CustomInput
                 name="surname"
                 placeholder="Enter Surname"
                 control={form.control}
-                label={"Surname"}
+                label="Surname"
               />
 
               <CustomInput
                 name="dateOfBirth"
                 placeholder="Enter Date of Birth"
                 control={form.control}
-                label={"Date of Birth"}
+                label="Date of Birth"
                 type="date"
               />
 
@@ -194,64 +307,93 @@ const EditStuff = ({ params }: { params: Promise<{ id: string }> }) => {
                 name="idNumber"
                 placeholder="Enter ID Number"
                 control={form.control}
-                label={"ID Number"}
+                label="ID Number"
               />
 
               <CustomInput
                 name="gender"
+                placeholder="Select gender"
                 control={form.control}
                 label="Gender"
-                placeholder="Select Gender"
                 select={true}
                 options={[
-                  { label: "Male", value: "Male" },
-                  { label: "Female", value: "Female" },
+                  { value: "male", label: "Male" },
+                  { value: "female", label: "Female" },
                 ]}
               />
 
               <CustomInput
-                name="contact"
-                placeholder="Enter Phone Number"
+                name="position"
+                placeholder="Enter position"
                 control={form.control}
-                label={"Phone Number"}
+                label="Position"
+              />
+
+              <CustomInput
+                name="contact"
+                placeholder="Enter contact number"
+                control={form.control}
+                label="Contact"
               />
 
               <CustomInput
                 name="email"
-                placeholder="Enter Email"
+                placeholder="Enter email"
                 control={form.control}
-                label={"Email"}
-              />
-
-              <div className="col-span-2">
-                <CustomInput
-                  name="address1"
-                  placeholder="Enter Address"
-                  control={form.control}
-                  label={"Address"}
-                />
-              </div>
-
-              <CustomInput
-                name="position"
-                placeholder="Enter Position"
-                control={form.control}
-                label={"Position"}
+                label="Email"
               />
 
               <CustomInput
-                name="startDate"
-                placeholder="Enter start date"
+                name="address.street"
+                placeholder="Enter street address"
                 control={form.control}
-                label={"Start Date"}
-                type="date"
+                label="Street Address"
               />
 
-              <Button type="submit" disabled={isLoading} className="form-btn">
-                {isLoading ? "Updating..." : "Update"}
-              </Button>
+              <CustomInput
+                name="address.city"
+                placeholder="Enter city"
+                control={form.control}
+                label="City"
+              />
+
+              <CustomInput
+                name="address.province"
+                placeholder="Enter province"
+                control={form.control}
+                label="Province"
+              />
+
+              <CustomInput
+                name="address.postalCode"
+                placeholder="Enter postal code"
+                control={form.control}
+                label="Postal Code"
+              />
+
+              <CustomInput
+                name="address.country"
+                placeholder="Enter country"
+                control={form.control}
+                label="Country"
+              />
+
+              <CustomInput
+                name="status"
+                placeholder="Select status"
+                control={form.control}
+                label="Status"
+                select={true}
+                options={[
+                  { value: "active", label: "Active" },
+                  { value: "inactive", label: "Inactive" },
+                ]}
+              />
             </div>
-            {error && <div className="text-red-500">{error}</div>}
+
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? "Updating..." : "Update Staff"}
+            </Button>
           </form>
         </div>
       </Form>

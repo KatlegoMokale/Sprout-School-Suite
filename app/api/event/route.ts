@@ -1,60 +1,61 @@
-import client from "@/lib/appwrite_client";
-import { Databases, ID, Query } from "appwrite";
 import { NextResponse } from "next/server";
+import { connectToDatabase } from "@/lib/mongodb";
+import Event from "@/lib/models/Event";
 
-const database = new Databases(client)
-
-//Create event
-
+// Create event
 async function createEvent(data: {
     eventName: string;
     date: string;
     amount: number;
     description: string;
+    type: string;
+    status?: string;
+    participants?: string[];
 }) {
     try {
-        const response = await database.createDocument(
-            process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
-            "Event",
-            ID.unique(),
-            data
-        );
+        await connectToDatabase();
+        const event = new Event({
+            ...data,
+            date: new Date(data.date),
+            status: data.status || 'Upcoming'
+        });
+        const response = await event.save();
         return response;
     } catch (error) {
-        console.error("Error creating event:", error);
-        throw new Error("Failed to create event");
+        console.error("Error creating Event:", error);
+        throw new Error("Failed to create Event");
     }
 }
 
-async function fetchEvent(){
+async function fetchEvents() {
     try {
-        const response = await database.listDocuments(
-            process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
-            "Event", [Query.orderDesc("$createdAt")]
-        );
-        return response.documents;
+        await connectToDatabase();
+        const events = await Event.find()
+            .sort({ date: -1 })
+            .populate('participants', 'firstName surname')
+            .exec();
+        return events;
     } catch (error) {
-        console.error("Error fetching event", error);
-        throw new Error("Failed to fetch event");
+        console.error("Error fetching Events", error);
+        throw new Error("Failed to fetch Events");
     }
 }
 
 export async function GET() {
     try {
-        const event = await fetchEvent();
-        return NextResponse.json(event, {status: 200});
+        const events = await fetchEvents();
+        return NextResponse.json(events, { status: 200 });
     } catch (error) {
-        return NextResponse.json({message:"Error fetching event"}, {status: 500})
+        return NextResponse.json({ message: "Error fetching Events" }, { status: 500 });
     }
 }
 
 export async function POST(request: Request) {
     try {
-        const {eventName, date, amount, description} = await request.json();
-        const data = {eventName, date, amount, description}
-        const response = await createEvent(data);
-        return NextResponse.json({message: "POST Event created successfully--"}, {status: 201})
+        const body = await request.json();
+        const event = await createEvent(body);
+        return NextResponse.json(event, { status: 201 });
     } catch (error) {
-        return NextResponse.json({message: "POST: Failed to create event--"}, {status: 500})
+        return NextResponse.json({ message: "Error creating Event" }, { status: 500 });
     }
 }

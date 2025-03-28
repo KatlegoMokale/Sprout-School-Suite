@@ -1,41 +1,39 @@
-import client from "@/lib/appwrite_client";
-import { Databases } from "appwrite";
 import { NextResponse } from "next/server";
+import connectToDatabase from "@/lib/mongodb";
+import Transaction from "@/lib/models/Transaction";
 
-const database = new Databases(client);
-
-//Fetch Stuff
-async function fetchStuff(id: string) {
+//Fetch Transaction
+async function fetchTransaction(id: string) {
   try {
-    const class1 = await database.getDocument(
-      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
-      "66d8358000313f85aa00",
-      id
-    );
-    return class1;
+    await connectToDatabase();
+    const transaction = await Transaction.findById(id);
+    if (!transaction) {
+      throw new Error("Transaction not found");
+    }
+    return transaction;
   } catch (error) {
-    console.error("Error fetching class:", error);
-    throw new Error("Failed to fetch class");
+    console.error("Error fetching transaction:", error);
+    throw new Error("Failed to fetch transaction");
   }
 }
 
-//Delete Stuff
-async function deleteStuff(id: string) {
+//Delete Transaction
+async function deleteTransaction(id: string) {
   try {
-    const response = await database.deleteDocument(
-      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
-      "66d8358000313f85aa00",
-      id
-    );
-    return response;
+    await connectToDatabase();
+    const transaction = await Transaction.findByIdAndDelete(id);
+    if (!transaction) {
+      throw new Error("Transaction not found");
+    }
+    return transaction;
   } catch (error) {
-    console.error("Error deleting class:", error);
-    throw new Error("Failed to delete class");
+    console.error("Error deleting transaction:", error);
+    throw new Error("Failed to delete transaction");
   }
 }
 
-//Update Stuff
-async function updateStuff(id: string, data: {
+//Update Transaction
+async function updateTransaction(id: string, data: {
   firstName: string;
   surname: string;
   studentId: string;
@@ -44,16 +42,19 @@ async function updateStuff(id: string, data: {
   paymentMethod: string;
 }){
   try {
-    const response = await database.updateDocument(
-      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
-      "66fcfb0e001b2b36c05c",
+    await connectToDatabase();
+    const transaction = await Transaction.findByIdAndUpdate(
       id,
-      data
+      data,
+      { new: true }
     );
-    return response;
+    if (!transaction) {
+      throw new Error("Transaction not found");
+    }
+    return transaction;
   } catch (error) {
-    console.error("Error updating stuff:", error);
-    throw new Error("Failed to update stuff");
+    console.error("Error updating transaction:", error);
+    throw new Error("Failed to update transaction");
   }
 }
 
@@ -62,12 +63,13 @@ export async function GET(
 ) {
   try {
     const url = new URL(req.url);
-    const id = url.pathname.split('/').pop() as string; // Extract id from URL
-    const stuff = await fetchStuff(id);
-    return NextResponse.json({stuff});
+    const id = url.pathname.split('/').pop();
+    if (!id) throw new Error("Transaction ID is required");
+    const transaction = await fetchTransaction(id);
+    return NextResponse.json(transaction);
   } catch (error) {
     return NextResponse.json(
-      { error: "Failed to fetch stuff" },
+      { error: "Failed to fetch transaction" },
       { status: 500 }
     );
   }
@@ -76,13 +78,13 @@ export async function GET(
 export async function DELETE(req: Request) {
   try {
     const url = new URL(req.url);
-    const id = url.pathname.split('/').pop() as string; // Extract id from URL
-    await deleteStuff(id);
-    return NextResponse.json({message: "Stuff deleted successfully"});
+    const id = url.pathname.split('/').pop();
+    if (!id) throw new Error("Transaction ID is required");
+    const transaction = await deleteTransaction(id);
+    return NextResponse.json(transaction);
   } catch (error) {
-    console.error("Error deleting stuff:", error);
     return NextResponse.json(
-      { error: "Failed to delete stuff" },
+      { error: "Failed to delete transaction" },
       { status: 500 }
     );
   }
@@ -91,13 +93,14 @@ export async function DELETE(req: Request) {
 export async function PUT(req: Request) {
   try {
     const url = new URL(req.url);
-    const id = url.pathname.split('/').pop() as string; // Extract id from URL
-    const stuff = await req.json();
-    await updateStuff(id, stuff);
-    return NextResponse.json({message : "Stuff updated successfully"});
+    const id = url.pathname.split('/').pop();
+    if (!id) throw new Error("Transaction ID is required");
+    const data = await req.json();
+    const transaction = await updateTransaction(id, data);
+    return NextResponse.json(transaction);
   } catch (error) {
     return NextResponse.json(
-      { error: "Failed to update student" },
+      { error: "Failed to update transaction" },
       { status: 500 }
     );
   }

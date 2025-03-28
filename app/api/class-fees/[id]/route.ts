@@ -1,92 +1,91 @@
-import client from "@/lib/appwrite_client";
-import { Databases } from "appwrite";
 import { NextResponse } from "next/server";
-
-const database = new Databases(client);
+import connectToDatabase from "@/lib/mongodb";
+import Class from "@/lib/models/Class";
 
 //Fetch Class And Fees
-
 async function fetchClassAndFees(id: string) {
   try {
-    const data = await database.getDocument(
-      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
-      "staffSalarySchema",
-      id
-    );
-    return data;
+    await connectToDatabase();
+    const classData = await Class.findById(id);
+    if (!classData) {
+      throw new Error("Class not found");
+    }
+    return classData;
   } catch (error) {
-    console.error("Error fetching staff salary:", error);
-    throw new Error("Failed to fetch staff salary");
+    console.error("Error fetching class:", error);
+    throw new Error("Failed to fetch class");
   }
 }
 
-//Delete SClass And Fees
+//Delete Class And Fees
 async function deleteClassAndFees(id: string) {
   try {
-    const response = await database.deleteDocument(
-      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
-      "classAndFees",
-      id
-    );
-    return response;
+    await connectToDatabase();
+    const classData = await Class.findByIdAndDelete(id);
+    if (!classData) {
+      throw new Error("Class not found");
+    }
+    return classData;
   } catch (error) {
-    console.error("Error deleting Class And Fees:", error);
-    throw new Error("Failed to delete Class And Feess");
+    console.error("Error deleting class:", error);
+    throw new Error("Failed to delete class");
   }
 }
 
 //Update Class And Fees
 async function updateClassAndFees(id: string, data: {
-    name: string;
-    ageStart: number;
-    ageEnd: number;
-    ageUnit: string;
-    teacherId: string;
-    teacherName:string;
-    monthlyFee: number;
+  name: string;
+  ageStart: number;
+  ageEnd: number;
+  ageUnit: string;
+  teacherId: string;
+  teacherName: string;
+  monthlyFee: number;
 }){
-    try {
-        const response = await database.updateDocument(
-            process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
-            "classAndFees",
-            id,
-            data
-        );
-        return response;
-    } catch (error) {
-        console.error("Error updating student:", error);
-        throw new Error("Failed to update Class And Fees");
+  try {
+    await connectToDatabase();
+    const classData = await Class.findByIdAndUpdate(
+      id,
+      data,
+      { new: true }
+    );
+    if (!classData) {
+      throw new Error("Class not found");
     }
+    return classData;
+  } catch (error) {
+    console.error("Error updating class:", error);
+    throw new Error("Failed to update class");
+  }
 }
 
 export async function GET(
-    req: Request
+  req: Request
 ) {
   try {
     const url = new URL(req.url);
-    const id = url.pathname.split('/').pop() as string; // Extract id from URL
-    const data = await fetchClassAndFees(id);
-    return NextResponse.json({data});
+    const id = url.pathname.split('/').pop();
+    if (!id) throw new Error("Class ID is required");
+    const classData = await fetchClassAndFees(id);
+    return NextResponse.json(classData);
   } catch (error) {
     return NextResponse.json(
-      { error: "Failed to fetch ClassAndFees" },
+      { error: "Failed to fetch class" },
       { status: 500 }
     );
   }
-    
 }
-  
 
 export async function DELETE(req: Request) {
   try {
     const url = new URL(req.url);
-    const id = url.pathname.split('/').pop() as string; // Extract id from URL
-    await deleteClassAndFees(id);
-    return NextResponse.json({message: "ClassAndFees deleted successfully"});
+    const id = url.pathname.split('/').pop();
+    if (!id) throw new Error("Class ID is required");
+    const classData = await deleteClassAndFees(id);
+    return NextResponse.json(classData);
   } catch (error) {
-    console.error("Error deleting ClassAndFees:", error);
     return NextResponse.json(
-      { error: "Failed to delete ClassAndFees" },
+      { error: "Failed to delete class" },
       { status: 500 }
     );
   }
@@ -95,13 +94,14 @@ export async function DELETE(req: Request) {
 export async function PUT(req: Request) {
   try {
     const url = new URL(req.url);
-    const id = url.pathname.split('/').pop() as string; // Extract id from URL
+    const id = url.pathname.split('/').pop();
+    if (!id) throw new Error("Class ID is required");
     const data = await req.json();
-    await updateClassAndFees(id, data);
-    return NextResponse.json({message : "ClassAndFees updated successfully"});
+    const classData = await updateClassAndFees(id, data);
+    return NextResponse.json(classData);
   } catch (error) {
     return NextResponse.json(
-      { error: "Failed to update ClassAndFees" },
+      { error: "Failed to update class" },
       { status: 500 }
     );
   }

@@ -100,69 +100,92 @@ export const authFormSchema = (type: string) => z.object({
 });
 
 
-export const newStudentFormSchema = () => {
-  return z.object({
-    // Student Information
+export const studentFormSchema = () => z.object({
+  // Student Information
+  firstName: z.string().min(1, "First name is required"),
+  secondName: z.string().optional(),
+  surname: z.string().min(1, "Surname is required"),
+  dateOfBirth: z.string().min(1, "Date of birth is required"),
+  age: z.string(),
+  gender: z.string().min(1, "Gender is required"),
+  address: z.object({
+    street: z.string().min(1, "Street address is required"),
+    city: z.string().min(1, "City is required"),
+    province: z.string().min(1, "Province is required"),
+    postalCode: z.string().min(1, "Postal code is required"),
+    country: z.string().default("South Africa")
+  }),
+  homeLanguage: z.string().min(1, "Home language is required"),
+  allergies: z.string().optional(),
+  medicalAidNumber: z.string().optional(),
+  medicalAidScheme: z.string().optional(),
+  studentClass: z.string().min(1, "Class is required"),
+  studentStatus: z.enum(["active", "inactive", "graduated"]).default("active"),
+  balance: z.number().min(0).default(0),
+  lastPaid: z.string().optional(),
+
+  // Parent 1 Information
+  parent1: z.object({
+    relationship: z.string().min(1, "Relationship is required"),
     firstName: z.string().min(1, "First name is required"),
-    secondName: z.string().optional(),
     surname: z.string().min(1, "Surname is required"),
-    dateOfBirth: z.string().min(1, "Date of birth is required"),
-    age: z.string(), // Age is optional, calculated elsewhere
+    email: z.string().email("Invalid email address"),
+    phoneNumber: z.string().min(1, "Phone number is required"),
+    idNumber: z.string().min(1, "ID number is required"),
     gender: z.string().min(1, "Gender is required"),
-    address1: z.string().min(1, "Address is required"),
-    homeLanguage: z.string().min(1, "Home language is required"),
-    allergies: z.string().optional(),
-    medicalAidNumber: z.string().optional(),
-    medicalAidScheme: z.string().optional(),
-    studentClass: z.string().min(1, "Class is required"),
-    studentStatus: z.enum(["active", "non-active"]),
-    balance: z.number().min(0),
-    lastPaid: z.string().optional(),
+    dateOfBirth: z.string().min(1, "Date of birth is required"),
+    address: z.object({
+      street: z.string().min(1, "Street address is required"),
+      city: z.string().min(1, "City is required"),
+      province: z.string().min(1, "Province is required"),
+      postalCode: z.string().min(1, "Postal code is required"),
+      country: z.string().default("South Africa")
+    }),
+    occupation: z.string().optional(),
+    workNumber: z.string().optional()
+  }),
 
-    // Guardian 1 Information
-    p1_relationship: z.string().min(1, "Relationship is required"),
-    p1_firstName: z.string().min(1, "First name is required"),
-    p1_surname: z.string().min(1, "Surname is required"),
-    p1_email: z.string().email("Invalid email address"),
-    p1_phoneNumber: z.string().min(1, "Phone number is required"),
-    p1_idNumber: z.string().min(1, "ID number is required"),
-    p1_gender: z.string().min(1, "Gender is required"),
-    p1_dateOfBirth: z.string().min(1, "Date of birth is required"),
-    p1_address1: z.string().min(1, "Address is required"),
-    p1_occupation: z.string().optional(),
-    p1_workNumber: z.string().optional(),
-
-    // Guardian 2 Information (all optional)
-    p2_relationship: z.string().optional(),
-    p2_firstName: z.string().optional(),
-    p2_surname: z.string().optional(),
-    p2_email: z.string().optional(),
-    p2_phoneNumber: z.string().optional(),
-    p2_idNumber: z.string().optional(),
-    p2_gender: z.string().optional(),
-    p2_dateOfBirth: z.string().optional(),
-    p2_address1: z.string().optional(),
-    p2_occupation: z.string().optional(),
-    p2_workNumber: z.string().optional(),
-  });
-};
+  // Parent 2 Information (all optional)
+  parent2: z.object({
+    relationship: z.string().optional(),
+    firstName: z.string().optional(),
+    surname: z.string().optional(),
+    email: z.string().email("Invalid email address").optional(),
+    phoneNumber: z.string().optional(),
+    idNumber: z.string().optional(),
+    gender: z.string().optional(),
+    dateOfBirth: z.string().optional(),
+    address: z.object({
+      street: z.string().optional(),
+      city: z.string().optional(),
+      province: z.string().optional(),
+      postalCode: z.string().optional(),
+      country: z.string().default("South Africa").optional()
+    }).optional(),
+    occupation: z.string().optional(),
+    workNumber: z.string().optional()
+  }).optional()
+});
 
 
 export const newStuffFormSchema = () => z.object({
-  //new student form
-  
   firstName: z.string().min(3),
   secondName: z.string().optional(),
   surname: z.string().min(3),
-  address1: z.string().min(3).max(150),
   dateOfBirth: z.string().min(3),
+  gender: z.enum(['male', 'female']),
   idNumber: z.string().min(13).max(13),
-  gender: z.string().min(3),
-  email: z.string().email(),
-  contact: z.string().min(10).max(10),
   position: z.string().min(3),
-  startDate: z.string().min(3),
-
+  contact: z.string().min(10).max(10),
+  email: z.string().email(),
+  address: z.object({
+    street: z.string().min(3),
+    city: z.string().min(3),
+    province: z.string().min(3),
+    postalCode: z.string().min(3),
+    country: z.string().min(3)
+  }).optional(),
+  status: z.enum(['active', 'inactive']).default('active')
 });
 
 export const classAndFeesFormSchema = z.object({
@@ -265,23 +288,44 @@ export const positionColors = {
 }
 
 export interface IStuff {
-  $id: string;
+  _id: string;
   firstName: string;
-  secondName: string;
+  secondName?: string;
   surname: string;
   dateOfBirth: string;
+  gender: 'male' | 'female';
   idNumber: string;
-  contact: string;
-  address1: string;
-  gender: string;
   position: string;
+  contact: string;
+  email: string;
+  address: {
+    street: string;
+    city: string;
+    province: string;
+    postalCode: string;
+    country: string;
+  };
+  status: 'active' | 'inactive';
+  createdAt?: string;
+  updatedAt?: string;
 }
 
-export  interface IClass {
-  $id: string;
-  name : string;
+export interface IClass {
+  _id: string;
+  name: string;
+  age: string;
   teacherId: string;
   teacherName: string;
+  capacity: number;
+  currentEnrollment: number;
+  schedule: {
+    startTime: string;
+    endTime: string;
+    days: string[];
+  };
+  status: 'active' | 'inactive';
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface ITransactions {
@@ -347,58 +391,68 @@ export interface ISchoolFeesReg {
 
 
 export interface IStudent {
-  $id: string;
+  _id?: string;
   firstName: string;
-  secondName: string;
+  secondName?: string;
   surname: string;
-  address1:string;
-  city: string;
-  province: string;
-  postalCode: string;
+  address: {
+    street: string;
+    city: string;
+    province: string;
+    postalCode: string;
+    country: string;
+  };
   dateOfBirth: string;
   gender: string;
   age: string;
   homeLanguage: string;
-  allergies: string;
-  medicalAidNumber: string;
-  medicalAidScheme:string;
+  allergies?: string;
+  medicalAidNumber?: string;
+  medicalAidScheme?: string;
   studentClass: string;
-
-
-  p1_relationship: string;
-  p1_firstName: string;
-  p1_surname: string;
-  p1_address1: string;
-  p1_city: string;
-  p1_province: string;
-  p1_postalCode: string;
-  p1_dateOfBirth: string;
-  p1_gender: string;
-  p1_idNumber : string;
-  p1_occupation: string;
-  p1_phoneNumber:string;
-  p1_email: string;
-  p1_workNumber: string;
- 
-  p2_relationship: string;
-  p2_firstName: string;
-  p2_surname: string;
-  p2_address1: string;
-  p2_city: string;
-  p2_province: string;
-  p2_postalCode: string;
-  p2_dateOfBirth: string;
-  p2_gender: string;
-  p2_idNumber: string;
-  p2_occupation: string;
-  p2_phoneNumber: string;
-  p2_email: string;
-  p2_workNumber: string;
-
+  parent1: {
+    relationship: string;
+    firstName: string;
+    surname: string;
+    address: {
+      street: string;
+      city: string;
+      province: string;
+      postalCode: string;
+      country: string;
+    };
+    dateOfBirth: string;
+    gender: string;
+    idNumber: string;
+    occupation?: string;
+    phoneNumber: string;
+    email: string;
+    workNumber?: string;
+  };
+  parent2?: {
+    relationship?: string;
+    firstName?: string;
+    surname?: string;
+    address?: {
+      street?: string;
+      city?: string;
+      province?: string;
+      postalCode?: string;
+      country?: string;
+    };
+    dateOfBirth?: string;
+    gender?: string;
+    idNumber?: string;
+    occupation?: string;
+    phoneNumber?: string;
+    email?: string;
+    workNumber?: string;
+  };
   balance: number;
-  lastPaid: string;
-  studentStatus: string;
-
+  lastPaid?: string;
+  studentStatus: "active" | "inactive" | "graduated";
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 
@@ -427,3 +481,65 @@ export interface IStudentFeesSchema {
   paymentFrequency: string;
   paymentDate: number
 };
+
+export interface NewStudentParms {
+  firstName: string;
+  secondName?: string;
+  surname: string;
+  address: {
+    street: string;
+    city: string;
+    province: string;
+    postalCode: string;
+    country: string;
+  };
+  dateOfBirth: string;
+  gender: string;
+  age: string;
+  homeLanguage: string;
+  allergies?: string;
+  medicalAidNumber?: string;
+  medicalAidScheme?: string;
+  studentClass: string;
+  studentStatus: 'active' | 'inactive' | 'graduated';
+  balance: number;
+  lastPaid?: string;
+  parent1: {
+    relationship: string;
+    firstName: string;
+    surname: string;
+    email: string;
+    phoneNumber: string;
+    idNumber: string;
+    gender: string;
+    dateOfBirth: string;
+    address: {
+      street: string;
+      city: string;
+      province: string;
+      postalCode: string;
+      country: string;
+    };
+    occupation?: string;
+    workNumber?: string;
+  };
+  parent2?: {
+    relationship?: string;
+    firstName?: string;
+    surname?: string;
+    email?: string;
+    phoneNumber?: string;
+    idNumber?: string;
+    gender?: string;
+    dateOfBirth?: string;
+    address?: {
+      street?: string;
+      city?: string;
+      province?: string;
+      postalCode?: string;
+      country?: string;
+    };
+    occupation?: string;
+    workNumber?: string;
+  };
+}

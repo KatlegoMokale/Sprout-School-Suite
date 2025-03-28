@@ -1,36 +1,34 @@
-import client from "@/lib/appwrite_client";
-import { Databases } from "appwrite";
 import { NextResponse } from "next/server";
-
-const database = new Databases(client);
+import connectToDatabase from "@/lib/mongodb";
+import Event from "@/lib/models/Event";
 
 //Fetch Event
 async function fetchEvent(id: string) {
   try {
-    const data = await database.getDocument(
-      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
-      "Event",
-      id
-    );
-    return data;
+    await connectToDatabase();
+    const event = await Event.findById(id);
+    if (!event) {
+      throw new Error("Event not found");
+    }
+    return event;
   } catch (error) {
-    console.error("Error fetching Event:", error);
-    throw new Error("Failed to fetch Event");
+    console.error("Error fetching event:", error);
+    throw new Error("Failed to fetch event");
   }
 }
 
 //Delete Event
 async function deleteEvent(id: string) {
   try {
-    const response = await database.deleteDocument(
-      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
-      "Event",
-      id
-    );
-    return response;
+    await connectToDatabase();
+    const event = await Event.findByIdAndDelete(id);
+    if (!event) {
+      throw new Error("Event not found");
+    }
+    return event;
   } catch (error) {
-    console.error("Error deleting Event:", error);
-    throw new Error("Failed to delete Event");
+    console.error("Error deleting event:", error);
+    throw new Error("Failed to delete event");
   }
 }
 
@@ -42,16 +40,19 @@ async function updateEvent(id: string, data: {
   description: string;
 }){
   try {
-    const response = await database.updateDocument(
-      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
-      "schoolFees",
+    await connectToDatabase();
+    const event = await Event.findByIdAndUpdate(
       id,
-      data
+      data,
+      { new: true }
     );
-    return response;
+    if (!event) {
+      throw new Error("Event not found");
+    }
+    return event;
   } catch (error) {
-    console.error("Error updating Event:", error);
-    throw new Error("Failed to update Event");
+    console.error("Error updating event:", error);
+    throw new Error("Failed to update event");
   }
 }
 
@@ -60,12 +61,13 @@ export async function GET(
 ) {
   try {
     const url = new URL(req.url);
-    const id = url.pathname.split('/').pop() as string; // Extract id from URL
-    const data = await fetchEvent(id);
-    return NextResponse.json({data});
+    const id = url.pathname.split('/').pop();
+    if (!id) throw new Error("Event ID is required");
+    const event = await fetchEvent(id);
+    return NextResponse.json(event);
   } catch (error) {
     return NextResponse.json(
-      { error: "Failed to fetch Event" },
+      { error: "Failed to fetch event" },
       { status: 500 }
     );
   }
@@ -74,13 +76,13 @@ export async function GET(
 export async function DELETE(req: Request) {
   try {
     const url = new URL(req.url);
-    const id = url.pathname.split('/').pop() as string; // Extract id from URL
-    await deleteEvent(id);
-    return NextResponse.json({message: "Event Fees deleted successfully"});
+    const id = url.pathname.split('/').pop();
+    if (!id) throw new Error("Event ID is required");
+    const event = await deleteEvent(id);
+    return NextResponse.json(event);
   } catch (error) {
-    console.error("Error deleting Event Fees:", error);
     return NextResponse.json(
-      { error: "Failed to delete Event Fees" },
+      { error: "Failed to delete event" },
       { status: 500 }
     );
   }
@@ -89,13 +91,14 @@ export async function DELETE(req: Request) {
 export async function PUT(req: Request) {
   try {
     const url = new URL(req.url);
-    const id = url.pathname.split('/').pop() as string; // Extract id from URL
+    const id = url.pathname.split('/').pop();
+    if (!id) throw new Error("Event ID is required");
     const data = await req.json();
-    await updateEvent(id, data);
-    return NextResponse.json({message : "Event updated successfully"});
+    const event = await updateEvent(id, data);
+    return NextResponse.json(event);
   } catch (error) {
     return NextResponse.json(
-      { error: "Failed to update Event" },
+      { error: "Failed to update event" },
       { status: 500 }
     );
   }

@@ -8,17 +8,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CustomInput from "@/components/ui/CustomInput";
-import { IClass, newStudentFormSchema, parseStringify } from "@/lib/utils";
+import { IClass, studentFormSchema, parseStringify, NewStudentParms } from "@/lib/utils";
 import { DialogContent, DialogDescription } from "@/components/ui/dialog";
 import Link from "next/link";
 import { Check, ChevronLeft, Loader2 } from "lucide-react";
-// import { autocomplete } from "@/lib/google";
-// import { PlaceAutocompleteResult } from "@googlemaps/google-maps-services-js";
-// import { Command, CommandInput, CommandGroup, CommandItem, CommandList } from "@/components/ui/command";
-
 import { useToast } from "@/hooks/use-toast";
-import dynamic from "next/dynamic";
-import { error } from "console";
 import { useRouter } from "next/navigation";
 import { newStudent } from "@/lib/actions/user.actions";
 import {
@@ -30,12 +24,12 @@ import {
   SelectTrigger,
   SelectValue1,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Toaster } from "@/components/ui/toaster";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-// const SearchAddress = dynamic(() => import("@/components/ui/search-address"), {
-//   ssr: false,
-// });
-
-const formSchema = newStudentFormSchema();
+const schema = studentFormSchema();
+type FormData = z.infer<typeof schema>;
 
 const NewStudentForm = () => {
   const { toast } = useToast();
@@ -45,19 +39,6 @@ const NewStudentForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  // const [predictions, setPredictions] = useState<PlaceAutocompleteResult[]>([]);
-  // const [input, setInput] = useState("");
-  // const [selectedAddress, setSelectedAddress] = useState<PlaceAutocompleteResult | null>(null);
-  // const [onSelectedAddress, setOnSelectedAddress] = useState(false);
-
-  // useEffect(() => {
-  //   const fetchPredictions = async () => {
-  //     const predictions = await autocomplete(input);
-  //     setPredictions(predictions ?? []);
-  //     console.log("Predictions:", predictions);
-  //   }
-  //   fetchPredictions();
-  // }, [input]);
 
   useEffect(() => {
     const fetchClasses = async () => {
@@ -68,6 +49,7 @@ const NewStudentForm = () => {
           throw new Error("Failed to fetch classes");
         }
         const data = await response.json();
+        
         setClassData(data);
       } catch (error) {
         console.log("Error fetching classes:", error);
@@ -79,44 +61,8 @@ const NewStudentForm = () => {
     fetchClasses();
   }, []);
 
-  // Handle prediction selection
-  // const handlePredictionSelect = (prediction: PlaceAutocompleteResult) => {
-  //   setSelectedAddress(prediction);
-  //   setInput(prediction.description); // Update input for display
-
-  //   // Extract address components from prediction
-  //   console.log(prediction.terms);
-  //   console.log("Address:" + prediction.terms[0].value + " " + prediction.terms[1].value + " " + prediction.terms[2].value + " " + prediction.terms[3].value);
-  //   const addressComponents = prediction.terms;
-  //   const address1 = addressComponents[0].value+ " " + addressComponents[1].value;
-  //   const city = addressComponents[2].value;
-
-  //   console.log("Address Components:", address1, city);
-
-  //   // Update form fields
-  //   form.setValue("address1", address1 + ", " + city);
-
-  //   form.setValue("p1_address1", address1 + ", " + city);
-
-  // };
-
-  // {predictions.length > 0 && (
-  //   <ul>
-  //     {predictions.map((prediction) => (
-  //       <li key={prediction.place_id} onClick={() => handlePredictionSelect(prediction)}>
-  //         {prediction.description}
-
-  //       </li>
-  //     ))}
-  //   </ul>
-  // )}
-  // useEffect(() => {
-  //   console.log("Current formData:", formData);
-  // }, [formData]);
-
-  const studentFormSchema = newStudentFormSchema();
-  const form = useForm<z.infer<typeof studentFormSchema>>({
-    resolver: zodResolver(studentFormSchema),
+  const form = useForm<FormData>({
+    resolver: zodResolver(schema),
     defaultValues: {
       firstName: "",
       secondName: "",
@@ -124,48 +70,131 @@ const NewStudentForm = () => {
       dateOfBirth: "",
       age: "",
       gender: "",
-      address1: "",
+      address: {
+        street: "",
+        city: "",
+        province: "",
+        postalCode: "",
+        country: "South Africa"
+      },
       homeLanguage: "",
       allergies: "",
-      medicalAidScheme: "",
       medicalAidNumber: "",
+      medicalAidScheme: "",
       studentClass: "",
-      p1_firstName: "",
-      p1_surname: "",
-      p1_address1: "",
-      p1_dateOfBirth: "",
-      p1_gender: "",
-      p1_idNumber: "",
-      p1_occupation: "",
-      p1_phoneNumber: "",
-      p1_email: "",
-      p1_workNumber: "",
-      p1_relationship: "",
-      p2_firstName: "",
-      p2_surname: "",
-      p2_address1: "",
-      p2_dateOfBirth: "",
-      p2_gender: "",
-      p2_idNumber: "",
-      p2_occupation: "",
-      p2_phoneNumber: "",
-      p2_email: "",
-      p2_workNumber: "",
-      p2_relationship: "",
-
+      studentStatus: "active",
       balance: 0,
       lastPaid: "",
-      studentStatus: "active",
-    },
+      parent1: {
+        relationship: "",
+        firstName: "",
+        surname: "",
+        email: "",
+        phoneNumber: "",
+        idNumber: "",
+        gender: "",
+        dateOfBirth: "",
+        address: {
+          street: "",
+          city: "",
+          province: "",
+          postalCode: "",
+          country: "South Africa"
+        },
+        occupation: "",
+        workNumber: ""
+      },
+      parent2: {
+        relationship: "",
+        firstName: "",
+        surname: "",
+        email: "",
+        phoneNumber: "",
+        idNumber: "",
+        gender: "",
+        dateOfBirth: "",
+        address: {
+          street: "",
+          city: "",
+          province: "",
+          postalCode: "",
+          country: "South Africa"
+        },
+        occupation: "",
+        workNumber: ""
+      }
+    }
   });
 
-  const onSubmit = async (data: z.infer<typeof studentFormSchema>) => {
+  const onSubmit = async (data: z.infer<typeof schema>) => {
     console.log("Form data:", data);
-    console.log("Submit");
     setIsLoading(true);
     try {
-      const addNewStudent = await newStudent(data);
-      console.log("Add new Student " + addNewStudent);
+      // Transform the form data to match MongoDB schema
+      const transformedData: NewStudentParms = {
+        firstName: data.firstName,
+        secondName: data.secondName || undefined,
+        surname: data.surname,
+        address: {
+          street: data.address.street,
+          city: data.address.city,
+          province: data.address.province,
+          postalCode: data.address.postalCode,
+          country: data.address.country
+        },
+        dateOfBirth: data.dateOfBirth,
+        gender: data.gender,
+        age: data.age,
+        homeLanguage: data.homeLanguage,
+        allergies: data.allergies || undefined,
+        medicalAidNumber: data.medicalAidNumber || undefined,
+        medicalAidScheme: data.medicalAidScheme || undefined,
+        studentClass: data.studentClass,
+        studentStatus: data.studentStatus as 'active' | 'inactive' | 'graduated',
+        balance: data.balance,
+        lastPaid: data.lastPaid || undefined,
+        parent1: {
+          relationship: data.parent1.relationship,
+          firstName: data.parent1.firstName,
+          surname: data.parent1.surname,
+          email: data.parent1.email,
+          phoneNumber: data.parent1.phoneNumber,
+          idNumber: data.parent1.idNumber,
+          gender: data.parent1.gender,
+          dateOfBirth: data.parent1.dateOfBirth,
+          address: {
+            street: data.parent1.address.street,
+            city: data.parent1.address.city,
+            province: data.parent1.address.province,
+            postalCode: data.parent1.address.postalCode,
+            country: data.parent1.address.country
+          },
+          occupation: data.parent1.occupation || undefined,
+          workNumber: data.parent1.workNumber || undefined
+        },
+        parent2: data.parent2 ? {
+          relationship: data.parent2.relationship || undefined,
+          firstName: data.parent2.firstName || undefined,
+          surname: data.parent2.surname || undefined,
+          email: data.parent2.email || undefined,
+          phoneNumber: data.parent2.phoneNumber || undefined,
+          idNumber: data.parent2.idNumber || undefined,
+          gender: data.parent2.gender || undefined,
+          dateOfBirth: data.parent2.dateOfBirth || undefined,
+          address: data.parent2.address ? {
+            street: data.parent2.address.street || undefined,
+            city: data.parent2.address.city || undefined,
+            province: data.parent2.address.province || undefined,
+            postalCode: data.parent2.address.postalCode || undefined,
+            country: data.parent2.address.country || undefined
+          } : undefined,
+          occupation: data.parent2.occupation || undefined,
+          workNumber: data.parent2.workNumber || undefined
+        } : undefined
+      };
+
+      const result = await newStudent(transformedData);
+      console.log("Add new Student " + result);
 
       toast({
         title: "Success!",
@@ -177,15 +206,13 @@ const NewStudentForm = () => {
           " to the system.",
       });
       form.reset();
-      // router.push('/students');
+      router.push('/students');
     } catch (error) {
       console.error("Error submitting form:", error);
       setError("An error occurred while submitting the form.");
     } finally {
       setIsLoading(false);
     }
-    setFormData(data);
-    console.log("Form data ready for Appwrite:", data);
   };
 
   const handleTabChange = (tab: string) => {
@@ -194,34 +221,31 @@ const NewStudentForm = () => {
     onGuardianChange(form.getValues());
   };
 
-  const onGuardianChange = (values: z.infer<typeof studentFormSchema>) => {
+  const onGuardianChange = (values: z.infer<typeof schema>) => {
     if (currentTab === "guardian1") {
-      // console.log("Guardian 1 values:", values);
-      // console.log("Guardian 1");
-      // Store guardian1 values
-      form.setValue("p1_relationship", values.p1_relationship);
-      form.setValue("p1_firstName", values.p1_firstName);
-      form.setValue("p1_surname", values.p1_surname);
-      form.setValue("p1_address1", values.p1_address1);
-      form.setValue("p1_dateOfBirth", values.p1_dateOfBirth);
-      form.setValue("p1_gender", values.p1_gender);
-      form.setValue("p1_idNumber", values.p1_idNumber);
-      form.setValue("p1_occupation", values.p1_occupation);
-      form.setValue("p1_phoneNumber", values.p1_phoneNumber);
-      form.setValue("p1_email", values.p1_email);
-      // ... (other p1 fields)
+      form.setValue("parent1.relationship", values.parent1.relationship);
+      form.setValue("parent1.firstName", values.parent1.firstName);
+      form.setValue("parent1.surname", values.parent1.surname);
+      form.setValue("parent1.address", values.parent1.address);
+      form.setValue("parent1.dateOfBirth", values.parent1.dateOfBirth);
+      form.setValue("parent1.gender", values.parent1.gender);
+      form.setValue("parent1.idNumber", values.parent1.idNumber);
+      form.setValue("parent1.occupation", values.parent1.occupation);
+      form.setValue("parent1.phoneNumber", values.parent1.phoneNumber);
+      form.setValue("parent1.email", values.parent1.email);
+      form.setValue("parent1.workNumber", values.parent1.workNumber);
     } else if (currentTab === "guardian2") {
-      // Store guardian2 values
-      // console.log("Guardian 2 values:", values);
-      // console.log("Guardian 2");
-      form.setValue("p2_relationship", values.p2_relationship);
-      form.setValue("p2_firstName", values.p2_firstName);
-      form.setValue("p2_surname", values.p2_surname);
-      form.setValue("p2_address1", values.p2_address1);
-      form.setValue("p2_dateOfBirth", values.p2_dateOfBirth);
-      form.setValue("p2_gender", values.p2_gender);
-      form.setValue("p2_idNumber", values.p2_idNumber);
-      // ... (other p2 fields)
+      form.setValue("parent2.relationship", values.parent2?.relationship);
+      form.setValue("parent2.firstName", values.parent2?.firstName);
+      form.setValue("parent2.surname", values.parent2?.surname);
+      form.setValue("parent2.address", values.parent2?.address);
+      form.setValue("parent2.dateOfBirth", values.parent2?.dateOfBirth);
+      form.setValue("parent2.gender", values.parent2?.gender);
+      form.setValue("parent2.idNumber", values.parent2?.idNumber);
+      form.setValue("parent2.occupation", values.parent2?.occupation);
+      form.setValue("parent2.phoneNumber", values.parent2?.phoneNumber);
+      form.setValue("parent2.email", values.parent2?.email);
+      form.setValue("parent2.workNumber", values.parent2?.workNumber);
     }
   };
 
@@ -248,21 +272,33 @@ const NewStudentForm = () => {
     }
   };
 
-  const handleCopyAddress2 = (checked: boolean) => {
+  const handleCopyAddress1 = (checked: boolean) => {
     if (checked) {
-      const studentAddress = form.getValues("address1");
-      form.setValue("p2_address1", studentAddress);
+      const studentAddress = form.getValues("address");
+      form.setValue("parent1.address", studentAddress);
     } else {
-      form.setValue("p2_address1", "");
+      form.setValue("parent1.address", {
+        street: "",
+        city: "",
+        province: "",
+        postalCode: "",
+        country: "South Africa"
+      });
     }
   };
 
-  const handleCopyAddress1 = (checked: boolean) => {
+  const handleCopyAddress2 = (checked: boolean) => {
     if (checked) {
-      const studentAddress = form.getValues("address1");
-      form.setValue("p1_address1", studentAddress);
+      const studentAddress = form.getValues("address");
+      form.setValue("parent2.address", studentAddress);
     } else {
-      form.setValue("p1_address1", "");
+      form.setValue("parent2.address", {
+        street: "",
+        city: "",
+        province: "",
+        postalCode: "",
+        country: "South Africa"
+      });
     }
   };
 
@@ -270,7 +306,6 @@ const NewStudentForm = () => {
     form.setValue("studentClass", value);
   };
 
-  // const form = useForm()
   return (
     <div className="flex flex-col px-4">
       <Link
@@ -289,16 +324,14 @@ const NewStudentForm = () => {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-              <Tabs defaultValue="student">
-                <TabsList className=" grid w-full grid-cols-3">
-                  <TabsTrigger value="student">Student Information</TabsTrigger>
-                  <TabsTrigger value="guardian1">Guardian 1</TabsTrigger>
-                  <TabsTrigger value="guardian2">Guardian 2</TabsTrigger>
-                </TabsList>
-                <TabsContent value="student" className="space-y-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Student Information</CardTitle>
+                </CardHeader>
+                <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 px-5">
                     <div className="cols-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
+                      <CustomInput<z.infer<typeof schema>>
                         name="firstName"
                         placeholder="Enter Child Name"
                         control={form.control}
@@ -306,7 +339,7 @@ const NewStudentForm = () => {
                       />
                     </div>
                     <div className="cols-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
+                      <CustomInput<z.infer<typeof schema>>
                         name="secondName"
                         placeholder="Enter Child Second Name"
                         control={form.control}
@@ -315,7 +348,7 @@ const NewStudentForm = () => {
                     </div>
 
                     <div className="col-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
+                      <CustomInput<z.infer<typeof schema>>
                         name="surname"
                         placeholder="Enter Child Surname"
                         control={form.control}
@@ -324,7 +357,7 @@ const NewStudentForm = () => {
                     </div>
 
                     <div className="cols-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
+                      <CustomInput<z.infer<typeof schema>>
                         name="dateOfBirth"
                         placeholder="Enter Child Date of Birth"
                         control={form.control}
@@ -339,7 +372,7 @@ const NewStudentForm = () => {
                     </div>
 
                     <div className="col-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
+                      <CustomInput<z.infer<typeof schema>>
                         name="age"
                         placeholder="Age will be calculated"
                         control={form.control}
@@ -349,7 +382,7 @@ const NewStudentForm = () => {
                     </div>
 
                     <div className="col-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
+                      <CustomInput<z.infer<typeof schema>>
                         name="gender"
                         placeholder="Select Gender"
                         control={form.control}
@@ -362,27 +395,37 @@ const NewStudentForm = () => {
                       />
                     </div>
 
-                    {/* <div className="cols-span-1">
-                    <CustomInput
-                      name="address1"
-                      placeholder="Enter Child Address"
-                      control={form.control}
-                      label={"Address"}
-                      type="search"
-                    />
-                  </div> */}
-
                     <div className="col-span-2">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="address1"
-                        placeholder="Enter Child Address"
-                        control={form.control}
-                        label={"Address"}
-                      />
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <CustomInput<z.infer<typeof schema>>
+                          name="address.street"
+                          placeholder="Enter Street Address"
+                          control={form.control}
+                          label={"Street Address"}
+                        />
+                        <CustomInput<z.infer<typeof schema>>
+                          name="address.city"
+                          placeholder="Enter City"
+                          control={form.control}
+                          label={"City"}
+                        />
+                        <CustomInput<z.infer<typeof schema>>
+                          name="address.province"
+                          placeholder="Enter Province"
+                          control={form.control}
+                          label={"Province"}
+                        />
+                        <CustomInput<z.infer<typeof schema>>
+                          name="address.postalCode"
+                          placeholder="Enter Postal Code"
+                          control={form.control}
+                          label={"Postal Code"}
+                        />
+                      </div>
                     </div>
 
                     <div className="col-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
+                      <CustomInput<z.infer<typeof schema>>
                         name="homeLanguage"
                         placeholder="Home Language"
                         control={form.control}
@@ -390,7 +433,7 @@ const NewStudentForm = () => {
                       />
                     </div>
                     <div className="col-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
+                      <CustomInput<z.infer<typeof schema>>
                         name="allergies"
                         placeholder="Allergies"
                         control={form.control}
@@ -399,7 +442,7 @@ const NewStudentForm = () => {
                     </div>
 
                     <div className="col-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
+                      <CustomInput<z.infer<typeof schema>>
                         name="medicalAidNumber"
                         placeholder="Medical Aid Number"
                         control={form.control}
@@ -408,7 +451,7 @@ const NewStudentForm = () => {
                     </div>
 
                     <div className="col-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
+                      <CustomInput<z.infer<typeof schema>>
                         name="medicalAidScheme"
                         placeholder="Medical Aid Scheme"
                         control={form.control}
@@ -416,45 +459,43 @@ const NewStudentForm = () => {
                       />
                     </div>
 
-                    <div className="col-span-1 hidden">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="studentClass"
-                        placeholder="Class"
-                        control={form.control}
-                        label={"Class"}
-                      />
-                    </div>
-
                     <div className="col-span-1">
                       <div className="form-item">
-                        <div className=" text-md  font-semibold text-gray-600 ">
-                          Class
-                        </div>
-                        <Select1 onValueChange={handleClassChange}>
+                        <div className="text-sm font-medium">Class</div>
+                        <Select1
+                          onValueChange={handleClassChange}
+                          defaultValue={form.getValues("studentClass")}
+                        >
                           <SelectTrigger className="w-full">
-                            <SelectValue1 placeholder="Select Class 1" />
+                            <SelectValue1 placeholder="Select a class" />
                           </SelectTrigger>
-                          <SelectContent className="bg-white gap-2 rounded-lg">
-                            {classData?.map((classItem) => (
-                              <SelectItem
-                                className="hover:bg-green-200 text-14 font-semibold rounded-lg hover:animate-in p-2 cursor-pointer"
-                                key={classItem.$id}
-                                value={classItem.$id}
-                              >
-                                {classItem.name}
-                              </SelectItem>
-                            ))}
+                          <SelectContent>
+                            <SelectGroup>
+                              <SelectLabel>Classes</SelectLabel>
+                              {classData?.map((cls) => (
+                                <SelectItem key={cls._id} value={cls._id}>
+                                  {cls.name} ({cls.age})
+                                </SelectItem>
+                              ))}
+                            </SelectGroup>
                           </SelectContent>
                         </Select1>
                       </div>
                     </div>
                   </div>
-                </TabsContent>
+                </CardContent>
+              </Card>
+
+              <Tabs defaultValue="guardian1">
+                <TabsList>
+                  <TabsTrigger value="guardian1">Guardian 1</TabsTrigger>
+                  <TabsTrigger value="guardian2">Guardian 2</TabsTrigger>
+                </TabsList>
                 <TabsContent value="guardian1">
                   <div className="grid grid-cols-2 gap-2">
-                    <div className=" col-span-2 pt-1 w-full">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="p1_relationship"
+                    <div className="col-span-2 pt-1 w-full">
+                      <CustomInput<z.infer<typeof schema>>
+                        name="parent1.relationship"
                         placeholder="Select Relationship"
                         control={form.control}
                         label={"Relationship"}
@@ -468,24 +509,24 @@ const NewStudentForm = () => {
                       />
                     </div>
                     <div className="cols-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="p1_firstName"
+                      <CustomInput<z.infer<typeof schema>>
+                        name="parent1.firstName"
                         placeholder="Enter Name"
                         control={form.control}
                         label={"Name"}
                       />
                     </div>
                     <div className="cols-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="p1_surname"
+                      <CustomInput<z.infer<typeof schema>>
+                        name="parent1.surname"
                         placeholder="Enter Surname"
                         control={form.control}
                         label={"Surname"}
                       />
                     </div>
                     <div className="cols-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="p1_email"
+                      <CustomInput<z.infer<typeof schema>>
+                        name="parent1.email"
                         placeholder="Enter Email"
                         control={form.control}
                         label={"Email"}
@@ -493,24 +534,24 @@ const NewStudentForm = () => {
                       />
                     </div>
                     <div className="cols-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="p1_phoneNumber"
+                      <CustomInput<z.infer<typeof schema>>
+                        name="parent1.phoneNumber"
                         placeholder="Enter Phone Number"
                         control={form.control}
                         label={"Phone Number"}
                       />
                     </div>
                     <div className="cols-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="p1_idNumber"
+                      <CustomInput<z.infer<typeof schema>>
+                        name="parent1.idNumber"
                         placeholder="Enter ID Number"
                         control={form.control}
                         label={"ID Number"}
                       />
                     </div>
                     <div className="cols-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="p1_gender"
+                      <CustomInput<z.infer<typeof schema>>
+                        name="parent1.gender"
                         placeholder="Enter gender"
                         control={form.control}
                         label={"Gender"}
@@ -522,47 +563,65 @@ const NewStudentForm = () => {
                       />
                     </div>
                     <div className="cols-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="p1_dateOfBirth"
+                      <CustomInput<z.infer<typeof schema>>
+                        name="parent1.dateOfBirth"
                         placeholder="Enter Date of Birth"
                         control={form.control}
                         label={"Date Of Birth"}
                         type="date"
                       />
                     </div>
-                    <div></div>
                     <div className="w-full col-span-2">
                       <div className="flex items-center space-x-2 mb-2">
                         <Checkbox
-                          id="copyAddress"
+                          id="copyAddress1"
                           onCheckedChange={handleCopyAddress1}
                         />
                         <label
-                          htmlFor="copyAddress"
+                          htmlFor="copyAddress1"
                           className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                         >
                           Copy from student address
                         </label>
                       </div>
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="p1_address1"
-                        placeholder="Enter Address"
-                        control={form.control}
-                        label={"Address"}
-                      />
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <CustomInput<z.infer<typeof schema>>
+                          name="parent1.address.street"
+                          placeholder="Enter Street Address"
+                          control={form.control}
+                          label={"Street Address"}
+                        />
+                        <CustomInput<z.infer<typeof schema>>
+                          name="parent1.address.city"
+                          placeholder="Enter City"
+                          control={form.control}
+                          label={"City"}
+                        />
+                        <CustomInput<z.infer<typeof schema>>
+                          name="parent1.address.province"
+                          placeholder="Enter Province"
+                          control={form.control}
+                          label={"Province"}
+                        />
+                        <CustomInput<z.infer<typeof schema>>
+                          name="parent1.address.postalCode"
+                          placeholder="Enter Postal Code"
+                          control={form.control}
+                          label={"Postal Code"}
+                        />
+                      </div>
                     </div>
-
                     <div className="cols-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="p1_occupation"
+                      <CustomInput<z.infer<typeof schema>>
+                        name="parent1.occupation"
                         placeholder="Enter Employer Name"
                         control={form.control}
                         label={"Employer"}
                       />
                     </div>
                     <div className="cols-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="p1_workNumber"
+                      <CustomInput<z.infer<typeof schema>>
+                        name="parent1.workNumber"
                         placeholder="Enter Employer Phone Number"
                         control={form.control}
                         label={"Employer Phone Number"}
@@ -573,8 +632,8 @@ const NewStudentForm = () => {
                 <TabsContent value="guardian2">
                   <div className="grid grid-cols-2 gap-2">
                     <div className="col-span-2 pt-1 w-full">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="p2_relationship"
+                      <CustomInput<z.infer<typeof schema>>
+                        name="parent2.relationship"
                         placeholder="Select Relationship"
                         control={form.control}
                         label={"Relationship"}
@@ -588,24 +647,24 @@ const NewStudentForm = () => {
                       />
                     </div>
                     <div className="cols-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="p2_firstName"
+                      <CustomInput<z.infer<typeof schema>>
+                        name="parent2.firstName"
                         placeholder="Enter Name"
                         control={form.control}
                         label={"Name"}
                       />
                     </div>
                     <div className="cols-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="p2_surname"
+                      <CustomInput<z.infer<typeof schema>>
+                        name="parent2.surname"
                         placeholder="Enter Surname"
                         control={form.control}
                         label={"Surname"}
                       />
                     </div>
                     <div className="cols-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="p2_email"
+                      <CustomInput<z.infer<typeof schema>>
+                        name="parent2.email"
                         placeholder="Enter Email"
                         control={form.control}
                         label={"Email"}
@@ -613,24 +672,24 @@ const NewStudentForm = () => {
                       />
                     </div>
                     <div className="cols-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="p2_phoneNumber"
+                      <CustomInput<z.infer<typeof schema>>
+                        name="parent2.phoneNumber"
                         placeholder="Enter Phone Number"
                         control={form.control}
                         label={"Phone Number"}
                       />
                     </div>
                     <div className="cols-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="p2_idNumber"
+                      <CustomInput<z.infer<typeof schema>>
+                        name="parent2.idNumber"
                         placeholder="Enter ID Number"
                         control={form.control}
                         label={"ID Number"}
                       />
                     </div>
                     <div className="cols-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="p2_gender"
+                      <CustomInput<z.infer<typeof schema>>
+                        name="parent2.gender"
                         placeholder="Enter gender"
                         control={form.control}
                         label={"Gender"}
@@ -642,8 +701,8 @@ const NewStudentForm = () => {
                       />
                     </div>
                     <div className="cols-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="p2_dateOfBirth"
+                      <CustomInput<z.infer<typeof schema>>
+                        name="parent2.dateOfBirth"
                         placeholder="Enter Date of Birth"
                         control={form.control}
                         label={"Date Of Birth"}
@@ -653,34 +712,54 @@ const NewStudentForm = () => {
                     <div className="w-full col-span-2">
                       <div className="flex items-center space-x-2 mb-2">
                         <Checkbox
-                          id="copyAddress"
+                          id="copyAddress2"
                           onCheckedChange={handleCopyAddress2}
                         />
                         <label
-                          htmlFor="copyAddress"
+                          htmlFor="copyAddress2"
                           className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                         >
                           Copy from student address
                         </label>
                       </div>
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="p2_address1"
-                        placeholder="Enter Address"
-                        control={form.control}
-                        label={"Address"}
-                      />
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <CustomInput<z.infer<typeof schema>>
+                          name="parent2.address.street"
+                          placeholder="Enter Street Address"
+                          control={form.control}
+                          label={"Street Address"}
+                        />
+                        <CustomInput<z.infer<typeof schema>>
+                          name="parent2.address.city"
+                          placeholder="Enter City"
+                          control={form.control}
+                          label={"City"}
+                        />
+                        <CustomInput<z.infer<typeof schema>>
+                          name="parent2.address.province"
+                          placeholder="Enter Province"
+                          control={form.control}
+                          label={"Province"}
+                        />
+                        <CustomInput<z.infer<typeof schema>>
+                          name="parent2.address.postalCode"
+                          placeholder="Enter Postal Code"
+                          control={form.control}
+                          label={"Postal Code"}
+                        />
+                      </div>
                     </div>
                     <div className="cols-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="p2_occupation"
+                      <CustomInput<z.infer<typeof schema>>
+                        name="parent2.occupation"
                         placeholder="Enter Employer Name"
                         control={form.control}
                         label={"Employer"}
                       />
                     </div>
                     <div className="cols-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="p2_workNumber"
+                      <CustomInput<z.infer<typeof schema>>
+                        name="parent2.workNumber"
                         placeholder="Enter Employer Phone Number"
                         control={form.control}
                         label={"Employer Phone Number"}
@@ -689,6 +768,7 @@ const NewStudentForm = () => {
                   </div>
                 </TabsContent>
               </Tabs>
+
               <Button
                 type="submit"
                 className="w-full transition-colors hover:bg-primary/90 bg-green-200 hover:bg-green-300"
@@ -713,17 +793,3 @@ const NewStudentForm = () => {
 };
 
 export default NewStudentForm;
-
-// ... in your component
-<DialogContent>
-  <DialogDescription>
-    This is a description of the dialog content. It provides context for screen
-    readers.
-  </DialogDescription>
-  {/* Your existing dialog content */}
-</DialogContent>;
-
-import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectValue } from "@radix-ui/react-select";
-import { Toaster } from "@/components/ui/toaster";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

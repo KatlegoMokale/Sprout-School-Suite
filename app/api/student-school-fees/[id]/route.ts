@@ -1,32 +1,30 @@
-import client from "@/lib/appwrite_client";
-import { Databases } from "appwrite";
+import { connectToDatabase } from "@/lib/mongodb";
+import { StudentSchoolFees } from "@/models/studentSchoolFees";
 import { NextResponse } from "next/server";
-
-const database = new Databases(client);
 
 //Fetch Student School Fees
 async function fetchStudentSchoolFees(id: string) {
   try {
-    const data = await database.getDocument(
-      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
-      "staffSalarySchema",
-      id
-    );
+    await connectToDatabase();
+    const data = await StudentSchoolFees.findById(id);
+    if (!data) {
+      throw new Error("Student School Fees not found");
+    }
     return data;
   } catch (error) {
-    console.error("Error fetching staff salary:", error);
-    throw new Error("Failed to fetch staff salary");
+    console.error("Error fetching student school fees:", error);
+    throw new Error("Failed to fetch student school fees");
   }
 }
 
 //Delete Student School Fees
 async function deleteStudentSchoolFees(id: string) {
   try {
-    const response = await database.deleteDocument(
-      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
-      "schoolFees",
-      id
-    );
+    await connectToDatabase();
+    const response = await StudentSchoolFees.findByIdAndDelete(id);
+    if (!response) {
+      throw new Error("Student School Fees not found");
+    }
     return response;
   } catch (error) {
     console.error("Error deleting Student School Fees:", error);
@@ -51,12 +49,11 @@ async function updateStudentSchoolFees(id: string, data: {
   nextPaymentDate: string;
 }){
   try {
-    const response = await database.updateDocument(
-      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
-      "schoolFees",
-      id,
-      data
-    );
+    await connectToDatabase();
+    const response = await StudentSchoolFees.findByIdAndUpdate(id, data, { new: true });
+    if (!response) {
+      throw new Error("Student School Fees not found");
+    }
     return response;
   } catch (error) {
     console.error("Error updating Student School Fees:", error);
@@ -101,8 +98,9 @@ export async function PUT(req: Request) {
     const id = url.pathname.split('/').pop() as string; // Extract id from URL
     const data = await req.json();
     await updateStudentSchoolFees(id, data);
-    return NextResponse.json({message : "Student School Fees updated successfully"});
+    return NextResponse.json({message: "Student School Fees updated successfully"});
   } catch (error) {
+    console.error("Error updating Student School Fees:", error);
     return NextResponse.json(
       { error: "Failed to update Student School Fees" },
       { status: 500 }
@@ -110,33 +108,41 @@ export async function PUT(req: Request) {
   }
 }
 
+//Update Amount Paid
 async function updateAmountPaid(id: string, paidAmount: number) {
   try {
-    const response = await database.updateDocument(
-      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
-      "studentFeesManagement", // Update to correct collection name
+    await connectToDatabase();
+    const response = await StudentSchoolFees.findByIdAndUpdate(
       id,
-      { paidAmount }
+      { $set: { paidAmount } },
+      { new: true }
     );
+    if (!response) {
+      throw new Error("Student School Fees not found");
+    }
     return response;
   } catch (error) {
-    console.error("Error updating student amount paid:", error);
-    throw new Error("Failed to update student amount paid");
+    console.error("Error updating amount paid:", error);
+    throw new Error("Failed to update amount paid");
   }
 }
 
+//Update Registration Balance
 async function updateRegBalance(id: string, balance: number) {
   try {
-    const response = await database.updateDocument(
-      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
-      "studentFeesManagement",
+    await connectToDatabase();
+    const response = await StudentSchoolFees.findByIdAndUpdate(
       id,
-      { balance: balance } // Pass as an object with the field name
+      { $set: { balance } },
+      { new: true }
     );
+    if (!response) {
+      throw new Error("Student School Fees not found");
+    }
     return response;
   } catch (error) {
-    console.error("Error updating student amount paid:", error);
-    throw new Error("Failed to update student amount paid");
+    console.error("Error updating registration balance:", error);
+    throw new Error("Failed to update registration balance");
   }
 }
 
@@ -144,60 +150,24 @@ export async function PATCH(
   req: Request
 ) {
   try {
-    // Ensure we have the ID
     const url = new URL(req.url);
     const id = url.pathname.split('/').pop() as string; // Extract id from URL
-
-    if (!id) {
-      return NextResponse.json(
-        { error: "Student ID is required" },
-        { status: 400 }
-      );
+    const { paidAmount, balance } = await req.json();
+    
+    if (paidAmount !== undefined) {
+      await updateAmountPaid(id, paidAmount);
     }
-
-    const body = await req.json();
-    const { balance, paidAmount } = body;
-    console.log('Received PATCH request:', { id, balance, paidAmount });
-
-    let response;
-    try {
-      if (balance !== undefined) {
-        console.log('Updating balance:', balance);
-        response = await updateRegBalance(id, balance);
-      } else if (paidAmount !== undefined) {
-        console.log('Updating paid amount:', paidAmount);
-        response = await updateAmountPaid(id, paidAmount);
-      } else {
-        return NextResponse.json(
-          { error: "Either balance or paidAmount must be provided" },
-          { status: 400 }
-        );
-      }
-    } catch (updateError: any) {
-      // Handle Appwrite specific errors
-      if (updateError.code === 404) {
-        return NextResponse.json(
-          { error: "Student fee record not found" },
-          { status: 404 }
-        );
-      }
-      throw updateError;
+    
+    if (balance !== undefined) {
+      await updateRegBalance(id, balance);
     }
-
-    return NextResponse.json({
-      message: "Student payment details updated successfully",
-      data: response
-    });
-  } catch (error: any) {
-    console.error('Error in PATCH /api/student-school-fees/[id]:', error);
-    // Return appropriate status codes based on the error
-    const statusCode = error.code === 404 ? 404 : 500;
+    
+    return NextResponse.json({message: "Student School Fees updated successfully"});
+  } catch (error) {
+    console.error("Error updating Student School Fees:", error);
     return NextResponse.json(
-      {
-        error: error.message || "Failed to update student payment details",
-        details: error.response || null
-      },
-      { status: statusCode }
+      { error: "Failed to update Student School Fees" },
+      { status: 500 }
     );
   }
 }

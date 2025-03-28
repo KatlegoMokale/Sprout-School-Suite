@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 
 import { Control, FieldPath } from "react-hook-form";
 import { z } from "zod";
-import { newStudentFormSchema } from "@/lib/utils";
+import { studentFormSchema } from "@/lib/utils";
 import {
   Select1,
   SelectContent,
@@ -27,7 +27,7 @@ const SearchAddress = dynamic(() => import("@/components/ui/search-address"), {
   ssr: false,
 });
 
-const formSchema = newStudentFormSchema();
+const formSchema = studentFormSchema();
 
 interface CustomInput<T extends Record<string, any>> {
   control: Control<T>;

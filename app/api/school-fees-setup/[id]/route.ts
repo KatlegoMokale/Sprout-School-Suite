@@ -1,33 +1,31 @@
-import client from "@/lib/appwrite_client";
-import { Databases } from "appwrite";
 import { NextResponse } from "next/server";
-
-const database = new Databases(client);
+import connectToDatabase from "@/lib/mongodb";
+import SchoolFees from "@/lib/models/SchoolFees";
 
 //Fetch School Fees
 async function fetchSchoolFees(id: string) {
   try {
-    const data = await database.getDocument(
-      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
-      "staffSalarySchema",
-      id
-    );
-    return data;
+    await connectToDatabase();
+    const schoolFees = await SchoolFees.findById(id);
+    if (!schoolFees) {
+      throw new Error("School fees not found");
+    }
+    return schoolFees;
   } catch (error) {
-    console.error("Error fetching staff salary:", error);
-    throw new Error("Failed to fetch staff salary");
+    console.error("Error fetching school fees:", error);
+    throw new Error("Failed to fetch school fees");
   }
 }
 
 //Delete School Fees
 async function deleteSchoolFees(id: string) {
   try {
-    const response = await database.deleteDocument(
-      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
-      "schoolFees",
-      id
-    );
-    return response;
+    await connectToDatabase();
+    const schoolFees = await SchoolFees.findByIdAndDelete(id);
+    if (!schoolFees) {
+      throw new Error("School fees not found");
+    }
+    return schoolFees;
   } catch (error) {
     console.error("Error deleting school fees:", error);
     throw new Error("Failed to delete school fees");
@@ -46,15 +44,18 @@ async function updateSchoolFees(id: string, data: {
   siblingDiscountPrice: number
 }){
   try {
-    const response = await database.updateDocument(
-      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
-      "schoolFees",
+    await connectToDatabase();
+    const schoolFees = await SchoolFees.findByIdAndUpdate(
       id,
-      data
+      data,
+      { new: true }
     );
-    return response;
+    if (!schoolFees) {
+      throw new Error("School fees not found");
+    }
+    return schoolFees;
   } catch (error) {
-    console.error("Error updating student:", error);
+    console.error("Error updating school fees:", error);
     throw new Error("Failed to update school fees");
   }
 }
@@ -64,9 +65,10 @@ export async function GET(
 ) {
   try {
     const url = new URL(req.url);
-    const id = url.pathname.split('/').pop() as string; // Extract id from URL
-    const data = await fetchSchoolFees(id);
-    return NextResponse.json({data});
+    const id = url.pathname.split('/').pop();
+    if (!id) throw new Error("School fees ID is required");
+    const schoolFees = await fetchSchoolFees(id);
+    return NextResponse.json(schoolFees);
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to fetch school fees" },
@@ -78,11 +80,11 @@ export async function GET(
 export async function DELETE(req: Request) {
   try {
     const url = new URL(req.url);
-    const id = url.pathname.split('/').pop() as string; // Extract id from URL
-    await deleteSchoolFees(id);
-    return NextResponse.json({message: "School fees deleted successfully"});
+    const id = url.pathname.split('/').pop();
+    if (!id) throw new Error("School fees ID is required");
+    const schoolFees = await deleteSchoolFees(id);
+    return NextResponse.json(schoolFees);
   } catch (error) {
-    console.error("Error deleting school fees:", error);
     return NextResponse.json(
       { error: "Failed to delete school fees" },
       { status: 500 }
@@ -93,10 +95,11 @@ export async function DELETE(req: Request) {
 export async function PUT(req: Request) {
   try {
     const url = new URL(req.url);
-    const id = url.pathname.split('/').pop() as string; // Extract id from URL
+    const id = url.pathname.split('/').pop();
+    if (!id) throw new Error("School fees ID is required");
     const data = await req.json();
-    await updateSchoolFees(id, data);
-    return NextResponse.json({message : "School fees updated successfully"});
+    const schoolFees = await updateSchoolFees(id, data);
+    return NextResponse.json(schoolFees);
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to update school fees" },

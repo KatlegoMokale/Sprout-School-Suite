@@ -1,18 +1,16 @@
-import client from "@/lib/appwrite_client";
-import { Databases } from "appwrite";
 import { NextResponse } from "next/server";
-
-const database = new Databases(client);
+import connectToDatabase from "@/lib/mongodb";
+import StaffSalary from "@/lib/models/StaffSalary";
 
 //Fetch Staff Salary
 async function fetchStaffSalary(id: string) {
   try {
-    const data = await database.getDocument(
-      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
-      "staffSalarySchema",
-      id
-    );
-    return data;
+    await connectToDatabase();
+    const staffSalary = await StaffSalary.findById(id);
+    if (!staffSalary) {
+      throw new Error("Staff salary not found");
+    }
+    return staffSalary;
   } catch (error) {
     console.error("Error fetching staff salary:", error);
     throw new Error("Failed to fetch staff salary");
@@ -22,12 +20,12 @@ async function fetchStaffSalary(id: string) {
 //Delete Staff Salary
 async function deleteStaffSalary(id: string) {
   try {
-    const response = await database.deleteDocument(
-      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
-      "staffSalarySchema",
-      id
-    );
-    return response;
+    await connectToDatabase();
+    const staffSalary = await StaffSalary.findByIdAndDelete(id);
+    if (!staffSalary) {
+      throw new Error("Staff salary not found");
+    }
+    return staffSalary;
   } catch (error) {
     console.error("Error deleting staff salary:", error);
     throw new Error("Failed to delete staff salary");
@@ -41,18 +39,21 @@ async function updateStaffSalary(id: string, data: {
   bonuses: number;
   deductions: number;
   paymentDate: string;
-  staffStatus : string;
+  staffStatus: string;
 }){
   try {
-    const response = await database.updateDocument(
-      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
-      "staffSalarySchema",
+    await connectToDatabase();
+    const staffSalary = await StaffSalary.findByIdAndUpdate(
       id,
-      data
+      data,
+      { new: true }
     );
-    return response;
+    if (!staffSalary) {
+      throw new Error("Staff salary not found");
+    }
+    return staffSalary;
   } catch (error) {
-    console.error("Error updating student:", error);
+    console.error("Error updating staff salary:", error);
     throw new Error("Failed to update staff salary");
   }
 }
@@ -62,9 +63,10 @@ export async function GET(
 ) {
   try {
     const url = new URL(req.url);
-    const id = url.pathname.split('/').pop() as string; // Extract id from URL
-    const data = await fetchStaffSalary(id);
-    return NextResponse.json({data});
+    const id = url.pathname.split('/').pop();
+    if (!id) throw new Error("Staff salary ID is required");
+    const staffSalary = await fetchStaffSalary(id);
+    return NextResponse.json(staffSalary);
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to fetch staff salary" },
@@ -76,11 +78,11 @@ export async function GET(
 export async function DELETE(req: Request) {
   try {
     const url = new URL(req.url);
-    const id = url.pathname.split('/').pop() as string; // Extract id from URL
-    await deleteStaffSalary(id);
-    return NextResponse.json({message: "Staff salary deleted successfully"});
+    const id = url.pathname.split('/').pop();
+    if (!id) throw new Error("Staff salary ID is required");
+    const staffSalary = await deleteStaffSalary(id);
+    return NextResponse.json(staffSalary);
   } catch (error) {
-    console.error("Error deleting staff salary:", error);
     return NextResponse.json(
       { error: "Failed to delete staff salary" },
       { status: 500 }
@@ -91,10 +93,11 @@ export async function DELETE(req: Request) {
 export async function PUT(req: Request) {
   try {
     const url = new URL(req.url);
-    const id = url.pathname.split('/').pop() as string; // Extract id from URL
+    const id = url.pathname.split('/').pop();
+    if (!id) throw new Error("Staff salary ID is required");
     const data = await req.json();
-    await updateStaffSalary(id, data);
-    return NextResponse.json({message : "Staff salary updated successfully"});
+    const staffSalary = await updateStaffSalary(id, data);
+    return NextResponse.json(staffSalary);
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to update staff salary" },

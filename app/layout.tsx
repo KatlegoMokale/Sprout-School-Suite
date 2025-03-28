@@ -12,7 +12,7 @@ const ibmPlexSerif = IBM_Plex_Serif({
 export const metadata: Metadata = {
   title: "Sprouts School Suite",
   description: "Daycare Dashboard is a modern school management system.",
-  icons : {
+  icons: {
     icon: '/assets/logoSSS.png',
   }
 };

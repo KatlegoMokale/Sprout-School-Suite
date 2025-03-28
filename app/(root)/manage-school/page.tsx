@@ -114,13 +114,14 @@ export default function CreativeStaffManagement() {
   //   fetchData()
   // }, [])
 
-  const filteredStaff = stuff.filter((member) => {
-    const nameMatch = `${member.firstName} ${member.surname}`
+  const filteredStaff = Array.isArray(stuff) ? stuff.filter((member) => {
+    if (!member) return false;
+    const nameMatch = `${member.firstName || ''} ${member.surname || ''}`
       .toLowerCase()
       .includes(searchTerm.toLowerCase())
-    const positionMatch = !selectedPosition || member.position.toLowerCase() === selectedPosition.toLowerCase()
+    const positionMatch = !selectedPosition || (member.position || '').toLowerCase() === selectedPosition.toLowerCase()
     return nameMatch && positionMatch
-  })
+  }) : []
 
   const handleDelete = async () => {
     if (!itemToDelete) return
@@ -208,7 +209,7 @@ export default function CreativeStaffManagement() {
           >
             {filteredStaff.map((member, index) => (
               <motion.div
-                key={member.$id}
+                key={member._id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: index * 0.1 }}
@@ -232,7 +233,7 @@ export default function CreativeStaffManagement() {
                           <DropdownMenuContent align="end">
                             <DropdownMenuLabel>Actions</DropdownMenuLabel>
                             <DropdownMenuItem asChild>
-                              <Link href={`/manage-school/stuff/${member.$id}`}>Edit</Link>
+                              <Link href={`/manage-school/stuff/${member._id}`}>Edit</Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem>Delete</DropdownMenuItem>
                           </DropdownMenuContent>
@@ -242,7 +243,7 @@ export default function CreativeStaffManagement() {
                       <p className="text-sm font-medium text-gray-600 mb-3">{member.position}</p>
                       <div className="flex items-center text-sm text-gray-500 mb-2">
                         <MapPin className="h-4 w-4 mr-2 text-red-500" />
-                        <span className="truncate">{member.address1}</span>
+                        <span className="truncate">{member.address?.street || 'No address'}</span>
                       </div>
                       <div className="flex items-center text-sm text-gray-500">
                         <Phone className="h-4 w-4 mr-2 text-green-500" />
@@ -280,17 +281,17 @@ export default function CreativeStaffManagement() {
               <div className="space-y-4">
                 {classes.map((classData, index) => (
                   <motion.div
-                    key={classData.$id}
+                    key={classData._id}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.3, delay: index * 0.1 }}
                   >
-                    <Card className="bg-gray-50 hover:bg-gray-100 transition-colors duration-200">
+                    <Card className="overflow-hidden">
                       <CardContent className="p-4">
-                        <div className="flex justify-between items-start">
+                        <div className="flex items-center justify-between mb-4">
                           <div>
-                            <h3 className="font-semibold text-lg mb-1">Class {classData.name}</h3>
-                            <p className="text-sm text-gray-600">Teacher: {classData.teacherName}</p>
+                            <h3 className="text-lg font-semibold">{classData.name}</h3>
+                            <p className="text-sm text-gray-500">Teacher: {classData.teacherName}</p>
                           </div>
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -300,19 +301,14 @@ export default function CreativeStaffManagement() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
+                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
                               <DropdownMenuItem asChild>
-                                <Link href={`/manage-school/class/${classData.$id}`}>
-                                  <Edit className="h-4 w-4 mr-2" />
-                                  Edit
-                                </Link>
+                                <Link href={`/manage-school/class/${classData._id}`}>Edit</Link>
                               </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => {
-                                  setItemToDelete({ id: classData.$id, type: 'class' })
-                                  setIsDeleteDialogOpen(true)
-                                }}
-                              >
-                                <Trash2 className="h-4 w-4 mr-2 text-red-500" />
+                              <DropdownMenuItem onClick={() => {
+                                setItemToDelete({ id: classData._id, type: 'class' });
+                                setIsDeleteDialogOpen(true);
+                              }}>
                                 Delete
                               </DropdownMenuItem>
                             </DropdownMenuContent>

@@ -178,15 +178,15 @@ export default function SchoolFeeManagement() {
             <h4 className="text-lg font-semibold">Student Information</h4>
             <p><strong>Name:</strong> {student.firstName} {student.surname}</p>
             <p><strong>Date of Birth:</strong> {new Date(student.dateOfBirth).toLocaleDateString()}</p>
-            <p><strong>Age:</strong> {student.age} years</p>
-            <p><strong>Address:</strong> {student.address1}</p>
+            <p><strong>Age:</strong> {student.age}</p>
+            <p><strong>Address:</strong> {student.address.street}, {student.address.city}, {student.address.province}</p>
             <p><strong>Class:</strong> {getClassName(student.studentClass || '')}</p>
           </div>
           <div>
             <h4 className="text-lg font-semibold">Parent/Guardian Information</h4>
-            <p><strong>Name:</strong> {student.p1_firstName} {student.p1_surname}</p>
-            <p><strong>Email:</strong> {student.p1_email}</p>
-            <p><strong>Phone:</strong> {student.p1_phoneNumber}</p>
+            <p><strong>Name:</strong> {student.parent1.firstName} {student.parent1.surname}</p>
+            <p><strong>Email:</strong> {student.parent1.email}</p>
+            <p><strong>Phone:</strong> {student.parent1.phoneNumber}</p>
           </div>
         </div>
 
