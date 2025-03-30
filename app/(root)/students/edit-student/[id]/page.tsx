@@ -165,75 +165,76 @@ export default function EditStudentForm({ params }: { params: Promise<{ id: stri
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-              <Tabs defaultValue="student">
-                <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="student">Student Information</TabsTrigger>
-                  <TabsTrigger value="guardian1">Guardian 1</TabsTrigger>
-                  <TabsTrigger value="guardian2">Guardian 2</TabsTrigger>
-                </TabsList>
-                <TabsContent value="student" className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <CustomInput name="firstName" control={form.control} label="Name" placeholder="Enter Child Name" />
-                    <CustomInput name="secondName" control={form.control} label="Second Name" placeholder="Enter Child Second Name" />
-                    <CustomInput name="surname" control={form.control} label="Surname" placeholder="Enter Child Surname" />
-                    <CustomInput
-                      name="dateOfBirth"
-                      control={form.control}
-                      label="Date of Birth"
-                      type="date"
-                      placeholder="Enter Child Date of Birth"
-                      onChange={(e) => {
-                        const age = calculateAge(e.target.value)
-                        form.setValue("age", age)
-                      }}
-                    />
-                    <CustomInput name="age" control={form.control} label="Age" placeholder="Age will be calculated" readonly={true} />
-                    <CustomInput
-                      name="gender"
-                      control={form.control}
-                      label="Gender"
-                      placeholder="Select Gender"
-                      select={true}
-                      options={[
-                        { label: "Male", value: "Male" },
-                        { label: "Female", value: "Female" },
-                      ]}
-                    />
-                    <CustomInput name="address1" control={form.control} label="Address" placeholder="Enter Child Address" />
-                    <CustomInput name="homeLanguage" control={form.control} label="Home Language" placeholder="Home Language" />
-                    <CustomInput name="allergies" control={form.control} label="Allergies" placeholder="Allergies" />
-                    <CustomInput name="medicalAidNumber" control={form.control} label="Medical Aid Number" placeholder="Medical Aid Number" />
-                    <CustomInput name="medicalAidScheme" control={form.control} label="Medical Aid Scheme" placeholder="Medical Aid Scheme" />
-                    <div className="form-item">
-                      <div className="text-md font-semibold text-gray-600">Class</div>
-                      <Select1 onValueChange={handleClassChange} value={form.getValues("studentClass")}>
-                        <SelectTrigger className="w-full">
-                          <SelectValue1 placeholder="Select Class" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-white">
-                          {classData?.map((classItem) => (
-                            <SelectItem key={classItem.$id} value={classItem.$id}>
-                              {classItem.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select1>
-                    </div>
-                    <CustomInput
-                      name="studentStatus"
-                      control={form.control}
-                      label="Student Status"
-                      placeholder="Student Status"
-                      select={true}
-                      options={[
-                        { label: "Active", value: "active" },
-                        { label: "Non-Active", value: "non-active" },
-                      ]}
-                    />
+              {/* Student Information Section */}
+              <div className="bg-orange-50 rounded-lg p-5">
+                <h2 className="text-xl font-semibold mb-4">Student Information</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <CustomInput name="firstName" control={form.control} label="Name" placeholder="Enter Child Name" />
+                  <CustomInput name="secondName" control={form.control} label="Second Name" placeholder="Enter Child Second Name" />
+                  <CustomInput name="surname" control={form.control} label="Surname" placeholder="Enter Child Surname" />
+                  <CustomInput
+                    name="dateOfBirth"
+                    control={form.control}
+                    label="Date of Birth"
+                    type="date"
+                    placeholder="Enter Child Date of Birth"
+                    onChange={(e) => {
+                      const age = calculateAge(e.target.value)
+                      form.setValue("age", age)
+                    }}
+                  />
+                  <CustomInput name="age" control={form.control} label="Age" placeholder="Age will be calculated" readonly={true} />
+                  <CustomInput
+                    name="gender"
+                    control={form.control}
+                    label="Gender"
+                    placeholder="Select Gender"
+                    select={true}
+                    options={[
+                      { label: "Male", value: "Male" },
+                      { label: "Female", value: "Female" },
+                    ]}
+                  />
+                  <CustomInput name="address1" control={form.control} label="Address" placeholder="Enter Child Address" />
+                  <CustomInput name="homeLanguage" control={form.control} label="Home Language" placeholder="Home Language" />
+                  <CustomInput name="allergies" control={form.control} label="Allergies" placeholder="Allergies" />
+                  <CustomInput name="medicalAidNumber" control={form.control} label="Medical Aid Number" placeholder="Medical Aid Number" />
+                  <CustomInput name="medicalAidScheme" control={form.control} label="Medical Aid Scheme" placeholder="Medical Aid Scheme" />
+                  <div className="form-item">
+                    <div className="text-md font-semibold text-gray-600">Class</div>
+                    <Select1 onValueChange={handleClassChange} value={form.getValues("studentClass")}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue1 placeholder="Select Class" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white">
+                        {classData?.map((classItem) => (
+                          <SelectItem key={classItem.$id} value={classItem.$id}>
+                            {classItem.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select1>
                   </div>
-                </TabsContent>
-                <TabsContent value="guardian1">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <CustomInput
+                    name="studentStatus"
+                    control={form.control}
+                    label="Student Status"
+                    placeholder="Student Status"
+                    select={true}
+                    options={[
+                      { label: "Active", value: "active" },
+                      { label: "Non-Active", value: "non-active" },
+                    ]}
+                  />
+                </div>
+              </div>
+
+              {/* Guardians Section */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Guardian 1 */}
+                <div className="bg-orange-50 rounded-lg p-5">
+                  <h2 className="text-xl font-semibold mb-4">Guardian 1</h2>
+                  <div className="grid grid-cols-1 gap-4">
                     <CustomInput
                       name="p1_relationship"
                       control={form.control}
@@ -268,9 +269,12 @@ export default function EditStudentForm({ params }: { params: Promise<{ id: stri
                     <CustomInput name="p1_occupation" control={form.control} label="Employer" placeholder="Enter Employer Name" />
                     <CustomInput name="p1_workNumber" control={form.control} label="Employer Phone Number" placeholder="Enter Employer Phone Number" />
                   </div>
-                </TabsContent>
-                <TabsContent value="guardian2">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                </div>
+
+                {/* Guardian 2 */}
+                <div className="bg-orange-50 rounded-lg p-5">
+                  <h2 className="text-xl font-semibold mb-4">Guardian 2</h2>
+                  <div className="grid grid-cols-1 gap-4">
                     <CustomInput
                       name="p2_relationship"
                       control={form.control}
@@ -305,8 +309,9 @@ export default function EditStudentForm({ params }: { params: Promise<{ id: stri
                     <CustomInput name="p2_occupation" control={form.control} label="Employer" placeholder="Enter Employer Name" />
                     <CustomInput name="p2_workNumber" control={form.control} label="Employer Phone Number" placeholder="Enter Employer Phone Number" />
                   </div>
-                </TabsContent>
-              </Tabs>
+                </div>
+              </div>
+
               <Button type="submit" className="w-full transition-colors hover:bg-primary/90 bg-green-200 hover:bg-green-300" disabled={isLoading}>
                 {isLoading ? (
                   <>

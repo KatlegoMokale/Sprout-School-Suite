@@ -93,7 +93,7 @@ export default function FinancialDashboard() {
     return data.reduce((total, item) => total + item[key], 0)
   }
 
-  const totalRevenue = 45231.89 // Placeholder value
+  const totalRevenue = 0.00 // Placeholder value
   const totalIncome = calculateTotal(transactions, 'amount')
   const totalExpenses = calculateTotal(pettyCash, 'price') + calculateTotal(grocery, 'totalPaid')
   const totalOutstanding = totalRevenue - totalIncome // Placeholder calculation
