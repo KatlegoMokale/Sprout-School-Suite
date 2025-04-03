@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CustomInput from "@/components/ui/CustomInput";
 import { IClass, newStudentFormSchema, parseStringify } from "@/lib/utils";
-import { DialogContent, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import Link from "next/link";
 import { Check, ChevronLeft, Loader2 } from "lucide-react";
 // import { autocomplete } from "@/lib/google";
@@ -41,9 +41,10 @@ const NewStudentForm = () => {
   const { toast } = useToast();
   const [currentTab, setCurrentTab] = useState("guardian1");
   const [classData, setClassData] = useState<IClass[] | null>(null);
-  const [formData, setFormData] = useState({});
+  const [formData, setFormData] = useState<z.infer<typeof studentFormSchema>>({} as z.infer<typeof studentFormSchema>);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showConfirmation, setShowConfirmation] = useState(false);
   const router = useRouter();
   // const [predictions, setPredictions] = useState<PlaceAutocompleteResult[]>([]);
   // const [input, setInput] = useState("");
@@ -177,7 +178,7 @@ const NewStudentForm = () => {
           " to the system.",
       });
       form.reset();
-      // router.push('/students');
+      setShowConfirmation(true);
     } catch (error) {
       console.error("Error submitting form:", error);
       setError("An error occurred while submitting the form.");
@@ -650,6 +651,28 @@ const NewStudentForm = () => {
           <Toaster />
         </CardContent>
       </Card>
+
+      <Dialog open={showConfirmation} onOpenChange={setShowConfirmation}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Student Added Successfully</DialogTitle>
+            <DialogDescription>
+              {formData.firstName} {formData.surname} has been added to the system.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              onClick={() => {
+                setShowConfirmation(false);
+                router.push('/students');
+              }}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              View All Students
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
