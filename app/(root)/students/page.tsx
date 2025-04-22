@@ -44,6 +44,7 @@ import { IClass, IStudent } from "@/lib/utils"
 import { RootState, AppDispatch } from '@/lib/store' // Import RootState and AppDispatch
 import { fetchStudents, selectStudents } from '@/lib/features/students/studentsSlice' // Import Redux actions and selectors
 import { fetchClasses, selectClasses } from '@/lib/features/classes/classesSlice' // Import Redux actions and selectors
+import { number } from "zod"
 
 export default function StudentManagement() {
   const dispatch = useDispatch<AppDispatch>() // Use AppDispatch type for dispatch
@@ -62,6 +63,7 @@ export default function StudentManagement() {
     // Fetch students and classes if they haven't been fetched yet
     if (studentStatus === 'idle') {
       dispatch(fetchStudents())
+
     }
     if (classesStatus === 'idle') {
       dispatch(fetchClasses())
@@ -119,6 +121,13 @@ export default function StudentManagement() {
       return { key, direction: 'asc' }
     })
   }
+ 
+  let counter = 0;
+  students.forEach(student => {
+    counter++;
+    console.log(student.firstName + " " + student.age)
+  });
+  console.log("Total " + counter )
 
   return (
     <div className="  px-4 py-8">

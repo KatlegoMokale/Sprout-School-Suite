@@ -71,7 +71,7 @@ async function fetchStudent() {
     const response = await database.listDocuments(
       process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
       "students",
-      [Query.orderDesc("$createdAt")]
+      [Query.orderDesc("$createdAt"), Query.limit(100)] // Set limit directly in the query array
     );
     return response.documents;
   } catch (error) {
