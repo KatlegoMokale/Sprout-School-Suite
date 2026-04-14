@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CustomInput from "@/components/ui/CustomInput";
 import { IClass, newStudentFormSchema, parseStringify } from "@/lib/utils";
-import { DialogContent, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import Link from "next/link";
 import { Check, ChevronLeft, Loader2 } from "lucide-react";
 // import { autocomplete } from "@/lib/google";
@@ -41,9 +41,10 @@ const NewStudentForm = () => {
   const { toast } = useToast();
   const [currentTab, setCurrentTab] = useState("guardian1");
   const [classData, setClassData] = useState<IClass[] | null>(null);
-  const [formData, setFormData] = useState({});
+  const [formData, setFormData] = useState<z.infer<typeof studentFormSchema>>({} as z.infer<typeof studentFormSchema>);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showConfirmation, setShowConfirmation] = useState(false);
   const router = useRouter();
   // const [predictions, setPredictions] = useState<PlaceAutocompleteResult[]>([]);
   // const [input, setInput] = useState("");
@@ -177,7 +178,7 @@ const NewStudentForm = () => {
           " to the system.",
       });
       form.reset();
-      // router.push('/students');
+      setShowConfirmation(true);
     } catch (error) {
       console.error("Error submitting form:", error);
       setError("An error occurred while submitting the form.");
@@ -289,249 +290,212 @@ const NewStudentForm = () => {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-              <Tabs defaultValue="student">
-                <TabsList className=" grid w-full grid-cols-3">
-                  <TabsTrigger value="student">Student Information</TabsTrigger>
-                  <TabsTrigger value="guardian1">Guardian 1</TabsTrigger>
-                  <TabsTrigger value="guardian2">Guardian 2</TabsTrigger>
-                </TabsList>
-                <TabsContent value="student" className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 px-5">
-                    <div className="cols-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="firstName"
-                        placeholder="Enter Child Name"
-                        control={form.control}
-                        label={"Name"}
-                      />
-                    </div>
-                    <div className="cols-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="secondName"
-                        placeholder="Enter Child Second Name"
-                        control={form.control}
-                        label={"Second Name"}
-                      />
-                    </div>
+              {/* Student Information Section */}
+              <div className="bg-orange-50 rounded-lg p-5">
+                <h2 className="text-xl font-semibold mb-4">Student Information</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="cols-span-1">
+                    <CustomInput<z.infer<typeof formSchema>>
+                      name="firstName"
+                      placeholder="Enter Child Name"
+                      control={form.control}
+                      label={"Name"}
+                    />
+                  </div>
+                  <div className="cols-span-1">
+                    <CustomInput<z.infer<typeof formSchema>>
+                      name="secondName"
+                      placeholder="Enter Child Second Name"
+                      control={form.control}
+                      label={"Second Name"}
+                    />
+                  </div>
 
-                    <div className="col-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="surname"
-                        placeholder="Enter Child Surname"
-                        control={form.control}
-                        label={"Surname"}
-                      />
-                    </div>
+                  <div className="col-span-1">
+                    <CustomInput<z.infer<typeof formSchema>>
+                      name="surname"
+                      placeholder="Enter Child Surname"
+                      control={form.control}
+                      label={"Surname"}
+                    />
+                  </div>
 
-                    <div className="cols-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="dateOfBirth"
-                        placeholder="Enter Child Date of Birth"
-                        control={form.control}
-                        label={"Date of Birth"}
-                        type="date"
-                        onChange={(e) => {
-                          const newValue = e.target.value;
-                          const age = calculateAge(e.target.value);
-                          form.setValue("age", age);
-                        }}
-                      />
-                    </div>
+                  <div className="cols-span-1">
+                    <CustomInput<z.infer<typeof formSchema>>
+                      name="dateOfBirth"
+                      placeholder="Enter Child Date of Birth"
+                      control={form.control}
+                      label={"Date of Birth"}
+                      type="date"
+                      onChange={(e) => {
+                        const newValue = e.target.value;
+                        const age = calculateAge(e.target.value);
+                        form.setValue("age", age);
+                      }}
+                    />
+                  </div>
 
-                    <div className="col-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="age"
-                        placeholder="Age will be calculated"
-                        control={form.control}
-                        label={"Age"}
-                        readonly={true}
-                      />
-                    </div>
+                  <div className="col-span-1">
+                    <CustomInput<z.infer<typeof formSchema>>
+                      name="age"
+                      placeholder="Age will be calculated"
+                      control={form.control}
+                      label={"Age"}
+                      readonly={true}
+                    />
+                  </div>
 
-                    <div className="col-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="gender"
-                        placeholder="Select Gender"
-                        control={form.control}
-                        label={"Gender"}
-                        select={true}
-                        options={[
-                          { label: "Male", value: "Male" },
-                          { label: "Female", value: "Female" },
-                        ]}
-                      />
-                    </div>
+                  <div className="col-span-1">
+                    <CustomInput<z.infer<typeof formSchema>>
+                      name="gender"
+                      placeholder="Select Gender"
+                      control={form.control}
+                      label={"Gender"}
+                      select={true}
+                      options={[
+                        { label: "Male", value: "Male" },
+                        { label: "Female", value: "Female" },
+                      ]}
+                    />
+                  </div>
 
-                    {/* <div className="cols-span-1">
-                    <CustomInput
+                  <div className="col-span-2">
+                    <CustomInput<z.infer<typeof formSchema>>
                       name="address1"
                       placeholder="Enter Child Address"
                       control={form.control}
                       label={"Address"}
-                      type="search"
                     />
-                  </div> */}
+                  </div>
 
-                    <div className="col-span-2">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="address1"
-                        placeholder="Enter Child Address"
-                        control={form.control}
-                        label={"Address"}
-                      />
-                    </div>
+                  <div className="col-span-1">
+                    <CustomInput<z.infer<typeof formSchema>>
+                      name="homeLanguage"
+                      placeholder="Home Language"
+                      control={form.control}
+                      label={"Home Language"}
+                    />
+                  </div>
+                  <div className="col-span-1">
+                    <CustomInput<z.infer<typeof formSchema>>
+                      name="allergies"
+                      placeholder="Allergies"
+                      control={form.control}
+                      label={"Allergies"}
+                    />
+                  </div>
 
-                    <div className="col-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="homeLanguage"
-                        placeholder="Home Language"
-                        control={form.control}
-                        label={"Home Language"}
-                      />
-                    </div>
-                    <div className="col-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="allergies"
-                        placeholder="Allergies"
-                        control={form.control}
-                        label={"Allergies"}
-                      />
-                    </div>
+                  <div className="col-span-1">
+                    <CustomInput<z.infer<typeof formSchema>>
+                      name="medicalAidNumber"
+                      placeholder="Medical Aid Number"
+                      control={form.control}
+                      label={"Medical Aid Number"}
+                    />
+                  </div>
 
-                    <div className="col-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="medicalAidNumber"
-                        placeholder="Medical Aid Number"
-                        control={form.control}
-                        label={"Medical Aid Number"}
-                      />
-                    </div>
+                  <div className="col-span-1">
+                    <CustomInput<z.infer<typeof formSchema>>
+                      name="medicalAidScheme"
+                      placeholder="Medical Aid Scheme"
+                      control={form.control}
+                      label={"Medical Aid Scheme"}
+                    />
+                  </div>
 
-                    <div className="col-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="medicalAidScheme"
-                        placeholder="Medical Aid Scheme"
-                        control={form.control}
-                        label={"Medical Aid Scheme"}
-                      />
-                    </div>
-
-                    <div className="col-span-1 hidden">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="studentClass"
-                        placeholder="Class"
-                        control={form.control}
-                        label={"Class"}
-                      />
-                    </div>
-
-                    <div className="col-span-1">
-                      <div className="form-item">
-                        <div className=" text-md  font-semibold text-gray-600 ">
-                          Class
-                        </div>
-                        <Select1 onValueChange={handleClassChange}>
-                          <SelectTrigger className="w-full">
-                            <SelectValue1 placeholder="Select Class 1" />
-                          </SelectTrigger>
-                          <SelectContent className="bg-white gap-2 rounded-lg">
-                            {classData?.map((classItem) => (
-                              <SelectItem
-                                className="hover:bg-green-200 text-14 font-semibold rounded-lg hover:animate-in p-2 cursor-pointer"
-                                key={classItem.$id}
-                                value={classItem.$id}
-                              >
-                                {classItem.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select1>
-                      </div>
+                  <div className="col-span-1">
+                    <div className="form-item">
+                      <div className="text-md font-semibold text-gray-600">Class</div>
+                      <Select1 onValueChange={handleClassChange}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue1 placeholder="Select Class" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white gap-2 rounded-lg">
+                          {classData?.map((classItem) => (
+                            <SelectItem
+                              className="hover:bg-green-200 text-14 font-semibold rounded-lg hover:animate-in p-2 cursor-pointer"
+                              key={classItem.$id}
+                              value={classItem.$id}
+                            >
+                              {classItem.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select1>
                     </div>
                   </div>
-                </TabsContent>
-                <TabsContent value="guardian1">
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className=" col-span-2 pt-1 w-full">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="p1_relationship"
-                        placeholder="Select Relationship"
-                        control={form.control}
-                        label={"Relationship"}
-                        select={true}
-                        options={[
-                          { label: "Mother", value: "Mother" },
-                          { label: "Father", value: "Father" },
-                          { label: "Grand Mother", value: "Grand Mother" },
-                          { label: "Grand Father", value: "Grand Father" },
-                        ]}
-                      />
-                    </div>
-                    <div className="cols-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="p1_firstName"
-                        placeholder="Enter Name"
-                        control={form.control}
-                        label={"Name"}
-                      />
-                    </div>
-                    <div className="cols-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="p1_surname"
-                        placeholder="Enter Surname"
-                        control={form.control}
-                        label={"Surname"}
-                      />
-                    </div>
-                    <div className="cols-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="p1_email"
-                        placeholder="Enter Email"
-                        control={form.control}
-                        label={"Email"}
-                        type="email"
-                      />
-                    </div>
-                    <div className="cols-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="p1_phoneNumber"
-                        placeholder="Enter Phone Number"
-                        control={form.control}
-                        label={"Phone Number"}
-                      />
-                    </div>
-                    <div className="cols-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="p1_idNumber"
-                        placeholder="Enter ID Number"
-                        control={form.control}
-                        label={"ID Number"}
-                      />
-                    </div>
-                    <div className="cols-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="p1_gender"
-                        placeholder="Enter gender"
-                        control={form.control}
-                        label={"Gender"}
-                        select={true}
-                        options={[
-                          { label: "Male", value: "Male" },
-                          { label: "Female", value: "Female" },
-                        ]}
-                      />
-                    </div>
-                    <div className="cols-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="p1_dateOfBirth"
-                        placeholder="Enter Date of Birth"
-                        control={form.control}
-                        label={"Date Of Birth"}
-                        type="date"
-                      />
-                    </div>
-                    <div></div>
-                    <div className="w-full col-span-2">
+                </div>
+              </div>
+
+              {/* Guardians Section */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Guardian 1 */}
+                <div className="bg-orange-50 rounded-lg p-5">
+                  <h2 className="text-xl font-semibold mb-4">Guardian 1</h2>
+                  <div className="grid grid-cols-1 gap-4">
+                    <CustomInput<z.infer<typeof formSchema>>
+                      name="p1_relationship"
+                      placeholder="Select Relationship"
+                      control={form.control}
+                      label={"Relationship"}
+                      select={true}
+                      options={[
+                        { label: "Mother", value: "Mother" },
+                        { label: "Father", value: "Father" },
+                        { label: "Grand Mother", value: "Grand Mother" },
+                        { label: "Grand Father", value: "Grand Father" },
+                      ]}
+                    />
+                    <CustomInput<z.infer<typeof formSchema>>
+                      name="p1_firstName"
+                      placeholder="Enter Name"
+                      control={form.control}
+                      label={"Name"}
+                    />
+                    <CustomInput<z.infer<typeof formSchema>>
+                      name="p1_surname"
+                      placeholder="Enter Surname"
+                      control={form.control}
+                      label={"Surname"}
+                    />
+                    <CustomInput<z.infer<typeof formSchema>>
+                      name="p1_email"
+                      placeholder="Enter Email"
+                      control={form.control}
+                      label={"Email"}
+                      type="email"
+                    />
+                    <CustomInput<z.infer<typeof formSchema>>
+                      name="p1_phoneNumber"
+                      placeholder="Enter Phone Number"
+                      control={form.control}
+                      label={"Phone Number"}
+                    />
+                    <CustomInput<z.infer<typeof formSchema>>
+                      name="p1_idNumber"
+                      placeholder="Enter ID Number"
+                      control={form.control}
+                      label={"ID Number"}
+                    />
+                    <CustomInput<z.infer<typeof formSchema>>
+                      name="p1_gender"
+                      placeholder="Enter gender"
+                      control={form.control}
+                      label={"Gender"}
+                      select={true}
+                      options={[
+                        { label: "Male", value: "Male" },
+                        { label: "Female", value: "Female" },
+                      ]}
+                    />
+                    <CustomInput<z.infer<typeof formSchema>>
+                      name="p1_dateOfBirth"
+                      placeholder="Enter Date of Birth"
+                      control={form.control}
+                      label={"Date Of Birth"}
+                      type="date"
+                    />
+                    <div className="w-full">
                       <div className="flex items-center space-x-2 mb-2">
                         <Checkbox
                           id="copyAddress"
@@ -551,106 +515,88 @@ const NewStudentForm = () => {
                         label={"Address"}
                       />
                     </div>
-
-                    <div className="cols-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="p1_occupation"
-                        placeholder="Enter Employer Name"
-                        control={form.control}
-                        label={"Employer"}
-                      />
-                    </div>
-                    <div className="cols-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="p1_workNumber"
-                        placeholder="Enter Employer Phone Number"
-                        control={form.control}
-                        label={"Employer Phone Number"}
-                      />
-                    </div>
+                    <CustomInput<z.infer<typeof formSchema>>
+                      name="p1_occupation"
+                      placeholder="Enter Employer Name"
+                      control={form.control}
+                      label={"Employer"}
+                    />
+                    <CustomInput<z.infer<typeof formSchema>>
+                      name="p1_workNumber"
+                      placeholder="Enter Employer Phone Number"
+                      control={form.control}
+                      label={"Employer Phone Number"}
+                    />
                   </div>
-                </TabsContent>
-                <TabsContent value="guardian2">
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="col-span-2 pt-1 w-full">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="p2_relationship"
-                        placeholder="Select Relationship"
-                        control={form.control}
-                        label={"Relationship"}
-                        select={true}
-                        options={[
-                          { label: "Mother", value: "Mother" },
-                          { label: "Father", value: "Father" },
-                          { label: "Grand Mother", value: "Grand Mother" },
-                          { label: "Grand Father", value: "Grand Father" },
-                        ]}
-                      />
-                    </div>
-                    <div className="cols-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="p2_firstName"
-                        placeholder="Enter Name"
-                        control={form.control}
-                        label={"Name"}
-                      />
-                    </div>
-                    <div className="cols-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="p2_surname"
-                        placeholder="Enter Surname"
-                        control={form.control}
-                        label={"Surname"}
-                      />
-                    </div>
-                    <div className="cols-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="p2_email"
-                        placeholder="Enter Email"
-                        control={form.control}
-                        label={"Email"}
-                        type="email"
-                      />
-                    </div>
-                    <div className="cols-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="p2_phoneNumber"
-                        placeholder="Enter Phone Number"
-                        control={form.control}
-                        label={"Phone Number"}
-                      />
-                    </div>
-                    <div className="cols-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="p2_idNumber"
-                        placeholder="Enter ID Number"
-                        control={form.control}
-                        label={"ID Number"}
-                      />
-                    </div>
-                    <div className="cols-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="p2_gender"
-                        placeholder="Enter gender"
-                        control={form.control}
-                        label={"Gender"}
-                        select={true}
-                        options={[
-                          { label: "Male", value: "Male" },
-                          { label: "Female", value: "Female" },
-                        ]}
-                      />
-                    </div>
-                    <div className="cols-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="p2_dateOfBirth"
-                        placeholder="Enter Date of Birth"
-                        control={form.control}
-                        label={"Date Of Birth"}
-                        type="date"
-                      />
-                    </div>
-                    <div className="w-full col-span-2">
+                </div>
+
+                {/* Guardian 2 */}
+                <div className="bg-orange-50 rounded-lg p-5">
+                  <h2 className="text-xl font-semibold mb-4">Guardian 2</h2>
+                  <div className="grid grid-cols-1 gap-4">
+                    <CustomInput<z.infer<typeof formSchema>>
+                      name="p2_relationship"
+                      placeholder="Select Relationship"
+                      control={form.control}
+                      label={"Relationship"}
+                      select={true}
+                      options={[
+                        { label: "Mother", value: "Mother" },
+                        { label: "Father", value: "Father" },
+                        { label: "Grand Mother", value: "Grand Mother" },
+                        { label: "Grand Father", value: "Grand Father" },
+                      ]}
+                    />
+                    <CustomInput<z.infer<typeof formSchema>>
+                      name="p2_firstName"
+                      placeholder="Enter Name"
+                      control={form.control}
+                      label={"Name"}
+                    />
+                    <CustomInput<z.infer<typeof formSchema>>
+                      name="p2_surname"
+                      placeholder="Enter Surname"
+                      control={form.control}
+                      label={"Surname"}
+                    />
+                    <CustomInput<z.infer<typeof formSchema>>
+                      name="p2_email"
+                      placeholder="Enter Email"
+                      control={form.control}
+                      label={"Email"}
+                      type="email"
+                    />
+                    <CustomInput<z.infer<typeof formSchema>>
+                      name="p2_phoneNumber"
+                      placeholder="Enter Phone Number"
+                      control={form.control}
+                      label={"Phone Number"}
+                    />
+                    <CustomInput<z.infer<typeof formSchema>>
+                      name="p2_idNumber"
+                      placeholder="Enter ID Number"
+                      control={form.control}
+                      label={"ID Number"}
+                    />
+                    <CustomInput<z.infer<typeof formSchema>>
+                      name="p2_gender"
+                      placeholder="Enter gender"
+                      control={form.control}
+                      label={"Gender"}
+                      select={true}
+                      options={[
+                        { label: "Male", value: "Male" },
+                        { label: "Female", value: "Female" },
+                      ]}
+                    />
+                    <CustomInput<z.infer<typeof formSchema>>
+                      name="p2_dateOfBirth"
+                      placeholder="Enter Date of Birth"
+                      control={form.control}
+                      label={"Date Of Birth"}
+                      type="date"
+                    />
+                    <div className="w-full">
                       <div className="flex items-center space-x-2 mb-2">
                         <Checkbox
                           id="copyAddress"
@@ -670,25 +616,22 @@ const NewStudentForm = () => {
                         label={"Address"}
                       />
                     </div>
-                    <div className="cols-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="p2_occupation"
-                        placeholder="Enter Employer Name"
-                        control={form.control}
-                        label={"Employer"}
-                      />
-                    </div>
-                    <div className="cols-span-1">
-                      <CustomInput<z.infer<typeof formSchema>>
-                        name="p2_workNumber"
-                        placeholder="Enter Employer Phone Number"
-                        control={form.control}
-                        label={"Employer Phone Number"}
-                      />
-                    </div>
+                    <CustomInput<z.infer<typeof formSchema>>
+                      name="p2_occupation"
+                      placeholder="Enter Employer Name"
+                      control={form.control}
+                      label={"Employer"}
+                    />
+                    <CustomInput<z.infer<typeof formSchema>>
+                      name="p2_workNumber"
+                      placeholder="Enter Employer Phone Number"
+                      control={form.control}
+                      label={"Employer Phone Number"}
+                    />
                   </div>
-                </TabsContent>
-              </Tabs>
+                </div>
+              </div>
+
               <Button
                 type="submit"
                 className="w-full transition-colors hover:bg-primary/90 bg-green-200 hover:bg-green-300"
@@ -708,6 +651,28 @@ const NewStudentForm = () => {
           <Toaster />
         </CardContent>
       </Card>
+
+      <Dialog open={showConfirmation} onOpenChange={setShowConfirmation}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Student Added Successfully</DialogTitle>
+            <DialogDescription>
+              {formData.firstName} {formData.surname} has been added to the system.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              onClick={() => {
+                setShowConfirmation(false);
+                router.push('/students');
+              }}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              View All Students
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
