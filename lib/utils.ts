@@ -431,6 +431,8 @@ export interface ISchoolFees {
   ageUnit: string
   monthlyFee: number
   yearlyFee: number
+  siblingDiscountType: "percentage" | "amount-per-child"
+  siblingDiscountPrice: number
 }
 
 ///studentFeesManagement

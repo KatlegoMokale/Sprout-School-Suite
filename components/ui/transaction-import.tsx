@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useCallback } from "react"
+import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -114,7 +114,7 @@ export default function TransactionImport({ students }: { students: any[] }) {
     }
   }
 
-  const handleImport = useCallback(async () => {
+  const handleImport = async () => {
     if (!file) return
 
     setIsLoading(true)
@@ -207,7 +207,7 @@ export default function TransactionImport({ students }: { students: any[] }) {
     } finally {
       setIsLoading(false)
     }
-  }, [file, students])
+  }
 
   const handleReset = () => {
     setFile(null)
