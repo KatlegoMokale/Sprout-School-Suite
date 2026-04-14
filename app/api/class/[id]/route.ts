@@ -1,102 +1,88 @@
-import client from "@/lib/appwrite_client";
-import { Databases } from "appwrite";
+import connectToDatabase from "@/lib/mongodb";
+import Class from "@/lib/models/class.model";
 import { NextResponse } from "next/server";
 
-const database = new Databases(client);
-
-//Fetch Class
-async function fetchClass(id:string) {
-  try {
-    const classes = await database.getDocument(
-      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
-      "66fcfbc4002c2ec480b0",
-      id
-    );
-    return classes;
-  } catch (error) {
-    console.error("Error fetching class", error);
-    throw new Error("Failed to fetch class");
-  }
-}
-
-//Delete Class
-async function deleteClass(id:string) {
-  try {
-    const response = await database.deleteDocument(
-      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
-      "66fcfbc4002c2ec480b0",
-      id
-    );
-    return response;
-  } catch (error) {
-    console.error("Error deleting class:", error);
-    throw new Error("Failed to delete class");
-  }
-}
-
-//Update Class
-async function updateClass(id: string, data: {
-  name: string;
-  age: string;
-  teacherId: string;
-  teacherName: string;
-}) {
-  try {
-    const response = await database.updateDocument(
-      process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID as string,
-      "66fcfbc4002c2ec480b0",
-      id,
-      data
-    );
-    return response;
-  } catch (error) {
-    console.error("Error updating class:", error);
-    throw new Error("Failed to update class");
-  }
-}
-
 export async function GET(
-  req: Request
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const url = new URL(req.url);
-    const id = url.pathname.split('/').pop() as string; // Extract id from URL
-    const class1 = await fetchClass(id);
-    return NextResponse.json({class1});
+    await connectToDatabase();
+    const { id } = await params;
+    const classDoc = await Class.findById(id).lean();
+
+    if (!classDoc) {
+      return NextResponse.json(
+        { message: "Class not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(classDoc, { status: 200 });
   } catch (error) {
     return NextResponse.json(
-      { error: "Failed to fetch class" },
+      { message: "Error fetching class" },
       { status: 500 }
     );
   }
 }
 
-export async function DELETE(req: Request) {
+export async function PUT(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
-    const url = new URL(req.url);
-    const id = url.pathname.split('/').pop() as string; // Extract id from URL
-    await deleteClass(id);
-    return NextResponse.json({message: "Class deleted successfully"});
-  } catch (error) {
-    console.error("Error deleting class:", error);
+    await connectToDatabase();
+    const { id } = await params;
+    const body = await request.json();
+
+    const classDoc = await Class.findByIdAndUpdate(id, body, {
+      new: true,
+      runValidators: true,
+    }).lean();
+
+    if (!classDoc) {
+      return NextResponse.json(
+        { message: "Class not found" },
+        { status: 404 }
+      );
+    }
+
     return NextResponse.json(
-      {error: "Failed to delete class"},
-      {status: 500}
+      { message: "Class updated successfully", data: classDoc },
+      { status: 200 }
     );
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error ? error.message : "Failed to update class";
+    return NextResponse.json({ message }, { status: 500 });
   }
 }
 
-export async function PUT(req: Request) {
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
-    const url = new URL(req.url);
-    const id = url.pathname.split('/').pop() as string; // Extract id from URL
-    const class1 = await req.json();
-    await updateClass(id, class1);
-    return NextResponse.json({message: "Class updated successfully"});
+    await connectToDatabase();
+    const { id } = await params;
+    const classDoc = await Class.findByIdAndDelete(id);
+
+    if (!classDoc) {
+      return NextResponse.json(
+        { message: "Class not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(
+      { message: "Class deleted successfully" },
+      { status: 200 }
+    );
   } catch (error) {
     return NextResponse.json(
-      { error: "Failed to update class"},
-      { status: 500}
+      { message: "Error deleting class" },
+      { status: 500 }
     );
   }
 }

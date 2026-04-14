@@ -1,8 +1,6 @@
 "use server";
 import { getBaseUrl } from "../utils";
-import { createAdminClient, createSessionClient } from "@/appwrite";
 import { cookies } from "next/headers";
-import { ID } from "node-appwrite";
 import { parseStringify } from "../utils";
 
 
@@ -417,17 +415,71 @@ export const newGrocery = async (data: NewGroceryParms) => {
 
 export const updateStudent = async (studentData: NewStudentParms, id: string) => {
   try {
+    // Transform flat guardian data to nested structure
+    const transformedData = {
+      firstName: studentData.firstName,
+      secondName: studentData.secondName,
+      surname: studentData.surname,
+      dateOfBirth: studentData.dateOfBirth,
+      age: studentData.age,
+      gender: studentData.gender,
+      address1: studentData.address1,
+      city: studentData.city,
+      province: studentData.province,
+      postalCode: studentData.postalCode,
+      homeLanguage: studentData.homeLanguage,
+      allergies: studentData.allergies,
+      medicalAidNumber: studentData.medicalAidNumber,
+      medicalAidScheme: studentData.medicalAidScheme,
+      studentClass: studentData.studentClass,
+      studentStatus: studentData.studentStatus,
+      balance: studentData.balance,
+      lastPaid: studentData.lastPaid,
+      guardian1: {
+        relationship: studentData.p1_relationship,
+        firstName: studentData.p1_firstName,
+        surname: studentData.p1_surname,
+        email: studentData.p1_email,
+        phoneNumber: studentData.p1_phoneNumber,
+        idNumber: studentData.p1_idNumber,
+        gender: studentData.p1_gender,
+        dateOfBirth: studentData.p1_dateOfBirth,
+        address1: studentData.p1_address1,
+        city: studentData.p1_city,
+        province: studentData.p1_province,
+        postalCode: studentData.p1_postalCode,
+        occupation: studentData.p1_occupation,
+        workNumber: studentData.p1_workNumber,
+      },
+      guardian2: studentData.p2_firstName ? {
+        relationship: studentData.p2_relationship,
+        firstName: studentData.p2_firstName,
+        surname: studentData.p2_surname,
+        email: studentData.p2_email,
+        phoneNumber: studentData.p2_phoneNumber,
+        idNumber: studentData.p2_idNumber,
+        gender: studentData.p2_gender,
+        dateOfBirth: studentData.p2_dateOfBirth,
+        address1: studentData.p2_address1,
+        city: studentData.p2_city,
+        province: studentData.p2_province,
+        postalCode: studentData.p2_postalCode,
+        occupation: studentData.p2_occupation,
+        workNumber: studentData.p2_workNumber,
+      } : undefined,
+    };
+
     const response = await fetch(`${getBaseUrl()}/api/students/${id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json", // Correct content type
       },
-      body: JSON.stringify(studentData),
+      body: JSON.stringify(transformedData),
     });
 
     if (response.ok) {
       console.log("Student updated successfully!");
-      // You might want to return the response here or handle it further
+      return await response.json();
     } else {
       const errorData = await response.json(); // Read the error response
       throw new Error(`Student update failed: ${errorData.message}`);

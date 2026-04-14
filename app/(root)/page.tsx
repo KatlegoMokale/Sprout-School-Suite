@@ -52,21 +52,23 @@ export default function Dashboard() {
     error: studentsError
   } = useGetStudentsQuery({});
 
-  // Add useEffect hooks to fetch all required data
+  // Add useEffect hooks to fetch available data only
   useEffect(() => {
-    const fetchAllData = async () => {
+    const fetchAvailableData = async () => {
       try {
         setIsLoading(true);
+        // Only fetch students since other APIs may not be available
         await Promise.all([
           dispatch(fetchStudents()),
-          dispatch(fetchClasses()),
-          dispatch(fetchEvents()),
-          dispatch(fetchStuff()),
-          dispatch(fetchTransactions()),
-          dispatch(fetchPettyCash()),
-          dispatch(fetchGroceries()),
-          dispatch(fetchSchoolFeesSetup()),
-          dispatch(fetchStudentSchoolFees())
+          // Comment out other fetches that may cause 404 errors
+          // dispatch(fetchClasses()),
+          // dispatch(fetchEvents()),
+          // dispatch(fetchStuff()),
+          // dispatch(fetchTransactions()),
+          // dispatch(fetchPettyCash()),
+          // dispatch(fetchGroceries()),
+          // dispatch(fetchSchoolFeesSetup()),
+          // dispatch(fetchStudentSchoolFees())
         ]);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -76,7 +78,7 @@ export default function Dashboard() {
       }
     };
 
-    fetchAllData();
+    fetchAvailableData();
   }, [dispatch]);
 
   // Calculate financial data from existing data
@@ -240,9 +242,10 @@ export default function Dashboard() {
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8']
 
-  useEffect(() => {
-    if (studentSchoolFeesStatus === 'idle') dispatch(fetchStudentSchoolFees());
-  }, [dispatch, studentSchoolFeesStatus]);
+  // Comment out the useEffect that tries to fetch student school fees
+  // useEffect(() => {
+  //   if (studentSchoolFeesStatus === 'idle') dispatch(fetchStudentSchoolFees());
+  // }, [dispatch, studentSchoolFeesStatus]);
 
   if (studentsLoading) {
     return <div>Loading...</div>;

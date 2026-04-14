@@ -53,7 +53,7 @@ const Payment: React.FC<PaymentProps> = ({ student }) => {
       setIsLoading(false);
     }
     setFormData(data);
-    console.log("Form data ready for Appwrite:", data);
+    console.log("Form data ready:", data);
   };
 
 

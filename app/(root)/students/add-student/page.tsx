@@ -185,7 +185,7 @@ const NewStudentForm = () => {
       setIsLoading(false);
     }
     setFormData(data);
-    console.log("Form data ready for Appwrite:", data);
+    console.log("Form data ready:", data);
   };
 
   const handleTabChange = (tab: string) => {

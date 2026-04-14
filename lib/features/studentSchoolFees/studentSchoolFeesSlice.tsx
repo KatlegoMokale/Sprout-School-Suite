@@ -4,7 +4,7 @@ import { IStudentFeesSchema } from '@/lib/utils'
 
 export const fetchStudentSchoolFees = createAsyncThunk('studentSchoolFees/fetchStudentSchoolFees', async () => {
   try {
-    const response = await fetch('/api/student-school-fees');
+    const response = await fetch('/api/student-fees');
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }

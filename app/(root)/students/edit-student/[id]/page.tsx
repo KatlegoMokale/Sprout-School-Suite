@@ -24,6 +24,7 @@ export default function EditStudentForm({ params }: { params: Promise<{ id: stri
   const [error, setError] = useState<string | null>(null)
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
   const [formData, setFormData] = useState({})
+  const [studentId, setStudentId] = useState<string>('')
   const router = useRouter()
 
   const studentFormSchema = newStudentFormSchema()
@@ -36,6 +37,7 @@ export default function EditStudentForm({ params }: { params: Promise<{ id: stri
       setIsLoading(true)
       try {
         const unwrappedParams = await params
+        setStudentId(unwrappedParams.id)
         const [classesResponse, studentResponse] = await Promise.all([
           fetch("/api/class"),
           fetch(`/api/students/${unwrappedParams.id}`)
@@ -45,10 +47,63 @@ export default function EditStudentForm({ params }: { params: Promise<{ id: stri
         const studentData = await studentResponse.json()
         
         setClassData(classesData)
-        setFormData(studentData.student)
+        setFormData(studentData)
         
-        // Set form values
-        Object.entries(studentData.student).forEach(([key, value]) => {
+        // Set form values - map nested guardian data to flat form fields
+        const formValues = {
+          firstName: studentData.firstName,
+          secondName: studentData.secondName || '',
+          surname: studentData.surname,
+          dateOfBirth: studentData.dateOfBirth,
+          age: studentData.age,
+          gender: studentData.gender,
+          address1: studentData.address1,
+          city: studentData.city || '',
+          province: studentData.province || '',
+          postalCode: studentData.postalCode || '',
+          homeLanguage: studentData.homeLanguage,
+          allergies: studentData.allergies || '',
+          medicalAidNumber: studentData.medicalAidNumber || '',
+          medicalAidScheme: studentData.medicalAidScheme || '',
+          studentClass: studentData.studentClass,
+          studentStatus: studentData.studentStatus,
+          balance: studentData.balance,
+          lastPaid: studentData.lastPaid || '',
+          
+          // Guardian 1
+          p1_relationship: studentData.guardian1?.relationship || '',
+          p1_firstName: studentData.guardian1?.firstName || '',
+          p1_surname: studentData.guardian1?.surname || '',
+          p1_email: studentData.guardian1?.email || '',
+          p1_phoneNumber: studentData.guardian1?.phoneNumber || '',
+          p1_idNumber: studentData.guardian1?.idNumber || '',
+          p1_gender: studentData.guardian1?.gender || '',
+          p1_dateOfBirth: studentData.guardian1?.dateOfBirth || '',
+          p1_address1: studentData.guardian1?.address1 || '',
+          p1_city: studentData.guardian1?.city || '',
+          p1_province: studentData.guardian1?.province || '',
+          p1_postalCode: studentData.guardian1?.postalCode || '',
+          p1_occupation: studentData.guardian1?.occupation || '',
+          p1_workNumber: studentData.guardian1?.workNumber || '',
+          
+          // Guardian 2
+          p2_relationship: studentData.guardian2?.relationship || '',
+          p2_firstName: studentData.guardian2?.firstName || '',
+          p2_surname: studentData.guardian2?.surname || '',
+          p2_email: studentData.guardian2?.email || '',
+          p2_phoneNumber: studentData.guardian2?.phoneNumber || '',
+          p2_idNumber: studentData.guardian2?.idNumber || '',
+          p2_gender: studentData.guardian2?.gender || '',
+          p2_dateOfBirth: studentData.guardian2?.dateOfBirth || '',
+          p2_address1: studentData.guardian2?.address1 || '',
+          p2_city: studentData.guardian2?.city || '',
+          p2_province: studentData.guardian2?.province || '',
+          p2_postalCode: studentData.guardian2?.postalCode || '',
+          p2_occupation: studentData.guardian2?.occupation || '',
+          p2_workNumber: studentData.guardian2?.workNumber || '',
+        }
+        
+        Object.entries(formValues).forEach(([key, value]) => {
           form.setValue(key as any, value as any)
         })
       } catch (error) {
@@ -71,6 +126,9 @@ export default function EditStudentForm({ params }: { params: Promise<{ id: stri
       age: data.age,
       gender: data.gender,
       address1: data.address1,
+      city: data.city,
+      province: data.province,
+      postalCode: data.postalCode,
       homeLanguage: data.homeLanguage,
       allergies: data.allergies,
       medicalAidNumber: data.medicalAidNumber,
@@ -79,6 +137,9 @@ export default function EditStudentForm({ params }: { params: Promise<{ id: stri
       p1_firstName: data.p1_firstName,
       p1_surname: data.p1_surname,
       p1_address1: data.p1_address1,
+      p1_city: data.p1_city,
+      p1_province: data.p1_province,
+      p1_postalCode: data.p1_postalCode,
       p1_dateOfBirth: data.p1_dateOfBirth,
       p1_gender: data.p1_gender,
       p1_idNumber: data.p1_idNumber,
@@ -90,6 +151,9 @@ export default function EditStudentForm({ params }: { params: Promise<{ id: stri
       p2_firstName: data.p2_firstName,
       p2_surname: data.p2_surname,
       p2_address1: data.p2_address1,
+      p2_city: data.p2_city,
+      p2_province: data.p2_province,
+      p2_postalCode: data.p2_postalCode,
       p2_dateOfBirth: data.p2_dateOfBirth,
       p2_gender: data.p2_gender,
       p2_idNumber: data.p2_idNumber,
@@ -99,6 +163,8 @@ export default function EditStudentForm({ params }: { params: Promise<{ id: stri
       p2_workNumber: data.p2_workNumber,
       p2_relationship: data.p2_relationship,
       studentStatus: data.studentStatus,
+      balance: data.balance,
+      lastPaid: data.lastPaid,
     };
     setFormData(studentData); 
   }
@@ -173,6 +239,15 @@ export default function EditStudentForm({ params }: { params: Promise<{ id: stri
                 </TabsList>
                 <TabsContent value="student" className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Student ID</label>
+                      <input
+                        type="text"
+                        value={studentId}
+                        readOnly
+                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      />
+                    </div>
                     <CustomInput name="firstName" control={form.control} label="Name" placeholder="Enter Child Name" />
                     <CustomInput name="secondName" control={form.control} label="Second Name" placeholder="Enter Child Second Name" />
                     <CustomInput name="surname" control={form.control} label="Surname" placeholder="Enter Child Surname" />
@@ -200,6 +275,9 @@ export default function EditStudentForm({ params }: { params: Promise<{ id: stri
                       ]}
                     />
                     <CustomInput name="address1" control={form.control} label="Address" placeholder="Enter Child Address" />
+                    <CustomInput name="city" control={form.control} label="City" placeholder="City" />
+                    <CustomInput name="province" control={form.control} label="Province" placeholder="Province" />
+                    <CustomInput name="postalCode" control={form.control} label="Postal Code" placeholder="Postal Code" />
                     <CustomInput name="homeLanguage" control={form.control} label="Home Language" placeholder="Home Language" />
                     <CustomInput name="allergies" control={form.control} label="Allergies" placeholder="Allergies" />
                     <CustomInput name="medicalAidNumber" control={form.control} label="Medical Aid Number" placeholder="Medical Aid Number" />
@@ -230,6 +308,8 @@ export default function EditStudentForm({ params }: { params: Promise<{ id: stri
                         { label: "Non-Active", value: "non-active" },
                       ]}
                     />
+                    <CustomInput name="balance" control={form.control} label="Balance" placeholder="Balance" type="number" />
+                    <CustomInput name="lastPaid" control={form.control} label="Last Paid" placeholder="Last Paid" type="date" />
                   </div>
                 </TabsContent>
                 <TabsContent value="guardian1">
@@ -265,6 +345,9 @@ export default function EditStudentForm({ params }: { params: Promise<{ id: stri
                     />
                     <CustomInput name="p1_dateOfBirth" control={form.control} label="Date Of Birth" type="date" placeholder="Enter Date of Birth" />
                     <CustomInput name="p1_address1" control={form.control} label="Address" placeholder="Enter Address" />
+                    <CustomInput name="p1_city" control={form.control} label="City" placeholder="City" />
+                    <CustomInput name="p1_province" control={form.control} label="Province" placeholder="Province" />
+                    <CustomInput name="p1_postalCode" control={form.control} label="Postal Code" placeholder="Postal Code" />
                     <CustomInput name="p1_occupation" control={form.control} label="Employer" placeholder="Enter Employer Name" />
                     <CustomInput name="p1_workNumber" control={form.control} label="Employer Phone Number" placeholder="Enter Employer Phone Number" />
                   </div>
@@ -302,6 +385,9 @@ export default function EditStudentForm({ params }: { params: Promise<{ id: stri
                     />
                     <CustomInput name="p2_dateOfBirth" control={form.control} label="Date Of Birth" type="date" placeholder="Enter Date of Birth" />
                     <CustomInput name="p2_address1" control={form.control} label="Address" placeholder="Enter Address" />
+                    <CustomInput name="p2_city" control={form.control} label="City" placeholder="City" />
+                    <CustomInput name="p2_province" control={form.control} label="Province" placeholder="Province" />
+                    <CustomInput name="p2_postalCode" control={form.control} label="Postal Code" placeholder="Postal Code" />
                     <CustomInput name="p2_occupation" control={form.control} label="Employer" placeholder="Enter Employer Name" />
                     <CustomInput name="p2_workNumber" control={form.control} label="Employer Phone Number" placeholder="Enter Employer Phone Number" />
                   </div>

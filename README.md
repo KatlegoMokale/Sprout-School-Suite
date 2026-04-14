@@ -24,7 +24,8 @@ This all-in-one solution offers a range of features to streamline day-to-day ope
 
 - Frontend & Backend: Next.js
 - Language: TypeScript
-- Database & Authentication: Appwrite
+- **Database: MongoDB**
+- **Authentication: Clerk**
 - Form Validation: Zod
 - Styling: Tailwind CSS
 

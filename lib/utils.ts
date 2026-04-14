@@ -110,6 +110,9 @@ export const newStudentFormSchema = () => {
     age: z.string(), // Age is optional, calculated elsewhere
     gender: z.string().min(1, "Gender is required"),
     address1: z.string().min(1, "Address is required"),
+    city: z.string().optional(),
+    province: z.string().optional(),
+    postalCode: z.string().optional(),
     homeLanguage: z.string().min(1, "Home language is required"),
     allergies: z.string().optional(),
     medicalAidNumber: z.string().optional(),
@@ -129,6 +132,9 @@ export const newStudentFormSchema = () => {
     p1_gender: z.string().min(1, "Gender is required"),
     p1_dateOfBirth: z.string().min(1, "Date of birth is required"),
     p1_address1: z.string().min(1, "Address is required"),
+    p1_city: z.string().optional(),
+    p1_province: z.string().optional(),
+    p1_postalCode: z.string().optional(),
     p1_occupation: z.string().optional(),
     p1_workNumber: z.string().optional(),
 
@@ -142,6 +148,9 @@ export const newStudentFormSchema = () => {
     p2_gender: z.string().optional(),
     p2_dateOfBirth: z.string().optional(),
     p2_address1: z.string().optional(),
+    p2_city: z.string().optional(),
+    p2_province: z.string().optional(),
+    p2_postalCode: z.string().optional(),
     p2_occupation: z.string().optional(),
     p2_workNumber: z.string().optional(),
   });
@@ -266,6 +275,7 @@ export const positionColors = {
   administrator: "bg-blue-500",
 }
 
+/// stuff
 export interface IStuff {
   $id: string;
   firstName: string;
@@ -279,6 +289,7 @@ export interface IStuff {
   position: string;
 }
 
+// class
 export  interface IClass {
   $id: string;
   name : string;
@@ -286,6 +297,7 @@ export  interface IClass {
   teacherName: string;
 }
 
+/// transactions
 export interface ITransactions {
   $id: string;
   studentId: string;
@@ -297,6 +309,7 @@ export interface ITransactions {
   transactionType: string;
 }
 
+/// grocery
 export interface IGrocery {
   $id: string;
   summery: string;
@@ -305,7 +318,7 @@ export interface IGrocery {
   date: string;
 }
 
-
+/// pettyCash
 export interface IPettyCash {
   $id: string;
   itemName: string;
@@ -316,6 +329,7 @@ export interface IPettyCash {
   date: string;
 }
 
+/// events
 export interface IEvent{
   $id: string;
   eventName: string;
@@ -323,7 +337,7 @@ export interface IEvent{
   description: string;
   date: string;
 }
-
+/// eventTransactions
 export interface IEventTransaction{
   $id: string;
   eventId: string
@@ -334,7 +348,7 @@ export interface IEventTransaction{
   quantity: number;
 }
 
-
+/// schoolFeesRegistration
 export interface ISchoolFeesReg {
   $id: string;
   year: number;
@@ -347,7 +361,7 @@ export interface ISchoolFeesReg {
   siblingDiscountPrice: number,
 }
 
-
+///students
 export interface IStudent {
   $id: string;
   firstName: string;
@@ -366,7 +380,7 @@ export interface IStudent {
   medicalAidScheme:string;
   studentClass: string;
 
-
+  ///Make object for parent 1 and parent 2
   p1_relationship: string;
   p1_firstName: string;
   p1_surname: string;
@@ -404,7 +418,7 @@ export interface IStudent {
 }
 
 
-
+///studentFees
 export interface ISchoolFees {
   $id: string
   year: number
@@ -416,6 +430,7 @@ export interface ISchoolFees {
   yearlyFee: number
 }
 
+///studentFeesManagement
 export interface IStudentFeesSchema {
   $id: string; 
   studentId: string;
@@ -429,3 +444,13 @@ export interface IStudentFeesSchema {
   paymentFrequency: string;
   paymentDate: number
 };
+
+///transactions
+export interface ITransactions {
+  $id: string;
+  studentId: string;
+  amount: number;
+  paymentMethod: string;
+  paymentDate: string;
+  feeType: "registration" | "re-registration" | "school-fees";
+}

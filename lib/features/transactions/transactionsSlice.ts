@@ -4,7 +4,7 @@ import {  ITransactions } from '@/lib/utils'
 
 export const fetchTransactions = createAsyncThunk('transactions/fetchTransactions', async () => {
   try {
-    const response = await fetch('/api/transactions');
+    const response = await fetch('/api/fee-transactions');
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }

@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/select"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { MoreHorizontal, PlusCircle, Search, UserPlus, UserRoundIcon as UserRoundPen } from 'lucide-react'
+import CsvStudentImport from "@/components/ui/csv-student-import"
 import {
   Dialog,
   DialogContent,
@@ -149,6 +150,7 @@ export default function StudentManagement() {
                   ))}
                 </SelectContent>
               </Select1>
+              <CsvStudentImport onImportComplete={() => dispatch(fetchStudents())} />
               <Link href="/students/add-student">
                 <Button size="sm">
                   <UserPlus className="h-4 w-4 mr-2" />

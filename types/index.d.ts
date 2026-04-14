@@ -50,6 +50,9 @@ declare type NewStudentParms = {
     age: string;
     gender:string;
     address1: string;
+    city?: string;
+    province?: string;
+    postalCode?: string;
     homeLanguage: string;
     allergies?: string;
     medicalAidNumber?: string;
@@ -68,6 +71,9 @@ declare type NewStudentParms = {
     p1_gender: string;
     p1_dateOfBirth: string;
     p1_address1: string;
+    p1_city?: string;
+    p1_province?: string;
+    p1_postalCode?: string;
     p1_occupation?: string;
     p1_workNumber?:string;
 
@@ -80,6 +86,9 @@ declare type NewStudentParms = {
     p2_gender?: string;
     p2_dateOfBirth?: string;
     p2_address1?: string;
+    p2_city?: string;
+    p2_province?: string;
+    p2_postalCode?: string;
     p2_occupation?: string;
     p2_workNumber?:string;
 
