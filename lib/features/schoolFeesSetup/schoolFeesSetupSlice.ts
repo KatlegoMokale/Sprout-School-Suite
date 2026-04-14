@@ -5,7 +5,7 @@ import { ISchoolFees } from '@/lib/utils'
 
 export const fetchSchoolFeesSetup = createAsyncThunk('schoolFeesSetup/fetchSchoolFeesSetup', async ()=>{
   try {
-    const response = await fetch('/api/school-fees-setup');
+    const response = await fetch('/api/school-fees');
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
@@ -50,8 +50,6 @@ const schoolFeesSetupSlice = createSlice({
 })
 
 const selectSchoolFeesSetupState = (state: { schoolFeesSetup: SchoolFeesSetupState }) => state.schoolFeesSetup;
-
-console.log("schoolFeesSetup ",selectSchoolFeesSetupState);
 
 export const selectSchoolFeesSetup = createSelector(
   selectSchoolFeesSetupState,

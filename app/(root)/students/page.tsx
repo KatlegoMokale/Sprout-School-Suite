@@ -122,6 +122,11 @@ export default function StudentManagement() {
       return { key, direction: 'asc' }
     })
   }
+
+  const getClassName = (studentClass: string) => {
+    if (!studentClass) return "N/A"
+    return classes.find((c) => c.$id === studentClass)?.name || studentClass
+  }
  
   let counter = 0;
   students.forEach(student => {
@@ -232,7 +237,7 @@ export default function StudentManagement() {
                       <TableCell>{student.surname}</TableCell>
                       <TableCell>{student.dateOfBirth}</TableCell>
                       <TableCell>{student.age}</TableCell>
-                      <TableCell>{classes.find((c) => c.$id === student.studentClass)?.name || 'N/A'}</TableCell>
+                      <TableCell>{getClassName(student.studentClass)}</TableCell>
                       <TableCell>{student.p1_firstName} {student.p1_surname}</TableCell>
                       <TableCell>{student.p1_phoneNumber}</TableCell>
                       <TableCell className="text-right">

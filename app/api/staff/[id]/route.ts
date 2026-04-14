@@ -18,7 +18,13 @@ export async function GET(
       );
     }
 
-    return NextResponse.json(staff, { status: 200 });
+    return NextResponse.json(
+      {
+        ...staff,
+        $id: staff._id.toString(),
+      },
+      { status: 200 }
+    );
   } catch (error) {
     return NextResponse.json(
       { message: "Error fetching staff" },

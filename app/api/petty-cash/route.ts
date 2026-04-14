@@ -6,7 +6,11 @@ export async function GET() {
   try {
     await connectToDatabase();
     const items = await PettyCash.find().sort({ createdAt: -1 }).lean();
-    return NextResponse.json(items, { status: 200 });
+    const transformedItems = items.map((item) => ({
+      ...item,
+      $id: item._id.toString(),
+    }));
+    return NextResponse.json(transformedItems, { status: 200 });
   } catch (error) {
     return NextResponse.json(
       { message: "Error fetching petty cash items" },

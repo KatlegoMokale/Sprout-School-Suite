@@ -104,6 +104,14 @@ export default function SchoolFeesView() {
                       <span className="text-muted-foreground">Yearly Fee</span>
                       <span className="font-semibold">ZAR {fee.yearlyFee.toFixed(2)}</span>
                     </div>
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="text-muted-foreground">Sibling Discount</span>
+                      <span className="font-semibold">
+                        {fee.siblingDiscountType === "amount-per-child"
+                          ? `ZAR ${fee.siblingDiscountPrice.toFixed(2)} / child`
+                          : `${fee.siblingDiscountPrice}%`}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </CardContent>

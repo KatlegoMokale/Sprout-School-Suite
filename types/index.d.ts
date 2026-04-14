@@ -58,6 +58,8 @@ declare type NewStudentParms = {
     medicalAidNumber?: string;
     medicalAidScheme?: string;
     studentClass?:string;
+    linkedStudentIds?: string[];
+    autoFeeRegistration?: boolean;
     studentStatus?: string;
     balance?: number;
     lastPaid?: string;
@@ -191,6 +193,7 @@ declare type NewStudentParms = {
     ageUnit: string;
     monthlyFee: number;
     yearlyFee: number,
+    siblingDiscountType: "percentage" | "amount-per-child",
     siblingDiscountPrice: number,
   }
 

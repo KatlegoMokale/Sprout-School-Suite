@@ -4,7 +4,7 @@ import { IClass, IPettyCash } from '@/lib/utils'
 
 export const fetchPettyCash = createAsyncThunk('pettyCash/fetchPettyCash', async () => {
   try {
-    const response = await fetch('/api/pettycash');
+    const response = await fetch('/api/petty-cash');
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }

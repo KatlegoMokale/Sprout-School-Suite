@@ -18,7 +18,13 @@ export async function GET(
       );
     }
 
-    return NextResponse.json(event, { status: 200 });
+    return NextResponse.json(
+      {
+        ...event,
+        $id: event._id.toString(),
+      },
+      { status: 200 }
+    );
   } catch (error) {
     return NextResponse.json(
       { message: "Error fetching event" },

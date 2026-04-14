@@ -56,14 +56,14 @@ export const api = createApi({
     
     // StudentSchoolFees
     getStudentSchoolFees: builder.query({
-      query: () => 'student-school-fees',
+      query: () => 'student-fees',
       providesTags: ['StudentSchoolFees'],
       keepUnusedDataFor: 300,
     }),
     
     // SchoolFeesSetup
     getSchoolFeesSetup: builder.query({
-      query: () => 'school-fees-setup',
+      query: () => 'school-fees',
       providesTags: ['SchoolFeesSetup'],
       keepUnusedDataFor: 300,
     }),

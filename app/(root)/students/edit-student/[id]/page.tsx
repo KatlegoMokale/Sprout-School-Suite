@@ -10,21 +10,34 @@ import { ChevronLeft, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Form } from "@/components/ui/form"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Input } from "@/components/ui/input"
 import CustomInput from "@/components/ui/CustomInput"
 import { Select1, SelectContent, SelectItem, SelectTrigger, SelectValue1 } from "@/components/ui/select"
 import { toast } from "@/hooks/use-toast"
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
-import { IClass, newStudentFormSchema, parseStringify } from "@/lib/utils"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { Checkbox } from "@/components/ui/checkbox"
+import { IClass, IStudent, newStudentFormSchema, parseStringify } from "@/lib/utils"
 import { updateStudent } from "@/lib/actions/user.actions"
 
 export default function EditStudentForm({ params }: { params: Promise<{ id: string }> }) {
   const [classData, setClassData] = useState<IClass[] | null>(null)
+  const [allStudents, setAllStudents] = useState<IStudent[]>([])
+  const [linkedStudentIds, setLinkedStudentIds] = useState<string[]>([])
+  const [linkedSiblingSearch, setLinkedSiblingSearch] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isConfirmOpen, setIsConfirmOpen] = useState(false)
-  const [formData, setFormData] = useState({})
-  const [studentId, setStudentId] = useState<string>('')
+  const [formData, setFormData] = useState<NewStudentParms | null>(null)
+  const [studentId, setStudentId] = useState<string>("")
   const router = useRouter()
 
   const studentFormSchema = newStudentFormSchema()
@@ -38,86 +51,99 @@ export default function EditStudentForm({ params }: { params: Promise<{ id: stri
       try {
         const unwrappedParams = await params
         setStudentId(unwrappedParams.id)
-        const [classesResponse, studentResponse] = await Promise.all([
+
+        const [classesResponse, studentResponse, studentsResponse] = await Promise.all([
           fetch("/api/class"),
-          fetch(`/api/students/${unwrappedParams.id}`)
+          fetch(`/api/students/${unwrappedParams.id}`),
+          fetch("/api/students"),
         ])
-        if (!classesResponse.ok || !studentResponse.ok) throw new Error("Failed to fetch data")
+
+        if (!classesResponse.ok || !studentResponse.ok || !studentsResponse.ok) {
+          throw new Error("Failed to fetch data")
+        }
+
         const classesData = await classesResponse.json()
         const studentData = await studentResponse.json()
-        
+        const studentsData = await studentsResponse.json()
+
         setClassData(classesData)
-        setFormData(studentData)
-        
-        // Set form values - map nested guardian data to flat form fields
+        setAllStudents(studentsData)
+        setLinkedStudentIds(studentData.linkedStudentIds || [])
+
         const formValues = {
           firstName: studentData.firstName,
-          secondName: studentData.secondName || '',
+          secondName: studentData.secondName || "",
           surname: studentData.surname,
           dateOfBirth: studentData.dateOfBirth,
           age: studentData.age,
           gender: studentData.gender,
           address1: studentData.address1,
-          city: studentData.city || '',
-          province: studentData.province || '',
-          postalCode: studentData.postalCode || '',
+          city: studentData.city || "",
+          province: studentData.province || "",
+          postalCode: studentData.postalCode || "",
           homeLanguage: studentData.homeLanguage,
-          allergies: studentData.allergies || '',
-          medicalAidNumber: studentData.medicalAidNumber || '',
-          medicalAidScheme: studentData.medicalAidScheme || '',
+          allergies: studentData.allergies || "",
+          medicalAidNumber: studentData.medicalAidNumber || "",
+          medicalAidScheme: studentData.medicalAidScheme || "",
           studentClass: studentData.studentClass,
           studentStatus: studentData.studentStatus,
           balance: studentData.balance,
-          lastPaid: studentData.lastPaid || '',
-          
-          // Guardian 1
-          p1_relationship: studentData.guardian1?.relationship || '',
-          p1_firstName: studentData.guardian1?.firstName || '',
-          p1_surname: studentData.guardian1?.surname || '',
-          p1_email: studentData.guardian1?.email || '',
-          p1_phoneNumber: studentData.guardian1?.phoneNumber || '',
-          p1_idNumber: studentData.guardian1?.idNumber || '',
-          p1_gender: studentData.guardian1?.gender || '',
-          p1_dateOfBirth: studentData.guardian1?.dateOfBirth || '',
-          p1_address1: studentData.guardian1?.address1 || '',
-          p1_city: studentData.guardian1?.city || '',
-          p1_province: studentData.guardian1?.province || '',
-          p1_postalCode: studentData.guardian1?.postalCode || '',
-          p1_occupation: studentData.guardian1?.occupation || '',
-          p1_workNumber: studentData.guardian1?.workNumber || '',
-          
-          // Guardian 2
-          p2_relationship: studentData.guardian2?.relationship || '',
-          p2_firstName: studentData.guardian2?.firstName || '',
-          p2_surname: studentData.guardian2?.surname || '',
-          p2_email: studentData.guardian2?.email || '',
-          p2_phoneNumber: studentData.guardian2?.phoneNumber || '',
-          p2_idNumber: studentData.guardian2?.idNumber || '',
-          p2_gender: studentData.guardian2?.gender || '',
-          p2_dateOfBirth: studentData.guardian2?.dateOfBirth || '',
-          p2_address1: studentData.guardian2?.address1 || '',
-          p2_city: studentData.guardian2?.city || '',
-          p2_province: studentData.guardian2?.province || '',
-          p2_postalCode: studentData.guardian2?.postalCode || '',
-          p2_occupation: studentData.guardian2?.occupation || '',
-          p2_workNumber: studentData.guardian2?.workNumber || '',
+          lastPaid: studentData.lastPaid || "",
+
+          p1_relationship: studentData.guardian1?.relationship || "",
+          p1_firstName: studentData.guardian1?.firstName || "",
+          p1_surname: studentData.guardian1?.surname || "",
+          p1_email: studentData.guardian1?.email || "",
+          p1_phoneNumber: studentData.guardian1?.phoneNumber || "",
+          p1_idNumber: studentData.guardian1?.idNumber || "",
+          p1_gender: studentData.guardian1?.gender || "",
+          p1_dateOfBirth: studentData.guardian1?.dateOfBirth || "",
+          p1_address1: studentData.guardian1?.address1 || "",
+          p1_city: studentData.guardian1?.city || "",
+          p1_province: studentData.guardian1?.province || "",
+          p1_postalCode: studentData.guardian1?.postalCode || "",
+          p1_occupation: studentData.guardian1?.occupation || "",
+          p1_workNumber: studentData.guardian1?.workNumber || "",
+
+          p2_relationship: studentData.guardian2?.relationship || "",
+          p2_firstName: studentData.guardian2?.firstName || "",
+          p2_surname: studentData.guardian2?.surname || "",
+          p2_email: studentData.guardian2?.email || "",
+          p2_phoneNumber: studentData.guardian2?.phoneNumber || "",
+          p2_idNumber: studentData.guardian2?.idNumber || "",
+          p2_gender: studentData.guardian2?.gender || "",
+          p2_dateOfBirth: studentData.guardian2?.dateOfBirth || "",
+          p2_address1: studentData.guardian2?.address1 || "",
+          p2_city: studentData.guardian2?.city || "",
+          p2_province: studentData.guardian2?.province || "",
+          p2_postalCode: studentData.guardian2?.postalCode || "",
+          p2_occupation: studentData.guardian2?.occupation || "",
+          p2_workNumber: studentData.guardian2?.workNumber || "",
         }
-        
+
         Object.entries(formValues).forEach(([key, value]) => {
           form.setValue(key as any, value as any)
         })
-      } catch (error) {
-        console.error("Error fetching data:", error)
+      } catch (fetchError) {
+        console.error("Error fetching data:", fetchError)
         setError("Failed to fetch data. Please try again.")
       } finally {
         setIsLoading(false)
       }
     }
+
     fetchData()
   }, [params, form])
 
+  const toggleLinkedStudent = (id: string, checked: boolean) => {
+    setLinkedStudentIds((prev) =>
+      checked ? Array.from(new Set([...prev, id])) : prev.filter((item) => item !== id)
+    )
+  }
+
   const onSubmit = async (data: z.infer<typeof studentFormSchema>) => {
     setIsConfirmOpen(true)
+
     const studentData: NewStudentParms = {
       firstName: data.firstName,
       secondName: data.secondName,
@@ -134,6 +160,8 @@ export default function EditStudentForm({ params }: { params: Promise<{ id: stri
       medicalAidNumber: data.medicalAidNumber,
       medicalAidScheme: data.medicalAidScheme,
       studentClass: data.studentClass,
+      linkedStudentIds,
+
       p1_firstName: data.p1_firstName,
       p1_surname: data.p1_surname,
       p1_address1: data.p1_address1,
@@ -148,6 +176,7 @@ export default function EditStudentForm({ params }: { params: Promise<{ id: stri
       p1_email: data.p1_email,
       p1_workNumber: data.p1_workNumber,
       p1_relationship: data.p1_relationship,
+
       p2_firstName: data.p2_firstName,
       p2_surname: data.p2_surname,
       p2_address1: data.p2_address1,
@@ -162,44 +191,78 @@ export default function EditStudentForm({ params }: { params: Promise<{ id: stri
       p2_email: data.p2_email,
       p2_workNumber: data.p2_workNumber,
       p2_relationship: data.p2_relationship,
+
       studentStatus: data.studentStatus,
       balance: data.balance,
       lastPaid: data.lastPaid,
-    };
-    setFormData(studentData); 
+    }
+
+    setFormData(studentData)
   }
 
   const handleConfirmUpdate = async () => {
+    if (!formData) return
+
     setIsLoading(true)
     try {
       const unwrappedParams = await params
-      await updateStudent(formData as NewStudentParms, unwrappedParams.id)
+      await updateStudent(formData, unwrappedParams.id)
+
+      // Keep sibling links bidirectional.
+      const linkResponse = await fetch("/api/students/link-siblings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          studentId: unwrappedParams.id,
+          siblingIds: linkedStudentIds,
+        }),
+      })
+
+      if (!linkResponse.ok) {
+        const linkData = await linkResponse.json()
+        throw new Error(linkData?.message || "Failed to save sibling links")
+      }
+
       toast({
         title: "Success",
         description: "Student information has been updated.",
       })
-      router.push('/students')
-    } catch (error) {
-      console.error("Error updating student:", error)
+      router.push("/students")
+    } catch (updateError) {
+      console.error("Error updating student:", updateError)
       setError("An error occurred while updating the student information.")
+      toast({
+        title: "Error",
+        description:
+          updateError instanceof Error
+            ? updateError.message
+            : "Failed to update student.",
+        variant: "destructive",
+      })
     } finally {
       setIsLoading(false)
     }
   }
+
   const calculateAge = (birthDate: string): string => {
     const today = new Date()
     const birth = new Date(birthDate)
-    let months = (today.getFullYear() - birth.getFullYear()) * 12 + (today.getMonth() - birth.getMonth())
-    
+    let months =
+      (today.getFullYear() - birth.getFullYear()) * 12 +
+      (today.getMonth() - birth.getMonth())
+
     if (months < 12) {
-      return `${months} month${months !== 1 ? 's' : ''}`
-    } else {
-      let years = Math.floor(months / 12)
-      if (today.getMonth() < birth.getMonth() || (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate())) {
-        years -= 1
-      }
-      return parseStringify(`${years} year${years !== 1 ? 's' : ''}`)
+      return `${months} month${months !== 1 ? "s" : ""}`
     }
+
+    let years = Math.floor(months / 12)
+    if (
+      today.getMonth() < birth.getMonth() ||
+      (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate())
+    ) {
+      years -= 1
+    }
+    return parseStringify(`${years} year${years !== 1 ? "s" : ""}`)
   }
 
   const handleClassChange = (value: string) => {
@@ -220,7 +283,10 @@ export default function EditStudentForm({ params }: { params: Promise<{ id: stri
 
   return (
     <div className="flex flex-col px-4">
-      <Link href="/students" className="flex items-center text-sm text-muted-foreground hover:text-primary transition-colors">
+      <Link
+        href="/students"
+        className="flex items-center text-sm text-muted-foreground hover:text-primary transition-colors"
+      >
         <ChevronLeft className="mr-2 h-4 w-4" />
         Back to Students
       </Link>
@@ -231,91 +297,18 @@ export default function EditStudentForm({ params }: { params: Promise<{ id: stri
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-<<<<<<< HEAD
-              <Tabs defaultValue="student">
-                <TabsList className="grid w-full grid-cols-3">
-                  <TabsTrigger value="student">Student Information</TabsTrigger>
-                  <TabsTrigger value="guardian1">Guardian 1</TabsTrigger>
-                  <TabsTrigger value="guardian2">Guardian 2</TabsTrigger>
-                </TabsList>
-                <TabsContent value="student" className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Student ID</label>
-                      <input
-                        type="text"
-                        value={studentId}
-                        readOnly
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                      />
-                    </div>
-                    <CustomInput name="firstName" control={form.control} label="Name" placeholder="Enter Child Name" />
-                    <CustomInput name="secondName" control={form.control} label="Second Name" placeholder="Enter Child Second Name" />
-                    <CustomInput name="surname" control={form.control} label="Surname" placeholder="Enter Child Surname" />
-                    <CustomInput
-                      name="dateOfBirth"
-                      control={form.control}
-                      label="Date of Birth"
-                      type="date"
-                      placeholder="Enter Child Date of Birth"
-                      onChange={(e) => {
-                        const age = calculateAge(e.target.value)
-                        form.setValue("age", age)
-                      }}
-                    />
-                    <CustomInput name="age" control={form.control} label="Age" placeholder="Age will be calculated" readonly={true} />
-                    <CustomInput
-                      name="gender"
-                      control={form.control}
-                      label="Gender"
-                      placeholder="Select Gender"
-                      select={true}
-                      options={[
-                        { label: "Male", value: "Male" },
-                        { label: "Female", value: "Female" },
-                      ]}
-                    />
-                    <CustomInput name="address1" control={form.control} label="Address" placeholder="Enter Child Address" />
-                    <CustomInput name="city" control={form.control} label="City" placeholder="City" />
-                    <CustomInput name="province" control={form.control} label="Province" placeholder="Province" />
-                    <CustomInput name="postalCode" control={form.control} label="Postal Code" placeholder="Postal Code" />
-                    <CustomInput name="homeLanguage" control={form.control} label="Home Language" placeholder="Home Language" />
-                    <CustomInput name="allergies" control={form.control} label="Allergies" placeholder="Allergies" />
-                    <CustomInput name="medicalAidNumber" control={form.control} label="Medical Aid Number" placeholder="Medical Aid Number" />
-                    <CustomInput name="medicalAidScheme" control={form.control} label="Medical Aid Scheme" placeholder="Medical Aid Scheme" />
-                    <div className="form-item">
-                      <div className="text-md font-semibold text-gray-600">Class</div>
-                      <Select1 onValueChange={handleClassChange} value={form.getValues("studentClass")}>
-                        <SelectTrigger className="w-full">
-                          <SelectValue1 placeholder="Select Class" />
-                        </SelectTrigger>
-                        <SelectContent className="bg-white">
-                          {classData?.map((classItem) => (
-                            <SelectItem key={classItem.$id} value={classItem.$id}>
-                              {classItem.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select1>
-                    </div>
-                    <CustomInput
-                      name="studentStatus"
-                      control={form.control}
-                      label="Student Status"
-                      placeholder="Student Status"
-                      select={true}
-                      options={[
-                        { label: "Active", value: "active" },
-                        { label: "Non-Active", value: "non-active" },
-                      ]}
-                    />
-                    <CustomInput name="balance" control={form.control} label="Balance" placeholder="Balance" type="number" />
-                    <CustomInput name="lastPaid" control={form.control} label="Last Paid" placeholder="Last Paid" type="date" />
-=======
-              {/* Student Information Section */}
               <div className="bg-orange-50 rounded-lg p-5">
                 <h2 className="text-xl font-semibold mb-4">Student Information</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Student ID</label>
+                    <input
+                      type="text"
+                      value={studentId}
+                      readOnly
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    />
+                  </div>
                   <CustomInput name="firstName" control={form.control} label="Name" placeholder="Enter Child Name" />
                   <CustomInput name="secondName" control={form.control} label="Second Name" placeholder="Enter Child Second Name" />
                   <CustomInput name="surname" control={form.control} label="Surname" placeholder="Enter Child Surname" />
@@ -343,6 +336,9 @@ export default function EditStudentForm({ params }: { params: Promise<{ id: stri
                     ]}
                   />
                   <CustomInput name="address1" control={form.control} label="Address" placeholder="Enter Child Address" />
+                  <CustomInput name="city" control={form.control} label="City" placeholder="City" />
+                  <CustomInput name="province" control={form.control} label="Province" placeholder="Province" />
+                  <CustomInput name="postalCode" control={form.control} label="Postal Code" placeholder="Postal Code" />
                   <CustomInput name="homeLanguage" control={form.control} label="Home Language" placeholder="Home Language" />
                   <CustomInput name="allergies" control={form.control} label="Allergies" placeholder="Allergies" />
                   <CustomInput name="medicalAidNumber" control={form.control} label="Medical Aid Number" placeholder="Medical Aid Number" />
@@ -361,7 +357,6 @@ export default function EditStudentForm({ params }: { params: Promise<{ id: stri
                         ))}
                       </SelectContent>
                     </Select1>
->>>>>>> b2c4f0624175df52a3e79d2343e5ed6ba7282bbc
                   </div>
                   <CustomInput
                     name="studentStatus"
@@ -374,12 +369,50 @@ export default function EditStudentForm({ params }: { params: Promise<{ id: stri
                       { label: "Non-Active", value: "non-active" },
                     ]}
                   />
+                  <CustomInput name="balance" control={form.control} label="Balance" placeholder="Balance" type="number" />
+                  <CustomInput name="lastPaid" control={form.control} label="Last Paid" placeholder="Last Paid" type="date" />
                 </div>
               </div>
 
-              {/* Guardians Section */}
+              <div className="bg-orange-50 rounded-lg p-5">
+                <h2 className="text-xl font-semibold mb-4">Linked Siblings</h2>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Select siblings linked to this child.
+                </p>
+                <Input
+                  placeholder="Search sibling by name..."
+                  value={linkedSiblingSearch}
+                  onChange={(e) => setLinkedSiblingSearch(e.target.value)}
+                  className="mb-3"
+                />
+                <div className="max-h-52 overflow-y-auto space-y-2">
+                  {allStudents
+                    .filter((student) => student.$id !== studentId)
+                    .filter((student) =>
+                      `${student.firstName} ${student.surname}`
+                        .toLowerCase()
+                        .includes(linkedSiblingSearch.toLowerCase())
+                    )
+                    .map((student) => {
+                      const checked = linkedStudentIds.includes(student.$id)
+                      return (
+                        <div key={student.$id} className="flex items-center space-x-2">
+                          <Checkbox
+                            checked={checked}
+                            onCheckedChange={(value) =>
+                              toggleLinkedStudent(student.$id, Boolean(value))
+                            }
+                          />
+                          <span className="text-sm">
+                            {student.firstName} {student.surname}
+                          </span>
+                        </div>
+                      )
+                    })}
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Guardian 1 */}
                 <div className="bg-orange-50 rounded-lg p-5">
                   <h2 className="text-xl font-semibold mb-4">Guardian 1</h2>
                   <div className="grid grid-cols-1 gap-4">
@@ -422,7 +455,6 @@ export default function EditStudentForm({ params }: { params: Promise<{ id: stri
                   </div>
                 </div>
 
-                {/* Guardian 2 */}
                 <div className="bg-orange-50 rounded-lg p-5">
                   <h2 className="text-xl font-semibold mb-4">Guardian 2</h2>
                   <div className="grid grid-cols-1 gap-4">
@@ -466,7 +498,11 @@ export default function EditStudentForm({ params }: { params: Promise<{ id: stri
                 </div>
               </div>
 
-              <Button type="submit" className="w-full transition-colors hover:bg-primary/90 bg-green-200 hover:bg-green-300" disabled={isLoading}>
+              <Button
+                type="submit"
+                className="w-full transition-colors hover:bg-primary/90 bg-green-200 hover:bg-green-300"
+                disabled={isLoading}
+              >
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -480,18 +516,26 @@ export default function EditStudentForm({ params }: { params: Promise<{ id: stri
           </Form>
         </CardContent>
       </Card>
+
       <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
-      <AlertDialogTitle className="hidden">Confirm Update</AlertDialogTitle>
         <AlertDialogContent>
-          <AlertDialogHeader>Confirm Update</AlertDialogHeader>
-          <AlertDialogDescription>
-            Are you sure you want to update this student&apos;s information?
-          </AlertDialogDescription>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Update</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to update this student&apos;s information?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="hover:bg-slate-200" onClick={() => setIsConfirmOpen(false)}>
+            <AlertDialogCancel
+              className="hover:bg-slate-200"
+              onClick={() => setIsConfirmOpen(false)}
+            >
               Cancel
             </AlertDialogCancel>
-            <AlertDialogAction className="bg-orange-200 hover:bg-orange-300" onClick={handleConfirmUpdate}>
+            <AlertDialogAction
+              className="bg-orange-200 hover:bg-orange-300"
+              onClick={handleConfirmUpdate}
+            >
               Confirm
             </AlertDialogAction>
           </AlertDialogFooter>

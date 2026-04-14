@@ -47,7 +47,7 @@ export default function StaffSalaryManagement() {
   useEffect(() => {
     const fetchStaffMembers = async () => {
       try {
-        const response = await fetch('/api/stuff')
+        const response = await fetch('/api/staff')
         if (!response.ok) throw new Error('Failed to fetch staff members')
         const data = await response.json()
         setStaffMembers(data)

@@ -56,6 +56,7 @@ export interface IStudent extends Document {
   medicalAidScheme?: string;
   studentClass: string;
   studentStatus: "active" | "non-active";
+  linkedStudentIds?: string[];
   balance: number;
   lastPaid?: string;
   guardian1: IGuardian;
@@ -84,6 +85,7 @@ const StudentSchema = new Schema<IStudent>(
       enum: ["active", "non-active"],
       default: "active",
     },
+    linkedStudentIds: [{ type: String }],
     balance: { type: Number, default: 0 },
     lastPaid: { type: String },
 

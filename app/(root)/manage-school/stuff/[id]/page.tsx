@@ -55,15 +55,15 @@ const EditStuff = ({ params }: { params: Promise<{ id: string }> }) => {
       try {
         const unwrappedParams = await params;
         const [stuffResponse] = await Promise.all([
-          fetch(`/api/stuff/${unwrappedParams.id}`),
+          fetch(`/api/staff/${unwrappedParams.id}`),
         ]);
         if (!stuffResponse.ok) throw new Error("Failed to fetch stuff");
         const stuffData = await stuffResponse.json();
 
-        setStuffData(stuffData.stuff);
-        console.log("Stuff Data:", stuffData.stuff);
+        setStuffData(stuffData);
+        console.log("Stuff Data:", stuffData);
 
-        Object.entries(stuffData.stuff).forEach(([key, value]) => {
+        Object.entries(stuffData).forEach(([key, value]) => {
           form.setValue(key as any, value as any);
         });
       } catch (error) {

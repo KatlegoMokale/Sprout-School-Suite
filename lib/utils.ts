@@ -221,6 +221,7 @@ export const schoolFeesSchema = () => z.object({
   ageUnit: z.enum(["months", "years"]),
   monthlyFee: z.number(),
   yearlyFee: z.number(),
+  siblingDiscountType: z.enum(["percentage", "amount-per-child"]),
   siblingDiscountPrice: z.number(),
 });
 
@@ -358,6 +359,7 @@ export interface ISchoolFeesReg {
   ageUnit: string;
   monthlyFee: number;
   yearlyFee: number,
+  siblingDiscountType: "percentage" | "amount-per-child",
   siblingDiscountPrice: number,
 }
 
@@ -379,6 +381,7 @@ export interface IStudent {
   medicalAidNumber: string;
   medicalAidScheme:string;
   studentClass: string;
+  linkedStudentIds?: string[];
 
   ///Make object for parent 1 and parent 2
   p1_relationship: string;

@@ -4,7 +4,7 @@ import { IEvent } from '@/lib/utils'
 
 export const fetchEvents = createAsyncThunk('events/fetchEvents', async () => {
   try {
-    const response = await fetch('/api/event');
+    const response = await fetch('/api/events');
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }

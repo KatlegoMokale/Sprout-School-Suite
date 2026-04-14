@@ -6,7 +6,11 @@ export async function GET() {
   try {
     await connectToDatabase();
     const groceries = await Grocery.find().sort({ createdAt: -1 }).lean();
-    return NextResponse.json(groceries, { status: 200 });
+    const transformedGroceries = groceries.map((grocery) => ({
+      ...grocery,
+      $id: grocery._id.toString(),
+    }));
+    return NextResponse.json(transformedGroceries, { status: 200 });
   } catch (error) {
     return NextResponse.json(
       { message: "Error fetching groceries" },

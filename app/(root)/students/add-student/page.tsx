@@ -166,17 +166,26 @@ const NewStudentForm = () => {
     setIsLoading(true);
     try {
       const addNewStudent = await newStudent(data);
-      console.log("Add new Student " + addNewStudent);
+      const autoRegistration = addNewStudent?.autoRegistration;
 
-      toast({
-        title: "Success!",
-        description:
-          "You have successfully added " +
-          data.firstName +
-          " " +
-          data.surname +
-          " to the system.",
-      });
+      if (autoRegistration?.enabled && autoRegistration?.created) {
+        toast({
+          title: "Success!",
+          description: `${data.firstName} ${data.surname} was added and auto-linked to this year's fee plan.`,
+        });
+      } else if (autoRegistration?.enabled && !autoRegistration?.created) {
+        toast({
+          title: "Student Added (Fee Setup Needed)",
+          description: `${data.firstName} ${data.surname} was added, but no matching fee plan was found for this year.`,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Success!",
+          description: `${data.firstName} ${data.surname} was added to the system.`,
+        });
+      }
+
       form.reset();
       setShowConfirmation(true);
     } catch (error) {

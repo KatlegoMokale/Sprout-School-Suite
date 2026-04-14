@@ -6,7 +6,11 @@ export async function GET() {
   try {
     await connectToDatabase();
     const classes = await Class.find().sort({ createdAt: -1 }).lean();
-    return NextResponse.json(classes, { status: 200 });
+    const transformedClasses = classes.map((classItem) => ({
+      ...classItem,
+      $id: classItem._id.toString(),
+    }));
+    return NextResponse.json(transformedClasses, { status: 200 });
   } catch (error) {
     return NextResponse.json(
       { message: "Error fetching classes" },

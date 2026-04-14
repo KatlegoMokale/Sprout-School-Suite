@@ -38,10 +38,10 @@ export default function EditEventForm({ params }: { params: { id: string } }) {
     const fetchEvent = async () => {
       setIsLoading(true)
       try {
-        const response = await fetch(`/api/event/${params.id}`)
+        const response = await fetch(`/api/events/${params.id}`)
         if (!response.ok) throw new Error("Failed to fetch event")
         const data = await response.json()
-        const eventData = data.data
+        const eventData = data
 
         form.reset({
           eventName: eventData.eventName,
@@ -63,7 +63,7 @@ export default function EditEventForm({ params }: { params: { id: string } }) {
   const onSubmit = async (data: z.infer<typeof formSchema>) => {
     setIsLoading(true)
     try {
-      const response = await fetch(`/api/event/${params.id}`, {
+      const response = await fetch(`/api/events/${params.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

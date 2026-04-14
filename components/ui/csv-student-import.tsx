@@ -206,70 +206,127 @@ function parseCSVLine(line: string): string[] {
 
 function parseCSV(csvText: string): ParsedStudent[] {
   const lines = csvText.split(/\r?\n/).filter((line) => line.trim() !== "")
-
   if (lines.length < 2) return []
 
-  // Skip header row
+  const header = parseCSVLine(lines[0]).map((h) => h.toLowerCase())
+  const isStatementStyleCsv = header.includes("surname and name")
   const dataLines = lines.slice(1)
 
-  return dataLines.map((line) => {
-    const columns = parseCSVLine(line)
-
-    // Column 2: Child's name AND surname
-    const childFullName = columns[2] || ""
-    const { firstName, secondName, surname } = splitNameAndSurname(childFullName)
-
-    // Column 3: Date of birth
-    const dob = parseDate(columns[3] || "")
-    const age = calculateAge(dob)
-
-    // Column 10: Parent 1 full name and surname
-    const p1FullName = columns[10] || ""
-    const p1Name = splitParentName(p1FullName)
-
-    // Column 17: Parent 2 full name and surname
-    const p2FullName = columns[17] || ""
-    const p2Name = splitParentName(p2FullName)
-
-    // The CSV "ID/Passport Number" (col 24) is the authorized pickup person's ID.
-    // We also assign it to p1_idNumber since the CSV registration form doesn't
-    // collect separate parent IDs. p2_idNumber is left empty.
-    const idPassport = columns[24] || ""
-
-    return {
-      firstName,
-      secondName,
-      surname,
-      dateOfBirth: dob,
-      age,
-      gender: columns[4] || "",
-      homeLanguage: columns[5] || "",
-      allergies: columns[8] || "",
-      address1: columns[7] || "",
-      p1_relationship: columns[9] || "",
-      p1_firstName: p1Name.firstName,
-      p1_surname: p1Name.surname,
-      p1_dateOfBirth: parseDate(columns[11] || ""),
-      p1_phoneNumber: columns[12] || "",
-      p1_whatsapp: columns[13] || "",
-      p1_email: columns[14] || "",
-      p1_address1: columns[15] || "",
-      p1_idNumber: idPassport,
-      p2_relationship: columns[16] || "",
-      p2_firstName: p2Name.firstName,
-      p2_surname: p2Name.surname,
-      p2_dateOfBirth: parseDate(columns[18] || ""),
-      p2_phoneNumber: columns[19] || "",
-      p2_whatsapp: columns[20] || "",
-      p2_email: columns[21] || "",
-      p2_address1: columns[22] || "",
-      p2_idNumber: "",
-      emergency_name: columns[23] || "",
-      emergency_idNumber: idPassport,
-      emergency_address: columns[25] || "",
-      emergency_phone: columns[26] || "",
+  const parseStatementName = (fullName: string) => {
+    const parts = fullName.trim().split(/\s+/)
+    if (parts.length === 0 || !parts[0]) {
+      return { firstName: "", secondName: "", surname: "" }
     }
-  })
+    if (parts.length === 1) {
+      return { firstName: "", secondName: "", surname: parts[0] }
+    }
+    return {
+      surname: parts[0],
+      firstName: parts[1],
+      secondName: parts.slice(2).join(" "),
+    }
+  }
+
+  const students = dataLines
+    .map((line) => parseCSVLine(line))
+    .filter((columns) => columns.some((value) => value.trim() !== ""))
+    .map((columns) => {
+      if (isStatementStyleCsv) {
+        // Format: NO.;SURNAME AND NAME;Email adress;AGE/ CLASS;...;DATE OF BIRTH;...
+        const fullName = columns[1] || ""
+        const { firstName, secondName, surname } = parseStatementName(fullName)
+        const dob = parseDate(columns[6] || "")
+        const age = calculateAge(dob)
+
+        return {
+          firstName,
+          secondName,
+          surname,
+          dateOfBirth: dob,
+          age,
+          gender: "Not specified",
+          homeLanguage: "Not specified",
+          allergies: "",
+          address1: "Address not provided",
+          p1_relationship: "Guardian",
+          p1_firstName: firstName || "Guardian",
+          p1_surname: surname || "",
+          p1_dateOfBirth: "",
+          p1_phoneNumber: "",
+          p1_whatsapp: "",
+          p1_email: columns[2] || "",
+          p1_address1: "Address not provided",
+          p1_idNumber: "",
+          p2_relationship: "",
+          p2_firstName: "",
+          p2_surname: "",
+          p2_dateOfBirth: "",
+          p2_phoneNumber: "",
+          p2_whatsapp: "",
+          p2_email: "",
+          p2_address1: "",
+          p2_idNumber: "",
+          emergency_name: "",
+          emergency_idNumber: "",
+          emergency_address: "",
+          emergency_phone: "",
+        }
+      }
+
+      // Original registration-form format
+      const childFullName = columns[2] || ""
+      const { firstName, secondName, surname } = splitNameAndSurname(childFullName)
+      const dob = parseDate(columns[3] || "")
+      const age = calculateAge(dob)
+      const p1FullName = columns[10] || ""
+      const p1Name = splitParentName(p1FullName)
+      const p2FullName = columns[17] || ""
+      const p2Name = splitParentName(p2FullName)
+      const idPassport = columns[24] || ""
+
+      return {
+        firstName,
+        secondName,
+        surname,
+        dateOfBirth: dob,
+        age,
+        gender: columns[4] || "",
+        homeLanguage: columns[5] || "",
+        allergies: columns[8] || "",
+        address1: columns[7] || "",
+        p1_relationship: columns[9] || "",
+        p1_firstName: p1Name.firstName,
+        p1_surname: p1Name.surname,
+        p1_dateOfBirth: parseDate(columns[11] || ""),
+        p1_phoneNumber: columns[12] || "",
+        p1_whatsapp: columns[13] || "",
+        p1_email: columns[14] || "",
+        p1_address1: columns[15] || "",
+        p1_idNumber: idPassport,
+        p2_relationship: columns[16] || "",
+        p2_firstName: p2Name.firstName,
+        p2_surname: p2Name.surname,
+        p2_dateOfBirth: parseDate(columns[18] || ""),
+        p2_phoneNumber: columns[19] || "",
+        p2_whatsapp: columns[20] || "",
+        p2_email: columns[21] || "",
+        p2_address1: columns[22] || "",
+        p2_idNumber: "",
+        emergency_name: columns[23] || "",
+        emergency_idNumber: idPassport,
+        emergency_address: columns[25] || "",
+        emergency_phone: columns[26] || "",
+      }
+    })
+    .filter((student) => {
+      return (
+        student.firstName.trim() !== "" &&
+        student.surname.trim() !== "" &&
+        student.dateOfBirth.trim() !== ""
+      )
+    })
+
+  return students
 }
 
 interface CsvStudentImportProps {
@@ -366,7 +423,8 @@ export default function CsvStudentImport({ onImportComplete }: CsvStudentImportP
           allergies: student.allergies,
           medicalAidNumber: "",
           medicalAidScheme: "",
-          studentClass: "Default Class", // Required field, set default
+          studentClass: "Imported",
+          autoFeeRegistration: false,
           studentStatus: "active",
           balance: 0,
           lastPaid: "",

@@ -6,7 +6,11 @@ export async function GET() {
   try {
     await connectToDatabase();
     const staff = await Staff.find().sort({ createdAt: -1 }).lean();
-    return NextResponse.json(staff, { status: 200 });
+    const transformedStaff = staff.map((member) => ({
+      ...member,
+      $id: member._id.toString(),
+    }));
+    return NextResponse.json(transformedStaff, { status: 200 });
   } catch (error) {
     return NextResponse.json(
       { message: "Error fetching staff" },

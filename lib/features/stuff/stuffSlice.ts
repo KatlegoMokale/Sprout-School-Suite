@@ -4,7 +4,7 @@ import { IStuff } from '@/lib/utils'
 
 export const fetchStuff = createAsyncThunk('stuff/fetchStuff', async () => {
   try {
-    const response = await fetch('/api/stuff');
+    const response = await fetch('/api/staff');
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }

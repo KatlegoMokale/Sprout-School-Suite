@@ -4,7 +4,7 @@ import { IGrocery } from '@/lib/utils'
 
 export const fetchGroceries = createAsyncThunk('grocery/fetchGroceries', async () => {
   try {
-    const response = await fetch('/api/grocery');
+    const response = await fetch('/api/groceries');
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }

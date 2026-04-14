@@ -100,7 +100,7 @@ export const newClass = async (classData: NewClassParms) => {
       const response = await fetch(`${getBaseUrl()}/api/class`, {
           method: "POST",
           headers: {
-              "Content-Type": "application.json",
+              "Content-Type": "application/json",
           },
           body: JSON.stringify(classData),
       });
@@ -119,28 +119,29 @@ export const newClass = async (classData: NewClassParms) => {
 export const newStuff = async (stuffData: NewStuffParams) => {
   console.log("stuff", stuffData);
   try {
-      const response = await fetch(`${getBaseUrl()}/api/stuff`, {
+      const response = await fetch(`${getBaseUrl()}/api/staff`, {
           method: "POST",
           headers: {
-              "Content-Type": "application.json",
+              "Content-Type": "application/json",
           },
           body: JSON.stringify(stuffData),
       });
-      if (response.ok) {
-          console.log("Stuff added successfully!");
-        } else {
-          console.error("Stuff submission failed.");
-          throw new Error("Stuff submission failed.");
-        }
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data?.message || "Stuff submission failed.");
+      }
+      console.log("Stuff added successfully!");
+      return data;
   } catch (error) {
     console.log(error);
+    throw error;
   }
 }
 
 export async function updateStudentBalance(studentId: string, amount: number) {
   try {
       const response = await fetch(`${getBaseUrl()}/api/students/${studentId}`, {
-          method: 'PATCH',
+          method: 'PUT',
           headers: {
               'Content-Type': 'application/json',
           },
@@ -161,8 +162,8 @@ export async function updateStudentBalance(studentId: string, amount: number) {
 }
 
 export async function updateStudentAmountPaid(id: string, paidAmount: number) {
-  const response = await fetch(`${getBaseUrl()}/api/student-school-fees/${id}`, {
-    method: 'PATCH',
+  const response = await fetch(`${getBaseUrl()}/api/student-fees/${id}`, {
+    method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
     },
@@ -180,8 +181,8 @@ export async function updateStudentAmountPaid(id: string, paidAmount: number) {
 
 export async function updateStudentRegBalance(id: string, balance: number) {
   try {
-      const response = await fetch(`${getBaseUrl()}/api/student-school-fees/${id}`, {
-          method: 'PATCH',
+      const response = await fetch(`${getBaseUrl()}/api/student-fees/${id}`, {
+          method: 'PUT',
           headers: {
               'Content-Type': 'application/json',
           },
@@ -204,63 +205,80 @@ export async function updateStudentRegBalance(id: string, balance: number) {
 
 export const newPayment = async (paymentData: NewPaymentParms) => {
     try {
-        console.log("//////////////////////");
-        const response = await fetch(`${getBaseUrl()}/api/transactions`, {
+        const payload = {
+          studentId: paymentData.studentId,
+          amount: paymentData.amount,
+          paymentMethod: paymentData.paymentMethod,
+          paymentDate: paymentData.paymentDate,
+          feeType:
+            paymentData.transactionType === "registration"
+              ? "registration"
+              : paymentData.transactionType === "re-registration"
+              ? "re-registration"
+              : "school-fees",
+        };
+
+        const response = await fetch(`${getBaseUrl()}/api/fee-transactions`, {
             method: "POST",
             headers: {
-                "Content-Type": "application.json",
+                "Content-Type": "application/json",
             },
-            body: JSON.stringify(paymentData),
+            body: JSON.stringify(payload),
         });
-        if (response.ok) {
-            console.log("Payment added successfully!");
-          } else {
-            console.error("Payment submission failed.");
-            throw new Error("Payment submission failed.");
-          }
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data?.message || "Payment submission failed.");
+        }
+
+        console.log("Payment added successfully!");
+        return data;
     } catch (error) {
       console.log(error);
+      throw error;
     }
 }
 
 
 export const newSchoolFees = async (schoolFeesData: SchoolFeesSetup) => {
   try {
-      const response = await fetch(`${getBaseUrl()}/api/school-fees-setup`, {
+      const response = await fetch(`${getBaseUrl()}/api/school-fees`, {
           method: "POST",
           headers: {
-              "Content-Type": "application.json",
+              "Content-Type": "application/json",
           },
           body: JSON.stringify(schoolFeesData),
       });
-      if (response.ok) {
-          console.log("New School Fees added successfully!");
-        } else {
-          console.error("New School Fees submission failed.");
-          throw new Error("New School Fees submission failed.");
-        }
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data?.message || "New School Fees submission failed.");
+      }
+      console.log("New School Fees added successfully!");
+      return data;
   } catch (error) {
     console.log(error);
+    throw error;
   }
 }
 
 export const newStudentRegistration = async (studentRegistration: StudentReg) => {
   try {
-      const response = await fetch(`${getBaseUrl()}/api/student-school-fees`, {
+      const response = await fetch(`${getBaseUrl()}/api/student-fees`, {
           method: "POST",
           headers: {
-              "Content-Type": "application.json",
+              "Content-Type": "application/json",
           },
           body: JSON.stringify(studentRegistration),
       });
-      if (response.ok) {
-          console.log("New student registered successfully!");
-        } else {
-          console.error("New student registration submission failed.");
-          throw new Error("New student registration submission failed.");
-        }
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data?.message || "New student registration submission failed.");
+      }
+      console.log("New student registered successfully!");
+      return data;
   } catch (error) {
     console.log(error);
+    throw error;
   }
 }
 
@@ -310,40 +328,42 @@ export const newStudent = async (studentData: NewStudentParms) => {
     const response = await fetch(`${getBaseUrl()}/api/students`, {
       method: "POST",
       headers: {
-        "Content-Type": "application.json",
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(studentData),
     });
-    console.log("//////////////////////2" + response.body);
-    if (response.ok) {
-      console.log("Student submitted successfully!");
-    } else {
-      console.error("Student submission failed.");
-      throw new Error("Student submission failed.");
+    const payload = await response.json();
+
+    if (!response.ok) {
+      throw new Error(payload?.message || "Student submission failed.");
     }
+
+    console.log("Student submitted successfully!");
+    return payload;
   } catch (error) {
     console.log(error);
+    throw error;
   }
 };
 
 export const newPettyCash = async (data: NewPettyCashParms) => {
   console.log("Petty Cash", data);
   try {
-      const response = await fetch(`${getBaseUrl()}/api/pettycash`, {
+      const response = await fetch(`${getBaseUrl()}/api/petty-cash`, {
           method: "POST",
           headers: {
-              "Content-Type": "application.json",
+              "Content-Type": "application/json",
           },
           body: JSON.stringify(data),
       });
-      if (response.ok) {
-          console.log("Petty Cash added successfully!");
-        } else {
-          console.error("Petty Cash submission failed.");
-          throw new Error("Petty Cash submission failed.");
-        }
+      const responseData = await response.json();
+      if (!response.ok) {
+        throw new Error(responseData?.message || "Petty Cash submission failed.");
+      }
+      console.log("Petty Cash added successfully!");
+      return responseData;
   } catch (error) {
-     
+     throw error;
   }
 }
 
@@ -351,31 +371,32 @@ export const newPettyCash = async (data: NewPettyCashParms) => {
 export const newEvent = async (data: NewEventParms) => {
   console.log("Event data: ", data);
   try {
-      const response = await fetch(`${getBaseUrl()}/api/event`, {
+      const response = await fetch(`${getBaseUrl()}/api/events`, {
           method: "POST",
           headers: {
-              "Content-Type": "application.json",
+              "Content-Type": "application/json",
           },
           body: JSON.stringify(data),
       });
-      if (response.ok) {
-          console.log("Event added successfully!");
-        } else {
-          console.error("Event submission failed.");
-          throw new Error("Event submission failed.");
-        }
+      const responseData = await response.json();
+      if (!response.ok) {
+        throw new Error(responseData?.message || "Event submission failed.");
+      }
+      console.log("Event added successfully!");
+      return responseData;
   } catch (error) {
      console.log("Event error: "+ error);
+     throw error;
   }
 }
 
 export const newEventTranaction = async (data: NewEventTransactionParms) => {
   console.log("Event Transaction data: ", data);
   try {
-      const response = await fetch(`${getBaseUrl()}/api/event-transaction`, {
+      const response = await fetch(`${getBaseUrl()}/api/event-transactions`, {
           method: "POST",
           headers: {
-              "Content-Type": "application.json",
+              "Content-Type": "application/json",
           },
           body: JSON.stringify(data),
       });
@@ -393,21 +414,22 @@ export const newEventTranaction = async (data: NewEventTransactionParms) => {
 export const newGrocery = async (data: NewGroceryParms) => {
   console.log("Grocery data: ", data);
   try {
-      const response = await fetch(`${getBaseUrl()}/api/grocery`, {
+      const response = await fetch(`${getBaseUrl()}/api/groceries`, {
           method: "POST",
           headers: {
-              "Content-Type": "application.json",
+              "Content-Type": "application/json",
           },
           body: JSON.stringify(data),
       });
-      if (response.ok) {
-          console.log("Grocery added successfully!");
-        } else {
-          console.error("Grocery submission failed.");
-          throw new Error("Grocery submission failed.");
-        }
+      const responseData = await response.json();
+      if (!response.ok) {
+        throw new Error(responseData?.message || "Grocery submission failed.");
+      }
+      console.log("Grocery added successfully!");
+      return responseData;
   } catch (error) {
      console.log("Grocery: "+ error);
+     throw error;
   }
 }
 
@@ -433,6 +455,7 @@ export const updateStudent = async (studentData: NewStudentParms, id: string) =>
       medicalAidScheme: studentData.medicalAidScheme,
       studentClass: studentData.studentClass,
       studentStatus: studentData.studentStatus,
+      linkedStudentIds: studentData.linkedStudentIds ?? [],
       balance: studentData.balance,
       lastPaid: studentData.lastPaid,
       guardian1: {
@@ -506,7 +529,7 @@ export const updateClass = async (
     const response = await fetch(`${getBaseUrl()}/api/class/${id}`, {
       method: "PUT",
       headers: {
-        "Content-Type": "application.json",
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(classData),
     });
@@ -539,20 +562,21 @@ export const updateStuff = async (
   } = stuffData;
 
   try {
-    const response = await fetch(`${getBaseUrl()}/api/stuff/${id}`, {
+    const response = await fetch(`${getBaseUrl()}/api/staff/${id}`, {
       method: "PUT",
       headers: {
-        "Content-Type": "application.json",
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(stuffData),
     });
-    console.log("//////////////////////2" + response.body);
-    if (response.ok) {
-      console.log("Stuff updated successfully!");
-    } else {
-      throw new Error("Stuff update failed.");
+    const responseData = await response.json();
+    if (!response.ok) {
+      throw new Error(responseData?.message || "Stuff update failed.");
     }
+    console.log("Stuff updated successfully!");
+    return responseData;
   } catch (error) {
     console.log(error);
+    throw error;
   }
 };

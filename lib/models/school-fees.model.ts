@@ -9,6 +9,7 @@ export interface ISchoolFees extends Document {
   ageUnit: "months" | "years";
   monthlyFee: number;
   yearlyFee: number;
+  siblingDiscountType: "percentage" | "amount-per-child";
   siblingDiscountPrice: number;
 }
 
@@ -21,6 +22,12 @@ const SchoolFeesSchema = new Schema<ISchoolFees>(
     ageUnit: { type: String, enum: ["months", "years"], required: true },
     monthlyFee: { type: Number, required: true },
     yearlyFee: { type: Number, required: true },
+    siblingDiscountType: {
+      type: String,
+      enum: ["percentage", "amount-per-child"],
+      default: "percentage",
+      required: true,
+    },
     siblingDiscountPrice: { type: Number, required: true },
   },
   { timestamps: true }

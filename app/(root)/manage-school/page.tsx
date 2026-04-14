@@ -96,7 +96,14 @@ export default function CreativeStaffManagement() {
     if (!itemToDelete) return
 
     try {
-      const response = await fetch(`/api/${itemToDelete.type}/${itemToDelete.id}`, {
+      const apiPath =
+        itemToDelete.type === "stuff"
+          ? "staff"
+          : itemToDelete.type === "event"
+          ? "events"
+          : "class"
+
+      const response = await fetch(`/api/${apiPath}/${itemToDelete.id}`, {
         method: 'DELETE',
       })
 

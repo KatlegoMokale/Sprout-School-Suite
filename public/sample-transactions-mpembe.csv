@@ -1,0 +1,3 @@
+firstName,surname,className,amount,paymentMethod,paymentDate,transactionType
+Andile,Mpembe,Default Class,1000,cash,2026-01-05,registration
+Andile,Mpembe,Default Class,1200,cash,2026-01-05,school-fees

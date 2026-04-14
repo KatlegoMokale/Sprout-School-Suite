@@ -138,20 +138,20 @@ const StudentInvoice = ({ params }: { params: Promise<{ id: string }> }) => {
         const unwrappedParams = await params;
         const [studentResponse, transactionsResponse, studentFeesResponse, schoolFeesResponse] = await Promise.all([
           fetch(`/api/students/${unwrappedParams.id}`),
-          fetch(`/api/transactions`),
-          fetch(`/api/student-school-fees`),
-          fetch(`/api/school-fees-setup`)
+          fetch(`/api/fee-transactions`),
+          fetch(`/api/student-fees`),
+          fetch(`/api/school-fees`)
         ]);
 
         if (!studentResponse.ok || !transactionsResponse.ok || !studentFeesResponse.ok || !schoolFeesResponse.ok) 
           throw new Error("Failed to fetch data");
 
-        const studentData: {student: IStudent} = await studentResponse.json();
+        const studentData: IStudent = await studentResponse.json();
         const transactionsData: ITransactions[] = await transactionsResponse.json();
         const studentFeesData: IStudentFeesSchema[] = await studentFeesResponse.json();
         const schoolFeesData: ISchoolFees[] = await schoolFeesResponse.json();
 
-        setStudent(studentData.student);
+        setStudent(studentData);
         
         const filteredTransactions = transactionsData.filter(t => t.studentId === unwrappedParams.id);
         const filteredStudentFees = studentFeesData.filter(f => f.studentId === unwrappedParams.id);

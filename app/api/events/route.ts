@@ -6,7 +6,11 @@ export async function GET() {
   try {
     await connectToDatabase();
     const events = await Event.find().sort({ createdAt: -1 }).lean();
-    return NextResponse.json(events, { status: 200 });
+    const transformedEvents = events.map((event) => ({
+      ...event,
+      $id: event._id.toString(),
+    }));
+    return NextResponse.json(transformedEvents, { status: 200 });
   } catch (error) {
     return NextResponse.json(
       { message: "Error fetching events" },

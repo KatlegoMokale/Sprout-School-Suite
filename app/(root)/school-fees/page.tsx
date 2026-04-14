@@ -28,6 +28,8 @@ import { IStudent, IStudentFeesSchema, paymentFormSchema } from "@/lib/utils";
 import { newPayment, updateStudentAmountPaid, updateStudentRegBalance } from "@/lib/actions/user.actions";
 import CustomInputPayment from "@/components/ui/CustomInputPayment";
 import SchoolFeesSetup from "@/components/ui/SchoolFeesSetup";
+import TransactionImport from "@/components/ui/transaction-import";
+import QuickRegistrationBoard from "@/components/ui/QuickRegistrationBoard";
 
 const newPaymentFormSchema = paymentFormSchema();
 
@@ -48,7 +50,11 @@ export default function SchoolFeeManagement() {
   const [selectedStudent, setSelectedStudent] = useState<IStudent | null>(null);
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const [showUnregistered, setShowUnregistered] = useState(false);
-  const [paymentStep, setPaymentStep] = useState(1);
+  const [isLinkDialogOpen, setIsLinkDialogOpen] = useState(false);
+  const [linkPrimaryStudentId, setLinkPrimaryStudentId] = useState("");
+  const [linkSiblingIds, setLinkSiblingIds] = useState<string[]>([]);
+  const [linkSiblingSearch, setLinkSiblingSearch] = useState("");
+  const [isSavingLinks, setIsSavingLinks] = useState(false);
 
   const form = useForm<z.infer<typeof newPaymentFormSchema>>({
     resolver: zodResolver(newPaymentFormSchema),
@@ -59,7 +65,7 @@ export default function SchoolFeeManagement() {
       paymentMethod: "",
       paymentDate: "",
       studentId: "",
-      transactionType: "fees",
+      transactionType: "school-fees",
     },
   });
 
@@ -99,7 +105,157 @@ export default function SchoolFeeManagement() {
   }, [filteredStudents, showUnregistered, selectedYear]);
 
   const getClassName = (classId: string) => {
-    return classes.find((c) => c.$id === classId)?.name || "Unknown";
+    if (!classId) return "Unknown";
+    return classes.find((c) => c.$id === classId)?.name || classId;
+  };
+
+  const getAgeInMonths = (dateOfBirth: string) => {
+    const dob = new Date(dateOfBirth);
+    if (Number.isNaN(dob.getTime())) return null;
+    const now = new Date();
+    let months =
+      (now.getFullYear() - dob.getFullYear()) * 12 +
+      (now.getMonth() - dob.getMonth());
+    if (now.getDate() < dob.getDate()) months -= 1;
+    return Math.max(0, months);
+  };
+
+  const toMonthsRange = (start: number, end: number, unit: "months" | "years") => {
+    if (unit === "months") return { min: start, max: end };
+    return { min: start * 12, max: end * 12 + 11 };
+  };
+
+  const createMissingStudentFeeRecord = async (student: IStudent) => {
+    const currentYear = new Date().getFullYear();
+    const ageInMonths = getAgeInMonths(student.dateOfBirth);
+
+    const plansResponse = await fetch("/api/school-fees");
+    if (!plansResponse.ok) {
+      throw new Error("Failed to load school fee plans");
+    }
+    const allPlans = await plansResponse.json();
+    const yearPlans = allPlans.filter((plan: any) => plan.year === currentYear);
+
+    let selectedPlan =
+      ageInMonths === null
+        ? null
+        : yearPlans
+            .filter((plan: any) => {
+              const { min, max } = toMonthsRange(plan.ageStart, plan.ageEnd, plan.ageUnit);
+              return ageInMonths >= min && ageInMonths <= max;
+            })
+            .sort((a: any, b: any) => (a.ageEnd - a.ageStart) - (b.ageEnd - b.ageStart))[0] ?? null;
+
+    if (!selectedPlan && student.studentClass) {
+      const classMatch = classes.find((item) => item.$id === student.studentClass);
+      if (classMatch && (classMatch as any).ageStart !== undefined) {
+        selectedPlan =
+          yearPlans.find(
+            (plan: any) =>
+              plan.ageStart === (classMatch as any).ageStart &&
+              plan.ageEnd === (classMatch as any).ageEnd &&
+              plan.ageUnit === (classMatch as any).ageUnit
+          ) ?? null;
+      }
+    }
+
+    if (!selectedPlan && yearPlans.length > 0) {
+      selectedPlan = yearPlans[0];
+    }
+
+    if (!selectedPlan) {
+      throw new Error("No school fee setup found for current year");
+    }
+
+    const now = new Date();
+    const monthsRemaining = 12 - now.getMonth();
+    const totalFees =
+      selectedPlan.registrationFee + selectedPlan.monthlyFee * monthsRemaining;
+
+    const createResponse = await fetch("/api/student-fees", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        studentId: student.$id,
+        schoolFeesRegId: selectedPlan.$id,
+        startDate: now.toISOString().split("T")[0],
+        endDate: `${currentYear}-12-31`,
+        fees: selectedPlan.monthlyFee,
+        totalFees,
+        paidAmount: 0,
+        balance: totalFees,
+        paymentFrequency: "monthly",
+        paymentDate: 1,
+      }),
+    });
+
+    const createData = await createResponse.json();
+    if (!createResponse.ok) {
+      throw new Error(createData?.message || "Failed to create student fee record");
+    }
+
+    await fetch(`/api/students/${student.$id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ balance: totalFees }),
+    });
+
+    return createData?.data;
+  };
+
+  const handlePrimaryStudentChange = (studentId: string) => {
+    setLinkPrimaryStudentId(studentId);
+    setLinkSiblingSearch("");
+    const student = students.find((item) => item.$id === studentId);
+    setLinkSiblingIds(student?.linkedStudentIds || []);
+  };
+
+  const toggleSiblingSelection = (studentId: string, checked: boolean) => {
+    setLinkSiblingIds((prev) =>
+      checked ? Array.from(new Set([...prev, studentId])) : prev.filter((id) => id !== studentId)
+    );
+  };
+
+  const handleSaveSiblingLinks = async () => {
+    if (!linkPrimaryStudentId) {
+      toast({
+        title: "Select Student",
+        description: "Please choose the primary child first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSavingLinks(true);
+    try {
+      const response = await fetch("/api/students/link-siblings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          studentId: linkPrimaryStudentId,
+          siblingIds: linkSiblingIds,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data?.message || "Failed to save sibling links");
+      }
+
+      await dispatch(fetchStudents());
+      toast({
+        title: "Success",
+        description: "Sibling links updated successfully.",
+      });
+      setIsLinkDialogOpen(false);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to update sibling links.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSavingLinks(false);
+    }
   };
 
   const getStudentBalance = (studentId: string) => {
@@ -129,27 +285,70 @@ export default function SchoolFeeManagement() {
     { title: "Outstanding", amount: totalOutstanding, icon: CreditCard, color: "bg-yellow-500" },
   ];
 
+  const normalizeText = (value: string) => value.trim().toLowerCase();
+  const normalizeName = (firstName: string, surname: string) => {
+    const a = normalizeText(firstName);
+    const b = normalizeText(surname);
+    return `${a} ${b}`.trim();
+  };
+
   const onSubmit = async (data: z.infer<typeof newPaymentFormSchema>) => {
     setIsLoadingForm(true);
     try {
-      const studentFee = studentSchoolFees.find((fee) => fee.studentId === data.studentId);
+      // Temporary matching strategy: resolve account by name+surname in either order.
+      const inputForward = normalizeName(data.firstName, data.surname);
+      const inputReverse = normalizeName(data.surname, data.firstName);
+
+      const matchedStudent = students.find(
+        (student) => {
+          const studentForward = normalizeName(student.firstName, student.surname);
+          return studentForward === inputForward || studentForward === inputReverse;
+        }
+      );
+
+      if (!matchedStudent) {
+        throw new Error("Student match not found by name and surname");
+      }
+
+      let studentFee = studentSchoolFees.find(
+        (fee) => fee.studentId === matchedStudent.$id
+      );
+      if (!studentFee) {
+        const createdFee = await createMissingStudentFeeRecord(matchedStudent);
+        await dispatch(fetchStudentSchoolFees());
+        studentFee = createdFee;
+      }
+
       if (!studentFee) {
         throw new Error("Student fee information not found");
       }
 
       const newBalance = studentFee.balance - data.amount;
       const newPaidAmount = studentFee.paidAmount + data.amount;
+      const paymentPayload = {
+        ...data,
+        studentId: matchedStudent.$id,
+      };
 
       await updateStudentAmountPaid(studentFee.$id, newPaidAmount);
       await updateStudentRegBalance(studentFee.$id, newBalance);
-      await newPayment(data);
+      await newPayment(paymentPayload);
+      await dispatch(fetchStudentSchoolFees());
+      await dispatch(fetchTransactions());
 
       toast({
         title: "Success",
         description: "Payment has been recorded successfully.",
       });
-      form.reset();
-      setPaymentStep(1);
+      form.reset({
+        firstName: "",
+        surname: "",
+        amount: 0,
+        paymentMethod: "",
+        paymentDate: "",
+        studentId: "",
+        transactionType: "school-fees",
+      });
     } catch (error) {
       console.error("Error submitting form:", error);
       toast({
@@ -244,6 +443,28 @@ export default function SchoolFeeManagement() {
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold">School Fee Management</h1>
         <div className="flex items-center gap-4">
+          <TransactionImport students={students} />
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline">Quick Register</Button>
+            </DialogTrigger>
+            <DialogContent className="bg-white max-w-4xl">
+              <DialogHeader>
+                <DialogTitle>Quick Student Registration</DialogTitle>
+                <DialogDescription>
+                  Drag learners from unregistered to registered, or click register on each card.
+                </DialogDescription>
+              </DialogHeader>
+              <QuickRegistrationBoard
+                students={students}
+                studentSchoolFees={studentSchoolFees}
+                onRefresh={async () => {
+                  await dispatch(fetchStudentSchoolFees());
+                  await dispatch(fetchStudents());
+                }}
+              />
+            </DialogContent>
+          </Dialog>
           <Link href="/school-fees/view">
             <Button variant="outline" className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
@@ -361,6 +582,81 @@ export default function SchoolFeeManagement() {
                     Show Unregistered
                   </label>
                 </div>
+                <Dialog open={isLinkDialogOpen} onOpenChange={setIsLinkDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline">Link Children</Button>
+                  </DialogTrigger>
+                  <DialogContent className="bg-white max-w-2xl">
+                    <DialogHeader>
+                      <DialogTitle>Link Siblings</DialogTitle>
+                      <DialogDescription>
+                        Select one child and link their siblings for discount calculations.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div>
+                        <Label className="mb-2 block">Primary Child</Label>
+                        <Select1
+                          value={linkPrimaryStudentId}
+                          onValueChange={handlePrimaryStudentChange}
+                        >
+                          <SelectTrigger>
+                            <SelectValue1 placeholder="Select primary child" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {students.map((student) => (
+                              <SelectItem key={student.$id} value={student.$id}>
+                                {student.firstName} {student.surname} - {getClassName(student.studentClass || "")}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select1>
+                      </div>
+                      {linkPrimaryStudentId && (
+                        <div className="space-y-2">
+                          <Input
+                            placeholder="Search sibling by name..."
+                            value={linkSiblingSearch}
+                            onChange={(e) => setLinkSiblingSearch(e.target.value)}
+                          />
+                          <div className="border rounded-md p-3 max-h-64 overflow-y-auto space-y-2">
+                          {students
+                            .filter((student) => student.$id !== linkPrimaryStudentId)
+                            .filter((student) =>
+                              `${student.firstName} ${student.surname}`
+                                .toLowerCase()
+                                .includes(linkSiblingSearch.toLowerCase())
+                            )
+                            .map((student) => {
+                              const checked = linkSiblingIds.includes(student.$id);
+                              return (
+                                <div key={student.$id} className="flex items-center space-x-2">
+                                  <Checkbox
+                                    checked={checked}
+                                    onCheckedChange={(value) =>
+                                      toggleSiblingSelection(student.$id, Boolean(value))
+                                    }
+                                  />
+                                  <span className="text-sm">
+                                    {student.firstName} {student.surname} - {getClassName(student.studentClass || "")}
+                                  </span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                      <div className="flex justify-end gap-2">
+                        <Button variant="outline" onClick={() => setIsLinkDialogOpen(false)}>
+                          Cancel
+                        </Button>
+                        <Button onClick={handleSaveSiblingLinks} disabled={isSavingLinks}>
+                          {isSavingLinks ? "Saving..." : "Save Links"}
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
               </div>
               <div className="rounded-md border">
                 <Table>
@@ -433,154 +729,77 @@ export default function SchoolFeeManagement() {
                 >
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      {paymentStep === 1 && (
-                        <div>
-                          <h2 className="text-xl font-semibold mb-4">
-                            Step 1: Select Year
-                          </h2>
-                          <Select1
-                            value={selectedYear.toString()}
-                            onValueChange={(value) =>
-                              setSelectedYear(parseInt(value))
-                            }
-                          >
-                            <SelectTrigger className="w-full">
-                              <SelectValue1 placeholder="Select Year" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {yearRange.map((year) => (
-                                <SelectItem key={year} value={year.toString()}>
-                                  {year}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select1>
-                          <Button
-                            className="mt-4"
-                            onClick={() => setPaymentStep(2)}
-                          >
-                            Next
-                          </Button>
-                        </div>
-                      )}
-                      {paymentStep === 2 && (
-                        <div>
-                          <h2 className="text-xl font-semibold mb-4">
-                            Step 2: Select Student and Transaction Type
-                          </h2>
-                          <FormField
-                            control={form.control}
-                            name="studentId"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Student</FormLabel>
-                                <Select1
-                                  onValueChange={(value) => {
-                                    field.onChange(value);
-                                    const student = students.find(
-                                      (student) => student.$id === value
-                                    );
-                                    form.setValue(
-                                      "firstName",
-                                      student?.firstName || ""
-                                    );
-                                    form.setValue(
-                                      "surname",
-                                      student?.surname || ""
-                                    );
-                                  }}
-                                  value={field.value}
-                                >
-                                  <FormControl>
-                                    <SelectTrigger>
-                                      <SelectValue1 placeholder="Select a student" />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                    {filteredStudents.map((student) => (
-                                      <SelectItem
-                                        key={student.$id}
-                                        value={student.$id}
-                                      >
-                                        {student.firstName} {student.surname} -{" "}
-                                        {getClassName(
-                                          student.studentClass || ""
-                                        )}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select1>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <CustomInputPayment
-                            name="transactionType"
-                            control={form.control}
-                            placeholder="Transaction Type"
-                            label="Transaction Type"
-                            select={true}
-                            options={[
-                              { label: "School Fees", value: "fees" },
-                              {
-                                label: "Registration Fee",
-                                value: "registration",
-                              },
-                            ]}
-                          />
-                          <div className="flex justify-between mt-4">
-                            <Button onClick={() => setPaymentStep(1)}>
-                              Previous
-                            </Button>
-                            <Button onClick={() => setPaymentStep(3)}>
-                              Next
-                            </Button>
-                          </div>
-                        </div>
-                      )}
-                      {paymentStep === 3 && (
-                        <div>
-                          <h2 className="text-xl font-semibold mb-4">
-                            Step 3: Payment Details
-                          </h2>
-                          <CustomInputPayment
-                            name="amount"
-                            control={form.control}
-                            placeholder="Amount"
-                            label="Amount"
-                            type="number"
-                          />
-                          <CustomInputPayment
-                            name="paymentMethod"
-                            placeholder="Select Method"
-                            control={form.control}
-                            label="Payment Method"
-                            select={true}
-                            options={[
-                              { label: "Cash", value: "cash" },
-                              { label: "EFT", value: "EFT" },
-                              { label: "Card", value: "card" },
-                            ]}
-                          />
-                          <CustomInputPayment
-                            name="paymentDate"
-                            label="Payment Date"
-                            control={form.control}
-                            placeholder="Payment Date"
-                            type="date"
-                          />
-                          <div className="flex justify-between mt-4">
-                            <Button onClick={() => setPaymentStep(2)}>
-                              Previous
-                            </Button>
-                            <Button type="submit" disabled={isLoadingForm}>
-                              {isLoadingForm
-                                ? "Processing..."
-                                : "Record Payment"}
-                            </Button>
-                          </div>
-                        </div>
-                      )}
+                      <h2 className="text-xl font-semibold mb-4">
+                        Record Payment
+                      </h2>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Choose student, amount, method and date, then save.
+                      </p>
+                      <FormField
+                        control={form.control}
+                        name="studentId"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Student</FormLabel>
+                            <Select1
+                              onValueChange={(value) => {
+                                field.onChange(value);
+                                const student = students.find(
+                                  (item) => item.$id === value
+                                );
+                                form.setValue("firstName", student?.firstName || "");
+                                form.setValue("surname", student?.surname || "");
+                                form.setValue("transactionType", "school-fees");
+                              }}
+                              value={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue1 placeholder="Select a student" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {filteredStudents.map((student) => (
+                                  <SelectItem key={student.$id} value={student.$id}>
+                                    {student.firstName} {student.surname} -{" "}
+                                    {getClassName(student.studentClass || "")}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select1>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <CustomInputPayment
+                        name="amount"
+                        control={form.control}
+                        placeholder="Amount"
+                        label="Amount"
+                        type="number"
+                      />
+                      <CustomInputPayment
+                        name="paymentMethod"
+                        placeholder="Select Method"
+                        control={form.control}
+                        label="Payment Method"
+                        select={true}
+                        options={[
+                          { label: "Cash", value: "cash" },
+                          { label: "EFT", value: "EFT" },
+                          { label: "Card", value: "card" },
+                        ]}
+                      />
+                      <CustomInputPayment
+                        name="paymentDate"
+                        label="Payment Date"
+                        control={form.control}
+                        placeholder="Payment Date"
+                        type="date"
+                      />
+                      <Button type="submit" disabled={isLoadingForm} className="mt-2">
+                        {isLoadingForm ? "Processing..." : "Record Payment"}
+                      </Button>
                     </div>
                     <div className="border-l pl-4">
                       {form.watch("studentId") &&

@@ -70,7 +70,7 @@ const Classes = () => {
     const fetchTeachers = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch("/api/stuff");
+        const response = await fetch("/api/staff");
         if (!response.ok) {
           throw new Error("Failed to fetch stuff");
         }

@@ -31,6 +31,7 @@ export default function SchoolFeesSetup() {
       ageUnit: "months",
       monthlyFee: 0,
       yearlyFee: 0,
+      siblingDiscountType: "percentage",
       siblingDiscountPrice: 50,
     },
   })
@@ -143,12 +144,33 @@ export default function SchoolFeesSetup() {
               icon={DollarSign}
             />
             <CustomInput
+              name="siblingDiscountType"
+              control={form.control}
+              label="Sibling Discount Type"
+              placeholder="Select discount type"
+              select={true}
+              options={[
+                { value: "percentage", label: "Percentage (%)" },
+                { value: "amount-per-child", label: "Amount Per Child (ZAR)" },
+              ]}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <CustomInput
               name="siblingDiscountPrice"
               control={form.control}
-              label="Sibling Discount %"
-              placeholder="Enter discount percentage"
+              label={
+                form.watch("siblingDiscountType") === "amount-per-child"
+                  ? "Sibling Discount (ZAR per child)"
+                  : "Sibling Discount %"
+              }
+              placeholder={
+                form.watch("siblingDiscountType") === "amount-per-child"
+                  ? "Enter amount per child"
+                  : "Enter discount percentage"
+              }
               type="number"
-              icon={Percent}
+              icon={form.watch("siblingDiscountType") === "amount-per-child" ? DollarSign : Percent}
             />
           </div>
 

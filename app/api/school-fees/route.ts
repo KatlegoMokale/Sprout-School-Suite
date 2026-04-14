@@ -6,7 +6,11 @@ export async function GET() {
   try {
     await connectToDatabase();
     const fees = await SchoolFees.find().sort({ createdAt: -1 }).lean();
-    return NextResponse.json(fees, { status: 200 });
+    const transformedFees = fees.map((fee) => ({
+      ...fee,
+      $id: fee._id.toString(),
+    }));
+    return NextResponse.json(transformedFees, { status: 200 });
   } catch (error) {
     return NextResponse.json(
       { message: "Error fetching school fees" },

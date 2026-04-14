@@ -15,8 +15,6 @@ import PinLock from "@/components/ui/PinLock"
 
 interface Transaction {
   $id: string
-  firstName: string
-  surname: string
   studentId: string
   paymentMethod: string
   paymentDate: string
@@ -56,10 +54,10 @@ export default function FinancialDashboard() {
     try {
       setIsLoading(true)
       const [transactionsRes, studentsRes, pettyCashRes, groceryRes] = await Promise.all([
-        fetch('/api/transactions'),
+        fetch('/api/fee-transactions'),
         fetch('/api/students'),
-        fetch('/api/pettycash'),
-        fetch('/api/grocery')
+        fetch('/api/petty-cash'),
+        fetch('/api/groceries')
       ])
 
       if (!transactionsRes.ok || !studentsRes.ok || !pettyCashRes.ok || !groceryRes.ok) {
@@ -132,6 +130,12 @@ export default function FinancialDashboard() {
   const filteredTransactions = filterDataByPeriod(transactions, sortPeriod)
   const filteredPettyCash = filterDataByPeriod(pettyCash, sortPeriod)
   const filteredGrocery = filterDataByPeriod(grocery, sortPeriod)
+
+  const getStudentName = (studentId: string) => {
+    const student = students.find((item: any) => item.$id === studentId) as any
+    if (!student) return studentId
+    return `${student.firstName ?? ""} ${student.surname ?? ""}`.trim()
+  }
 
   const handleUnlock = () => {
     setIsUnlocked(true)
@@ -216,7 +220,9 @@ export default function FinancialDashboard() {
                           transition={{ duration: 0.2, delay: index * 0.05 }}
                           className="hover:bg-gray-50"
                         >
-                          <TableCell className="font-medium">{transaction.firstName} {transaction.surname}</TableCell>
+                          <TableCell className="font-medium">
+                            {getStudentName(transaction.studentId)}
+                          </TableCell>
                           <TableCell>
                             {students.find(student => student.$id === transaction.studentId)?.age || 'N/A'}
                           </TableCell>
