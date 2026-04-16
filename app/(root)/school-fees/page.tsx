@@ -24,6 +24,7 @@ import { fetchStudents, selectStudents, selectStudentsStatus } from '@/lib/featu
 import { fetchClasses, selectClasses, selectClassesStatus } from '@/lib/features/classes/classesSlice';
 import { fetchTransactions, selectTransactions, selectTransactionsStatus } from '@/lib/features/transactions/transactionsSlice';
 import { fetchStudentSchoolFees, selectStudentSchoolFees, selectStudentSchoolFeesStatus } from '@/lib/features/studentSchoolFees/studentSchoolFeesSlice';
+import { fetchSchoolFeesSetup, selectSchoolFeesSetup, selectSchoolFeesSetupStatus } from '@/lib/features/schoolFeesSetup/schoolFeesSetupSlice';
 import { IStudent, IStudentFeesSchema, paymentFormSchema } from "@/lib/utils";
 import { newPayment, updateStudentAmountPaid, updateStudentRegBalance } from "@/lib/actions/user.actions";
 import CustomInputPayment from "@/components/ui/CustomInputPayment";
@@ -43,6 +44,8 @@ export default function SchoolFeeManagement() {
   const transactionsStatus = useSelector(selectTransactionsStatus);
   const studentSchoolFees = useSelector(selectStudentSchoolFees);
   const studentSchoolFeesStatus = useSelector(selectStudentSchoolFeesStatus);
+  const schoolFeesSetup = useSelector(selectSchoolFeesSetup);
+  const schoolFeesSetupStatus = useSelector(selectSchoolFeesSetupStatus);
 
   const [isLoadingForm, setIsLoadingForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -55,6 +58,7 @@ export default function SchoolFeeManagement() {
   const [linkSiblingIds, setLinkSiblingIds] = useState<string[]>([]);
   const [linkSiblingSearch, setLinkSiblingSearch] = useState("");
   const [isSavingLinks, setIsSavingLinks] = useState(false);
+  const [isUpdatingBalances, setIsUpdatingBalances] = useState(false);
 
   const form = useForm<z.infer<typeof newPaymentFormSchema>>({
     resolver: zodResolver(newPaymentFormSchema),
@@ -74,13 +78,16 @@ export default function SchoolFeeManagement() {
     if (classesStatus === 'idle') dispatch(fetchClasses());
     if (transactionsStatus === 'idle') dispatch(fetchTransactions());
     if (studentSchoolFeesStatus === 'idle') dispatch(fetchStudentSchoolFees());
-  }, [dispatch, studentsStatus, classesStatus, transactionsStatus, studentSchoolFeesStatus]);
+    if (schoolFeesSetupStatus === 'idle') dispatch(fetchSchoolFeesSetup());
+  }, [dispatch, studentsStatus, classesStatus, transactionsStatus, studentSchoolFeesStatus, schoolFeesSetupStatus]);
 
   const isLoading = studentsStatus === 'loading' || classesStatus === 'loading' || 
-                    transactionsStatus === 'loading' || studentSchoolFeesStatus === 'loading';
+                    transactionsStatus === 'loading' || studentSchoolFeesStatus === 'loading' ||
+                    schoolFeesSetupStatus === 'loading';
 
   const error = studentsStatus === 'failed' || classesStatus === 'failed' || 
-                transactionsStatus === 'failed' || studentSchoolFeesStatus === 'failed' 
+                transactionsStatus === 'failed' || studentSchoolFeesStatus === 'failed' ||
+                schoolFeesSetupStatus === 'failed'
                 ? "Failed to fetch data. Please try again later." : null;
 
   const filteredStudents = useMemo(() => {
@@ -263,21 +270,164 @@ export default function SchoolFeeManagement() {
     return studentFee ? studentFee.balance : 0;
   };
 
+  const today = useMemo(() => {
+    const date = new Date();
+    date.setHours(23, 59, 59, 999);
+    return date;
+  }, []);
+
+  const paidAsOfTodayByStudent = useMemo(() => {
+    const totals: Record<string, number> = {};
+    transactions.forEach((transaction) => {
+      const paymentDate = new Date(transaction.paymentDate);
+      if (Number.isNaN(paymentDate.getTime()) || paymentDate > today) return;
+      totals[transaction.studentId] = (totals[transaction.studentId] || 0) + (transaction.amount || 0);
+    });
+    return totals;
+  }, [transactions, today]);
+
+  const getCurrentPaidAmount = (studentId: string, totalFees: number) => {
+    const paid = paidAsOfTodayByStudent[studentId] || 0;
+    return Math.max(0, Math.min(paid, totalFees));
+  };
+
+  const generateStatementItems = (
+    studentTransactions: any[],
+    fees: IStudentFeesSchema[],
+    schoolFees: any[]
+  ) => {
+    const items: { date: string; debit: number; credit: number; balance: number }[] = [];
+    let runningBalance = 0;
+    const now = new Date();
+
+    const sortedFees = [...fees].sort(
+      (a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+    );
+
+    for (const fee of sortedFees) {
+      const startDate = new Date(fee.startDate);
+      const endDate = new Date(fee.endDate);
+      if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) continue;
+      if (startDate > now) continue;
+
+      const plan = schoolFees.find((setup) => setup.$id === fee.schoolFeesRegId);
+      if (plan?.registrationFee) {
+        runningBalance += plan.registrationFee;
+        items.push({
+          date: startDate.toISOString(),
+          debit: plan.registrationFee,
+          credit: 0,
+          balance: runningBalance,
+        });
+      }
+
+      if (fee.competitionWinner) {
+        const competitionCredit = Math.max(
+          0,
+          (fee.totalFees || 0) - Number(plan?.registrationFee || 0)
+        );
+
+        if (competitionCredit > 0) {
+          runningBalance -= competitionCredit;
+          items.push({
+            date: startDate.toISOString(),
+            debit: 0,
+            credit: competitionCredit,
+            balance: runningBalance,
+          });
+        }
+
+        continue;
+      }
+
+      runningBalance += fee.fees;
+      items.push({
+        date: startDate.toISOString(),
+        debit: fee.fees,
+        credit: 0,
+        balance: runningBalance,
+      });
+
+      const cursor = new Date(startDate);
+      cursor.setMonth(cursor.getMonth() + 1);
+
+      while (cursor <= endDate && cursor <= now) {
+        runningBalance += fee.fees;
+        items.push({
+          date: cursor.toISOString(),
+          debit: fee.fees,
+          credit: 0,
+          balance: runningBalance,
+        });
+        cursor.setMonth(cursor.getMonth() + 1);
+      }
+    }
+
+    for (const transaction of studentTransactions) {
+      const paymentDate = new Date(transaction.paymentDate);
+      if (Number.isNaN(paymentDate.getTime()) || paymentDate > now) continue;
+      runningBalance -= transaction.amount;
+      items.push({
+        date: paymentDate.toISOString(),
+        debit: 0,
+        credit: transaction.amount,
+        balance: runningBalance,
+      });
+    }
+
+    items.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    let recomputed = 0;
+    items.forEach((item) => {
+      recomputed += item.debit - item.credit;
+      item.balance = recomputed;
+    });
+
+    return items;
+  };
+
+  const currentStatementBalanceByStudent = useMemo(() => {
+    const map: Record<string, number> = {};
+    students.forEach((student) => {
+      const fees = studentSchoolFees.filter((fee) => fee.studentId === student.$id);
+      const txns = transactions.filter((transaction) => transaction.studentId === student.$id);
+      const statementItems = generateStatementItems(txns, fees, schoolFeesSetup);
+      map[student.$id] =
+        statementItems.length > 0
+          ? Number(statementItems[statementItems.length - 1].balance.toFixed(2))
+          : 0;
+    });
+    return map;
+  }, [students, studentSchoolFees, transactions, schoolFeesSetup]);
+
+  const getCurrentBalanceForFee = (fee: IStudentFeesSchema) =>
+    currentStatementBalanceByStudent[fee.studentId] ?? 0;
+
+  const getCurrentBalanceForStudent = (studentId: string) => {
+    return currentStatementBalanceByStudent[studentId] ?? 0;
+  };
+
   const getStudentLastPaid = (studentId: string) => {
-    const studentTransactions = transactions.filter(t => t.studentId === studentId);
+    const studentTransactions = transactions.filter((t) => {
+      const paymentDate = new Date(t.paymentDate);
+      return t.studentId === studentId && !Number.isNaN(paymentDate.getTime()) && paymentDate <= today;
+    });
     if (studentTransactions.length === 0) return null;
     return Math.max(...studentTransactions.map(t => new Date(t.paymentDate).getTime()));
   };
 
   const isOutstanding = (student: IStudent) => {
-    const studentFee = studentSchoolFees.find(fee => fee.studentId === student.$id);
-    if (!studentFee) return false;
-    return new Date(studentFee.paymentDate).getTime() <= Date.now();
+    return getCurrentBalanceForStudent(student.$id) > 0;
   };
 
   const totalFees = studentSchoolFees.reduce((sum, fee) => sum + fee.totalFees, 0);
-  const totalPaid = studentSchoolFees.reduce((sum, fee) => sum + fee.paidAmount, 0);
-  const totalOutstanding = studentSchoolFees.reduce((sum, fee) => sum + fee.balance, 0);
+  const totalPaid = studentSchoolFees.reduce(
+    (sum, fee) => sum + getCurrentPaidAmount(fee.studentId, fee.totalFees || 0),
+    0
+  );
+  const totalOutstanding = students.reduce(
+    (sum, student) => sum + getCurrentBalanceForStudent(student.$id),
+    0
+  );
 
   const summaryCards = [
     { title: "Total Fees", amount: totalFees, icon: DollarSign, color: "bg-blue-500" },
@@ -323,8 +473,10 @@ export default function SchoolFeeManagement() {
         throw new Error("Student fee information not found");
       }
 
-      const newBalance = studentFee.balance - data.amount;
-      const newPaidAmount = studentFee.paidAmount + data.amount;
+      const currentBalance = getCurrentBalanceForStudent(studentFee.studentId);
+      const currentPaid = Math.max(0, (studentFee.totalFees || 0) - currentBalance);
+      const newBalance = Math.max(0, currentBalance - data.amount);
+      const newPaidAmount = Math.min((studentFee.totalFees || 0), currentPaid + data.amount);
       const paymentPayload = {
         ...data,
         studentId: matchedStudent.$id,
@@ -358,6 +510,73 @@ export default function SchoolFeeManagement() {
       });
     } finally {
       setIsLoadingForm(false);
+    }
+  };
+
+  const handleUpdateBalances = async () => {
+    if (studentSchoolFees.length === 0) {
+      toast({
+        title: "No Records",
+        description: "There are no student fee records to update.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsUpdatingBalances(true);
+    try {
+      const results = await Promise.allSettled(
+        studentSchoolFees.map(async (fee) => {
+          const recalculatedBalance = getCurrentBalanceForStudent(fee.studentId);
+          const recalculatedPaid = Math.max(0, (fee.totalFees || 0) - recalculatedBalance);
+
+          const updateFeeResponse = await fetch(`/api/student-fees/${fee.$id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              paidAmount: recalculatedPaid,
+              balance: recalculatedBalance,
+            }),
+          });
+          if (!updateFeeResponse.ok) {
+            throw new Error(`Failed to update student fee for ${fee.studentId}`);
+          }
+
+          const student = students.find((item) => item.$id === fee.studentId);
+          if (student) {
+            await fetch(`/api/students/${student.$id}`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ balance: recalculatedBalance }),
+            });
+          }
+        })
+      );
+
+      const failed = results.filter((result) => result.status === "rejected");
+      await dispatch(fetchStudentSchoolFees());
+      await dispatch(fetchStudents());
+
+      if (failed.length > 0) {
+        toast({
+          title: "Partial Update",
+          description: `${studentSchoolFees.length - failed.length} updated, ${failed.length} failed.`,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Balances Updated",
+          description: "Balances and paid amounts were recalculated to today's date.",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Update Failed",
+        description: error instanceof Error ? error.message : "Could not update balances.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdatingBalances(false);
     }
   };
 
@@ -444,6 +663,9 @@ export default function SchoolFeeManagement() {
         <h1 className="text-3xl font-bold">School Fee Management</h1>
         <div className="flex items-center gap-4">
           <TransactionImport students={students} />
+          <Button variant="outline" onClick={handleUpdateBalances} disabled={isUpdatingBalances}>
+            {isUpdatingBalances ? "Updating Balances..." : "Update Balances"}
+          </Button>
           <Dialog>
             <DialogTrigger asChild>
               <Button variant="outline">Quick Register</Button>
@@ -684,9 +906,7 @@ export default function SchoolFeeManagement() {
                           <TableCell>
                             {getClassName(student.studentClass || "")}
                           </TableCell>
-                          <TableCell>
-                            R {(studentFee?.balance || 0).toFixed(2)}
-                          </TableCell>
+                          <TableCell>R {getCurrentBalanceForStudent(student.$id).toFixed(2)}</TableCell>
                           <TableCell>
                             {getStudentLastPaid(student.$id)
                               ? new Date(

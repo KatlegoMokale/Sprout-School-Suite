@@ -12,6 +12,13 @@ export interface IStudentFees extends Document {
   balance: number;
   paymentFrequency: "monthly" | "quarterly" | "yearly";
   paymentDate: number;
+  discountType?: "none" | "percentage" | "amount";
+  discountValue?: number;
+  fullExemption?: boolean;
+  exemptedMonths?: string[];
+  competitionWinner?: boolean;
+  competitionTitle?: string;
+  registrationNotes?: string;
 }
 
 const StudentFeesSchema = new Schema<IStudentFees>(
@@ -30,6 +37,17 @@ const StudentFeesSchema = new Schema<IStudentFees>(
       required: true,
     },
     paymentDate: { type: Number, required: true },
+    discountType: {
+      type: String,
+      enum: ["none", "percentage", "amount"],
+      default: "none",
+    },
+    discountValue: { type: Number, default: 0 },
+    fullExemption: { type: Boolean, default: false },
+    exemptedMonths: { type: [String], default: [] },
+    competitionWinner: { type: Boolean, default: false },
+    competitionTitle: { type: String, default: "" },
+    registrationNotes: { type: String, default: "" },
   },
   { timestamps: true }
 );

@@ -41,6 +41,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import StudentRegistration from "@/components/ui/StudentRegistration"
+import StudentRegistrationManager from "@/components/ui/StudentRegistrationManager"
 import { IClass, IStudent } from "@/lib/utils"
 import { RootState, AppDispatch } from '@/lib/store' // Import RootState and AppDispatch
 import { fetchStudents, selectStudents } from '@/lib/features/students/studentsSlice' // Import Redux actions and selectors
@@ -57,6 +58,8 @@ export default function StudentManagement() {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedClass, setSelectedClass] = useState<string>("all")
   const [sortConfig, setSortConfig] = useState<{ key: keyof IStudent; direction: 'asc' | 'desc' } | null>(null)
+  const [manageRegistrationOpen, setManageRegistrationOpen] = useState(false)
+  const [selectedStudentForRegistration, setSelectedStudentForRegistration] = useState<IStudent | null>(null)
 
   const recordsPerPage = 10
 
@@ -139,6 +142,14 @@ export default function StudentManagement() {
 
   return (
     <div className="  px-4 py-8">
+      <Dialog open={manageRegistrationOpen} onOpenChange={setManageRegistrationOpen}>
+        <StudentRegistrationManager
+          student={selectedStudentForRegistration}
+          onSaved={async () => {
+            await dispatch(fetchStudents())
+          }}
+        />
+      </Dialog>
       <Card>
         <CardHeader>
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
@@ -256,6 +267,14 @@ export default function StudentManagement() {
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleDeleteStudent(student.$id)}>
                               Delete
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => {
+                                setSelectedStudentForRegistration(student)
+                                setManageRegistrationOpen(true)
+                              }}
+                            >
+                              Manage Registration
                             </DropdownMenuItem>
                             <DropdownMenuItem>Add Payment</DropdownMenuItem>
                           </DropdownMenuContent>

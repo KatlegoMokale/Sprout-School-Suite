@@ -448,6 +448,13 @@ export interface IStudentFeesSchema {
   balance: number;
   paymentFrequency: string;
   paymentDate: number
+  discountType?: "none" | "percentage" | "amount";
+  discountValue?: number;
+  fullExemption?: boolean;
+  exemptedMonths?: string[];
+  competitionWinner?: boolean;
+  competitionTitle?: string;
+  registrationNotes?: string;
 };
 
 ///transactions

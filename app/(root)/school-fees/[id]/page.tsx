@@ -9,7 +9,6 @@ import { jsPDF } from "jspdf";
 import "jspdf-autotable";
 import Link from 'next/link';
 import { ChevronLeft, FileText } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 
 // Moved helper functions outside component
 const isLeapYear = (year: number): boolean => {
@@ -57,6 +56,26 @@ const generateStatementItems = (transactions: ITransactions[], fees: IStudentFee
           credit: 0,
           balance: balance
         });
+      }
+
+      if (fee.competitionWinner) {
+        const competitionCredit = Math.max(
+          0,
+          (fee.totalFees || 0) - Number(schoolFee?.registrationFee || 0)
+        );
+
+        if (competitionCredit > 0) {
+          balance -= competitionCredit;
+          items.push({
+            date: startDate.toISOString(),
+            description: `Competition Credit - Full Year`,
+            debit: 0,
+            credit: competitionCredit,
+            balance: balance,
+          });
+        }
+
+        continue;
       }
 
       // Add first monthly fee on startDate
@@ -119,6 +138,30 @@ const generateStatementItems = (transactions: ITransactions[], fees: IStudentFee
   return items;
 };
 
+const toDDMMYY = (date: Date) => {
+  const dd = `${date.getDate()}`.padStart(2, "0");
+  const mm = `${date.getMonth() + 1}`.padStart(2, "0");
+  const yy = `${date.getFullYear()}`.slice(-2);
+  return `${dd}/${mm}/${yy}`;
+};
+
+const formatCurrency = (value: number) => `R${value.toFixed(2)}`;
+
+const loadImageAsDataUrl = async (src: string) => {
+  try {
+    const response = await fetch(src);
+    const blob = await response.blob();
+    return await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result as string);
+      reader.onerror = () => reject(new Error("Failed to load logo image"));
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
+};
+
 const StudentInvoice = ({ params }: { params: Promise<{ id: string }> }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [student, setStudent] = useState<IStudent | null>(null);
@@ -128,8 +171,6 @@ const StudentInvoice = ({ params }: { params: Promise<{ id: string }> }) => {
   const [statementItems, setStatementItems] = useState<any[]>([]);
   const [startDate, setStartDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
-  const router = useRouter()
-  const [pdfUrl, setPdfUrl] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -188,105 +229,152 @@ const StudentInvoice = ({ params }: { params: Promise<{ id: string }> }) => {
     });
   };
 
-  const generatePDF = () => {
+  const generatePDF = async () => {
     if (!student) return null;
-  
+
     const filteredItems = filterStatementItems();
     const totalBalance = filteredItems.length > 0 ? filteredItems[filteredItems.length - 1].balance : 0;
-  
+    const now = new Date();
+    const logoDataUrl = await loadImageAsDataUrl("/assets/sssLogo.png");
+
+    const totalPaid = filteredItems.reduce((sum, item) => sum + item.credit, 0);
+    const currentMonthBilled = filteredItems
+      .filter((item) => {
+        const d = new Date(item.date);
+        return item.debit > 0 && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+      })
+      .reduce((sum, item) => sum + item.debit, 0);
+    const billedThisYear = filteredItems
+      .filter((item) => new Date(item.date).getFullYear() === now.getFullYear())
+      .reduce((sum, item) => sum + item.debit, 0);
+    const paidThisYear = filteredItems
+      .filter((item) => new Date(item.date).getFullYear() === now.getFullYear())
+      .reduce((sum, item) => sum + item.credit, 0);
+    const outstandingYear = billedThisYear - paidThisYear;
+
     const doc = new jsPDF();
-    
-    // Set up the document
-    doc.setFillColor(102, 51, 153); // A purple color for the header
-    doc.rect(0, 0, 210, 40, 'F');
-    
-    // Add the header content
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(18);
-    doc.text('Angels World Day Care Centre', 14, 25);
-    
+
+    doc.setFillColor(245, 245, 245);
+    doc.rect(0, 0, 210, 297, "F");
+
+    doc.setDrawColor(122, 145, 0);
+    doc.setLineWidth(1.5);
+    doc.line(0, 36, 136, 36);
+    doc.setDrawColor(0, 138, 145);
+    doc.line(0, 39, 210, 39);
+
+    doc.setTextColor(20, 102, 110);
+    doc.setFontSize(20);
+    doc.setFont("times", "bold");
+    doc.text("ANGELS WORLD DAY CARE CENTRE", 4, 49);
+    doc.setTextColor(95, 113, 0);
     doc.setFontSize(10);
-    doc.text('Statement Period', 140, 20);
-    doc.setFontSize(12);
-    doc.text(`${startDate} - ${endDate}`, 140, 28);
-  
-    // Reset text color for the rest of the document
-    doc.setTextColor(0, 0, 0);
-  
-    // Add student information
-    doc.setFontSize(18);
-    doc.text(`${student.firstName} ${student.surname}`, 14, 55);
-    doc.setFontSize(10);
-    doc.text(`ID: ${student.$id}`, 14, 62);
-  
-    doc.setFontSize(10);
-    doc.text('Address', 140, 55);
-    // Split the address into two lines
-    const addressParts = student.address1.split(',');
-    let address1, address2;
-    if (addressParts.length > 1) {
-      address1 = addressParts[0].trim();
-      address2 = addressParts.slice(1).join(',').trim();
-    } else {
-      const words = student.address1.split(' ');
-      const midpoint = Math.ceil(words.length / 2);
-      address1 = words.slice(0, midpoint).join(' ');
-      address2 = words.slice(midpoint).join(' ');
+    doc.setFont("times", "normal");
+    doc.text("19 Boniface Street, CE3, Vanderbijlpark, 1911", 4, 56);
+    doc.text("016 100 6298 / 083 683 1036", 4, 61);
+
+    if (logoDataUrl) {
+      doc.addImage(logoDataUrl, "PNG", 148, 12, 50, 52);
     }
-    console.log("address1",address1);
-    console.log("address2",address2);
-    doc.text(address1.trim(), 140, 62);
-    doc.text(address2.trim(), 140, 69);
-  
-    // Add Statement Summary title
-    doc.setFontSize(14);
-    doc.text('Statement Summary', 14, 80);
-  
-    // Create the table
-    const tableData = filteredItems.map(item => [
-      new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: '2-digit' }),
-      item.description,
-      item.debit > 0 ? `R ${item.debit.toFixed(2)}` : '',
-      item.credit > 0 ? `R ${item.credit.toFixed(2)}` : '',
-      `R ${item.balance.toFixed(2)}`,
-    ]);
-  
-    (doc as any).autoTable({
-      startY: 90,
-      head: [['DATE', 'DESCRIPTION', 'DEBIT', 'CREDIT', 'BALANCE']],
-      body: tableData,
-      theme: 'grid',
-      headStyles: { fillColor: [240, 240, 240], textColor: [0, 0, 0], fontStyle: 'bold' },
-      columnStyles: {
-        0: { cellWidth: 25 },
-        1: { cellWidth: 'auto' },
-        2: { cellWidth: 35, halign: 'right' },
-        3: { cellWidth: 35, halign: 'right' },
-        4: { cellWidth: 35, halign: 'right' },
-      },
-      styles: { fontSize: 9, cellPadding: 1.5 },
+
+    doc.setFillColor(0, 129, 135);
+    doc.rect(0, 78, 210, 10, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.text("SCHOOL FEES STATEMENT", 105, 84.5, { align: "center" });
+    doc.setFont("helvetica", "normal");
+    doc.text(`Date: ${toDDMMYY(now)}`, 206, 84.5, { align: "right" });
+
+    doc.setFillColor(122, 145, 0);
+    doc.rect(15, 95, 85, 7, "F");
+    doc.rect(110, 95, 85, 7, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.text("Student Information:", 17, 100);
+    doc.text("Financial Summary:", 112, 100);
+
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Name: ${student.firstName} ${student.surname}`, 15, 108);
+    doc.text(`Age: ${student.age || "N/A"}`, 15, 114);
+    const monthlyFees = studentFees.length > 0 ? studentFees[0].fees : 0;
+    doc.text(`Monthly Fees: ${formatCurrency(monthlyFees)}`, 15, 120);
+
+    doc.text(`Total Paid: ${formatCurrency(totalPaid)}`, 110, 108);
+    doc.text(`Fees Billed (Current): ${formatCurrency(currentMonthBilled)}`, 110, 114);
+    doc.text(`Fees Billed (Year): ${formatCurrency(billedThisYear)}`, 110, 120);
+    doc.setTextColor(0, 109, 118);
+    doc.setFont("helvetica", "bold");
+    doc.text(`Outstanding (Year): ${formatCurrency(outstandingYear)}`, 110, 126);
+    doc.text(`Outstanding (Current): ${formatCurrency(totalBalance)}`, 110, 132);
+
+    doc.setFillColor(122, 145, 0);
+    doc.rect(15, 140, 180, 7, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.text("Transaction History:", 17, 145);
+
+    const tableData = filteredItems.map((item) => {
+      const date = new Date(item.date);
+      return [
+        toDDMMYY(date),
+        item.description,
+        item.debit > 0 ? `R${item.debit.toFixed(2)}` : "",
+        item.credit > 0 ? `R${item.credit.toFixed(2)}` : "",
+        `R${item.balance.toFixed(2)}`,
+      ];
     });
-  
+
+    (doc as any).autoTable({
+      startY: 151,
+      head: [["Date", "Description", "Debit", "Credit", "Balance"]],
+      body: tableData,
+      foot: [["Current Balance", "", "", "", `R${totalBalance.toFixed(2)}`]],
+      theme: "striped",
+      headStyles: { fillColor: [0, 129, 135], textColor: [255, 255, 255], fontStyle: "bold" },
+      footStyles: { fillColor: [0, 129, 135], textColor: [255, 255, 255], fontStyle: "bold" },
+      alternateRowStyles: { fillColor: [235, 235, 235] },
+      columnStyles: {
+        0: { cellWidth: 30 },
+        1: { cellWidth: 70 },
+        2: { cellWidth: 26, halign: "right" },
+        3: { cellWidth: 26, halign: "right" },
+        4: { cellWidth: 28, halign: "right" },
+      },
+      styles: { fontSize: 10, cellPadding: 1.8 },
+      margin: { left: 15, right: 15 },
+    });
+
+    doc.setTextColor(0, 0, 0);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.text(
+      "This is an official school fees statement. Please retain for your records.",
+      105,
+      232,
+      { align: "center" }
+    );
+
     return doc;
   };
 
-  const downloadPDF = () => {
-    const doc = generatePDF();
+  const downloadPDF = async () => {
+    const doc = await generatePDF();
     if (doc) {
       doc.save(`student_statement_${student?.firstName}_${student?.surname}.pdf`);
     }
   };
 
-  const viewPDF = () => {
-    const doc = generatePDF();
+  const viewPDF = async () => {
+    const doc = await generatePDF();
     if (doc) {
-      const pdfBlob = doc.output('blob');
+      const pdfBlob = doc.output("blob");
       const pdfUrl = URL.createObjectURL(pdfBlob);
-      setPdfUrl(pdfUrl);
-      window.open(pdfUrl, '_blank');
+      window.open(pdfUrl, "_blank");
+      setTimeout(() => URL.revokeObjectURL(pdfUrl), 30000);
     }
   };
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -296,26 +384,46 @@ const StudentInvoice = ({ params }: { params: Promise<{ id: string }> }) => {
   }
 
   const filteredItems = filterStatementItems();
+  const currentBalance =
+    filteredItems.length > 0 ? filteredItems[filteredItems.length - 1].balance : 0;
 
 
 
   return (
-    <div className='container'>
-          <Link href="/school-fees" className="flex items-center text-sm text-muted-foreground hover:text-primary transition-colors">
+    <div className='container mx-auto px-4 py-6 space-y-6'>
+      <Link href="/school-fees" className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors">
         <ChevronLeft className="mr-2 h-4 w-4" />
         School Fees
       </Link>
-      <div className='w-full'>
-        <h1 className="text-2xl font-bold mb-4">Account Statement</h1>
-        {student && (
-          <div className="mb-4">
-            <p><strong>Name:</strong> {student.firstName} {student.surname}</p>
-            <p><strong>Address:</strong> {student.address1}</p>
-            <p><strong>Date of Birth:</strong> {new Date(student.dateOfBirth).toLocaleDateString()}</p>
-            <p><strong>Contact:</strong> {student.p1_phoneNumber}</p>
+      <div className="overflow-hidden rounded-xl border shadow-sm">
+        <div className="bg-purple-700 px-6 py-5 text-white">
+          <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+            <div>
+              <p className="text-sm opacity-90">Angels World Day Care Centre</p>
+              <h1 className="text-2xl font-bold">Account Statement</h1>
+            </div>
+            <div className="text-sm">
+              <p className="font-medium">Statement Period</p>
+              <p>{startDate || "Start"} - {endDate || "Today"}</p>
+            </div>
           </div>
-        )}
-        <div className="flex space-x-4 mb-4">
+        </div>
+        <div className="bg-white px-6 py-5">
+          {student && (
+            <div className="grid grid-cols-1 gap-3 text-sm md:grid-cols-2">
+              <p><strong>Name:</strong> {student.firstName} {student.surname}</p>
+              <p><strong>ID:</strong> {student.$id}</p>
+              <p><strong>Address:</strong> {student.address1}</p>
+              <p><strong>Date of Birth:</strong> {new Date(student.dateOfBirth).toLocaleDateString()}</p>
+              <p><strong>Contact:</strong> {student.p1_phoneNumber}</p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="rounded-xl border bg-white p-6 shadow-sm">
+        <h2 className="mb-4 text-lg font-semibold">Statement Summary</h2>
+        <div className="mb-5 grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
             <label htmlFor="startDate" className="block text-sm font-medium text-gray-700">Start Date</label>
             <Input
@@ -337,7 +445,7 @@ const StudentInvoice = ({ params }: { params: Promise<{ id: string }> }) => {
             />
           </div>
         </div>
-        <div className="flex space-x-4 mt-4 mb-6">
+        <div className="mb-6 flex flex-wrap gap-3">
           <Button onClick={downloadPDF}>
             Download PDF
           </Button>
@@ -346,8 +454,6 @@ const StudentInvoice = ({ params }: { params: Promise<{ id: string }> }) => {
             View PDF
           </Button>
         </div>
-      </div>
-      <div>
         <Table>
           <TableHeader>
             <TableRow>
@@ -373,9 +479,7 @@ const StudentInvoice = ({ params }: { params: Promise<{ id: string }> }) => {
             <TableRow>
               <TableCell colSpan={4}>Current Balance</TableCell>
               <TableCell>
-                R {filteredItems.length > 0 
-                    ? filteredItems[filteredItems.length - 1].balance.toFixed(2) 
-                    : "0.00"}
+                R {currentBalance.toFixed(2)}
               </TableCell>
             </TableRow>
           </TableFooter>
