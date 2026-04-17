@@ -47,7 +47,7 @@ export async function PUT(
     const { $id, ...updateData } = body;
 
     const student = await Student.findByIdAndUpdate(id, updateData, {
-      new: true,
+      returnDocument: 'after',
       runValidators: true,
     }).lean();
 

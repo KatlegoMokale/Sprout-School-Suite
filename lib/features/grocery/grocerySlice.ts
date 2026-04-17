@@ -51,7 +51,7 @@ const grocerySlice = createSlice({
 
 
 // Selectors
-const selectGroceriesState = (state: { grocery: GroceriesState }) => state.grocery;
+const selectGroceriesState = (state: { groceries: GroceriesState }) => state.groceries;
 
 export const selectGroceries = createSelector(
     selectGroceriesState,

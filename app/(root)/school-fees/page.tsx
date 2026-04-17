@@ -59,6 +59,8 @@ export default function SchoolFeeManagement() {
   const [linkSiblingSearch, setLinkSiblingSearch] = useState("");
   const [isSavingLinks, setIsSavingLinks] = useState(false);
   const [isUpdatingBalances, setIsUpdatingBalances] = useState(false);
+  const [sortBy, setSortBy] = useState<"name" | "class" | "balance" | "lastPaid" | "status">("name");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
   const form = useForm<z.infer<typeof newPaymentFormSchema>>({
     resolver: zodResolver(newPaymentFormSchema),
@@ -418,6 +420,28 @@ export default function SchoolFeeManagement() {
   const isOutstanding = (student: IStudent) => {
     return getCurrentBalanceForStudent(student.$id) > 0;
   };
+
+  const sortedFilteredStudents = [...filteredStudents].sort((a, b) => {
+    let compare = 0;
+
+    if (sortBy === "name") {
+      compare = `${a.firstName} ${a.surname}`.localeCompare(`${b.firstName} ${b.surname}`);
+    } else if (sortBy === "class") {
+      compare = getClassName(a.studentClass || "").localeCompare(getClassName(b.studentClass || ""));
+    } else if (sortBy === "balance") {
+      compare = getCurrentBalanceForStudent(a.$id) - getCurrentBalanceForStudent(b.$id);
+    } else if (sortBy === "lastPaid") {
+      const aLast = getStudentLastPaid(a.$id) || 0;
+      const bLast = getStudentLastPaid(b.$id) || 0;
+      compare = aLast - bLast;
+    } else if (sortBy === "status") {
+      const aStatus = isOutstanding(a) ? 1 : 0;
+      const bStatus = isOutstanding(b) ? 1 : 0;
+      compare = aStatus - bStatus;
+    }
+
+    return sortDirection === "asc" ? compare : -compare;
+  });
 
   const totalFees = studentSchoolFees.reduce((sum, fee) => sum + fee.totalFees, 0);
   const totalPaid = studentSchoolFees.reduce(
@@ -804,6 +828,27 @@ export default function SchoolFeeManagement() {
                     Show Unregistered
                   </label>
                 </div>
+                <Select1 value={sortBy} onValueChange={(value) => setSortBy(value as typeof sortBy)}>
+                  <SelectTrigger className="w-[170px]">
+                    <SelectValue1 placeholder="Sort by" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="name">Sort: Name</SelectItem>
+                    <SelectItem value="class">Sort: Class</SelectItem>
+                    <SelectItem value="balance">Sort: Balance</SelectItem>
+                    <SelectItem value="lastPaid">Sort: Last Paid</SelectItem>
+                    <SelectItem value="status">Sort: Status</SelectItem>
+                  </SelectContent>
+                </Select1>
+                <Select1 value={sortDirection} onValueChange={(value) => setSortDirection(value as "asc" | "desc")}>
+                  <SelectTrigger className="w-[130px]">
+                    <SelectValue1 placeholder="Direction" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="asc">Asc</SelectItem>
+                    <SelectItem value="desc">Desc</SelectItem>
+                  </SelectContent>
+                </Select1>
                 <Dialog open={isLinkDialogOpen} onOpenChange={setIsLinkDialogOpen}>
                   <DialogTrigger asChild>
                     <Button variant="outline">Link Children</Button>
@@ -894,7 +939,7 @@ export default function SchoolFeeManagement() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredStudents.map((student) => {
+                    {sortedFilteredStudents.map((student) => {
                       const studentFee = studentSchoolFees.find(
                         (fee) => fee.studentId === student.$id
                       );

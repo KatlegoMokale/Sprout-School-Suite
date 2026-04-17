@@ -154,7 +154,7 @@ const loadImageAsDataUrl = async (src: string) => {
     return await new Promise<string>((resolve, reject) => {
       const reader = new FileReader();
       reader.onloadend = () => resolve(reader.result as string);
-      reader.onerror = () => reject(new Error("Failed to load logo image"));
+      reader.onerror = () => reject(new Error("Failed to load image"));
       reader.readAsDataURL(blob);
     });
   } catch {
@@ -235,7 +235,7 @@ const StudentInvoice = ({ params }: { params: Promise<{ id: string }> }) => {
     const filteredItems = filterStatementItems();
     const totalBalance = filteredItems.length > 0 ? filteredItems[filteredItems.length - 1].balance : 0;
     const now = new Date();
-    const logoDataUrl = await loadImageAsDataUrl("/assets/sssLogo.png");
+    const letterheadDataUrl = await loadImageAsDataUrl("/letterhead.png");
 
     const totalPaid = filteredItems.reduce((sum, item) => sum + item.credit, 0);
     const currentMonthBilled = filteredItems
@@ -254,66 +254,56 @@ const StudentInvoice = ({ params }: { params: Promise<{ id: string }> }) => {
 
     const doc = new jsPDF();
 
-    doc.setFillColor(245, 245, 245);
+    doc.setFillColor(255, 255, 255);
     doc.rect(0, 0, 210, 297, "F");
 
-    doc.setDrawColor(122, 145, 0);
-    doc.setLineWidth(1.5);
-    doc.line(0, 36, 136, 36);
-    doc.setDrawColor(0, 138, 145);
-    doc.line(0, 39, 210, 39);
-
-    doc.setTextColor(20, 102, 110);
-    doc.setFontSize(20);
-    doc.setFont("times", "bold");
-    doc.text("ANGELS WORLD DAY CARE CENTRE", 4, 49);
-    doc.setTextColor(95, 113, 0);
-    doc.setFontSize(10);
-    doc.setFont("times", "normal");
-    doc.text("19 Boniface Street, CE3, Vanderbijlpark, 1911", 4, 56);
-    doc.text("016 100 6298 / 083 683 1036", 4, 61);
-
-    if (logoDataUrl) {
-      doc.addImage(logoDataUrl, "PNG", 148, 12, 50, 52);
+    let contentStartY = 78;
+    if (letterheadDataUrl) {
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const letterheadWidth = pageWidth;
+      const letterheadHeight = letterheadWidth / 4;
+      const letterheadY = 10;
+      doc.addImage(letterheadDataUrl, "PNG", 0, letterheadY, letterheadWidth, letterheadHeight);
+      contentStartY = letterheadY + letterheadHeight + 8;
     }
 
     doc.setFillColor(0, 129, 135);
-    doc.rect(0, 78, 210, 10, "F");
+    doc.rect(0, contentStartY, 210, 10, "F");
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(11);
     doc.setFont("helvetica", "bold");
-    doc.text("SCHOOL FEES STATEMENT", 105, 84.5, { align: "center" });
+    doc.text("SCHOOL FEES STATEMENT", 105, contentStartY + 6.5, { align: "center" });
     doc.setFont("helvetica", "normal");
-    doc.text(`Date: ${toDDMMYY(now)}`, 206, 84.5, { align: "right" });
+    doc.text(`Date: ${toDDMMYY(now)}`, 206, contentStartY + 6.5, { align: "right" });
 
     doc.setFillColor(122, 145, 0);
-    doc.rect(15, 95, 85, 7, "F");
-    doc.rect(110, 95, 85, 7, "F");
+    doc.rect(15, contentStartY + 17, 85, 7, "F");
+    doc.rect(110, contentStartY + 17, 85, 7, "F");
     doc.setTextColor(255, 255, 255);
     doc.setFont("helvetica", "bold");
-    doc.text("Student Information:", 17, 100);
-    doc.text("Financial Summary:", 112, 100);
+    doc.text("Student Information:", 17, contentStartY + 22);
+    doc.text("Financial Summary:", 112, contentStartY + 22);
 
     doc.setTextColor(0, 0, 0);
     doc.setFontSize(11);
     doc.setFont("helvetica", "normal");
-    doc.text(`Name: ${student.firstName} ${student.surname}`, 15, 108);
-    doc.text(`Age: ${student.age || "N/A"}`, 15, 114);
+    doc.text(`Name: ${student.firstName} ${student.surname}`, 15, contentStartY + 30);
+    doc.text(`Age: ${student.age || "N/A"}`, 15, contentStartY + 36);
     const monthlyFees = studentFees.length > 0 ? studentFees[0].fees : 0;
-    doc.text(`Monthly Fees: ${formatCurrency(monthlyFees)}`, 15, 120);
+    doc.text(`Monthly Fees: ${formatCurrency(monthlyFees)}`, 15, contentStartY + 42);
 
-    doc.text(`Total Paid: ${formatCurrency(totalPaid)}`, 110, 108);
-    doc.text(`Fees Billed (Current): ${formatCurrency(currentMonthBilled)}`, 110, 114);
-    doc.text(`Fees Billed (Year): ${formatCurrency(billedThisYear)}`, 110, 120);
+    doc.text(`Total Paid: ${formatCurrency(totalPaid)}`, 110, contentStartY + 30);
+    doc.text(`Fees Billed (Current): ${formatCurrency(currentMonthBilled)}`, 110, contentStartY + 36);
+    doc.text(`Fees Billed (Year): ${formatCurrency(billedThisYear)}`, 110, contentStartY + 42);
     doc.setTextColor(0, 109, 118);
     doc.setFont("helvetica", "bold");
-    doc.text(`Outstanding (Year): ${formatCurrency(outstandingYear)}`, 110, 126);
-    doc.text(`Outstanding (Current): ${formatCurrency(totalBalance)}`, 110, 132);
+    doc.text(`Outstanding (Year): ${formatCurrency(outstandingYear)}`, 110, contentStartY + 48);
+    doc.text(`Outstanding (Current): ${formatCurrency(totalBalance)}`, 110, contentStartY + 54);
 
     doc.setFillColor(122, 145, 0);
-    doc.rect(15, 140, 180, 7, "F");
+    doc.rect(15, contentStartY + 62, 180, 7, "F");
     doc.setTextColor(255, 255, 255);
-    doc.text("Transaction History:", 17, 145);
+    doc.text("Transaction History:", 17, contentStartY + 67);
 
     const tableData = filteredItems.map((item) => {
       const date = new Date(item.date);
@@ -327,7 +317,7 @@ const StudentInvoice = ({ params }: { params: Promise<{ id: string }> }) => {
     });
 
     (doc as any).autoTable({
-      startY: 151,
+      startY: contentStartY + 73,
       head: [["Date", "Description", "Debit", "Credit", "Balance"]],
       body: tableData,
       foot: [["Current Balance", "", "", "", `R${totalBalance.toFixed(2)}`]],

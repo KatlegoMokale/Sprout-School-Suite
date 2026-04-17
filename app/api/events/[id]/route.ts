@@ -43,7 +43,7 @@ export async function PUT(
     const body = await request.json();
 
     const event = await Event.findByIdAndUpdate(id, body, {
-      new: true,
+      returnDocument: 'after',
       runValidators: true,
     }).lean();
 

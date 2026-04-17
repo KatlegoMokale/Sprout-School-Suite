@@ -37,7 +37,7 @@ export async function PUT(
     const body = await request.json();
 
     const grocery = await Grocery.findByIdAndUpdate(id, body, {
-      new: true,
+      returnDocument: 'after',
       runValidators: true,
     }).lean();
 

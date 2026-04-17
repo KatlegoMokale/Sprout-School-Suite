@@ -11,14 +11,14 @@ import { Select1, SelectContent, SelectItem, SelectTrigger, SelectValue1 } from 
 import { PiggyBank, ShoppingCart, DollarSign, TrendingUp, TrendingDown, CreditCard, GraduationCap, Users, BookOpen, CalendarIcon, CakeIcon } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { RootState, AppDispatch } from '@/lib/store'
-import { fetchClasses, selectClasses } from "@/lib/features/classes/classesSlice"
-import { fetchEvents, selectEvents } from "@/lib/features/events/eventsSlice"
-import { fetchStudents, selectStudents } from "@/lib/features/students/studentsSlice"
-import { fetchStuff, selectStuff } from "@/lib/features/stuff/stuffSlice"
-import { fetchTransactions, selectTransactions } from "@/lib/features/transactions/transactionsSlice"
-import { fetchPettyCash, selectPettyCash } from "@/lib/features/pettyCash/pettyCashSlice"
-import { fetchGroceries, selectGroceries } from "@/lib/features/grocery/grocerySlice"
-import { fetchSchoolFeesSetup, selectSchoolFeesSetup } from '@/lib/features/schoolFeesSetup/schoolFeesSetupSlice'
+import { fetchClasses, selectClasses, selectClassesStatus } from "@/lib/features/classes/classesSlice"
+import { fetchEvents, selectEvents, selectEventsStatus } from "@/lib/features/events/eventsSlice"
+import { fetchStudents, selectStudents, selectStudentsStatus } from "@/lib/features/students/studentsSlice"
+import { fetchStuff, selectStuff, selectStuffStatus } from "@/lib/features/stuff/stuffSlice"
+import { fetchTransactions, selectTransactions, selectTransactionsStatus } from "@/lib/features/transactions/transactionsSlice"
+import { fetchPettyCash, selectPettyCash, selectPettyCashStatus } from "@/lib/features/pettyCash/pettyCashSlice"
+import { fetchGroceries, selectGroceries, selectGroceriesStatus } from "@/lib/features/grocery/grocerySlice"
+import { fetchSchoolFeesSetup, selectSchoolFeesSetup, selectSchoolFeesSetupStatus } from '@/lib/features/schoolFeesSetup/schoolFeesSetupSlice'
 import { fetchStudentSchoolFees, selectStudentSchoolFees, selectStudentSchoolFeesStatus } from '@/lib/features/studentSchoolFees/studentSchoolFeesSlice'
 import { useDispatch, useSelector } from "react-redux"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts'
@@ -26,25 +26,29 @@ import { useGetStudentsQuery } from '@/lib/features/api/apiSlice'
 import { IStudentFeesSchema } from "@/lib/utils";
 
 // Add this function before the Dashboard component
-const calculateTotal = (data: any[], field: string): number => {
-  return data.reduce((sum, item) => sum + (Number(item[field]) || 0), 0);
-};
-
 export default function Dashboard() {
   const dispatch = useDispatch<AppDispatch>()
-  const { students, studentStatus } = useSelector((state: RootState) => state.students)
-  const { classes, classesStatus } = useSelector((state: RootState) => state.classes)
-  const { stuff, stuffStatus } = useSelector((state: RootState) => state.stuff)
-  const { transactions, transactionsStatus } = useSelector((state: RootState) => state.transactions)
-  const { events, eventsStatus } = useSelector((state: RootState) => state.events)
-  const { pettyCash, pettyCashStatus } = useSelector((state: RootState) => state.pettyCash)
-  const { grocery, groceryStatus } = useSelector((state: RootState) => state.groceries)
-  const { schoolFeesSetup, schoolFeesSetupStatus } = useSelector((state: RootState) => state.schoolFeesSetup)
-  const { studentSchoolFees, studentSchoolFeesStatus } = useSelector((state: RootState) => state.studentSchoolFees)
+  const students = useSelector(selectStudents)
+  const studentStatus = useSelector(selectStudentsStatus)
+  const classes = useSelector(selectClasses)
+  const classesStatus = useSelector(selectClassesStatus)
+  const stuff = useSelector(selectStuff)
+  const stuffStatus = useSelector(selectStuffStatus)
+  const transactions = useSelector(selectTransactions)
+  const transactionsStatus = useSelector(selectTransactionsStatus)
+  const events = useSelector(selectEvents)
+  const eventsStatus = useSelector(selectEventsStatus)
+  const pettyCash = useSelector(selectPettyCash)
+  const pettyCashStatus = useSelector(selectPettyCashStatus)
+  const grocery = useSelector(selectGroceries)
+  const groceryStatus = useSelector(selectGroceriesStatus)
+  const schoolFeesSetup = useSelector(selectSchoolFeesSetup)
+  const schoolFeesSetupStatus = useSelector(selectSchoolFeesSetupStatus)
+  const studentSchoolFees = useSelector(selectStudentSchoolFees)
+  const studentSchoolFeesStatus = useSelector(selectStudentSchoolFeesStatus)
 
   const [sortPeriod, setSortPeriod] = useState("all")
   const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
 
   const {
     data: studentsData,
@@ -54,36 +58,60 @@ export default function Dashboard() {
 
   // Add useEffect hooks to fetch available data only
   useEffect(() => {
-    const fetchAvailableData = async () => {
-      try {
-        setIsLoading(true);
-        // Only fetch students since other APIs may not be available
-        await Promise.all([
-          dispatch(fetchStudents()),
-          // Comment out other fetches that may cause 404 errors
-          // dispatch(fetchClasses()),
-          // dispatch(fetchEvents()),
-          // dispatch(fetchStuff()),
-          // dispatch(fetchTransactions()),
-          // dispatch(fetchPettyCash()),
-          // dispatch(fetchGroceries()),
-          // dispatch(fetchSchoolFeesSetup()),
-          // dispatch(fetchStudentSchoolFees())
-        ]);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        setError("Failed to fetch data. Please try again later.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    if (studentStatus === "idle") dispatch(fetchStudents());
+    if (classesStatus === "idle") dispatch(fetchClasses());
+    if (eventsStatus === "idle") dispatch(fetchEvents());
+    if (stuffStatus === "idle") dispatch(fetchStuff());
+    if (transactionsStatus === "idle") dispatch(fetchTransactions());
+    if (pettyCashStatus === "idle") dispatch(fetchPettyCash());
+    if (groceryStatus === "idle") dispatch(fetchGroceries());
+    if (schoolFeesSetupStatus === "idle") dispatch(fetchSchoolFeesSetup());
+    if (studentSchoolFeesStatus === "idle") dispatch(fetchStudentSchoolFees());
+  }, [
+    dispatch,
+    studentStatus,
+    classesStatus,
+    eventsStatus,
+    stuffStatus,
+    transactionsStatus,
+    pettyCashStatus,
+    groceryStatus,
+    schoolFeesSetupStatus,
+    studentSchoolFeesStatus,
+  ]);
 
-    fetchAvailableData();
-  }, [dispatch]);
+  useEffect(() => {
+    setIsLoading(
+      studentStatus === "loading" ||
+        classesStatus === "loading" ||
+        eventsStatus === "loading" ||
+        stuffStatus === "loading" ||
+        transactionsStatus === "loading" ||
+        pettyCashStatus === "loading" ||
+        groceryStatus === "loading" ||
+        schoolFeesSetupStatus === "loading" ||
+        studentSchoolFeesStatus === "loading"
+    );
+  }, [
+    studentStatus,
+    classesStatus,
+    eventsStatus,
+    stuffStatus,
+    transactionsStatus,
+    pettyCashStatus,
+    groceryStatus,
+    schoolFeesSetupStatus,
+    studentSchoolFeesStatus,
+  ]);
 
   // Calculate financial data from existing data
-  const totalRevenue = useMemo(() => 
-    transactions.reduce((sum, t) => sum + t.amount, 0), 
+  const totalRevenue = useMemo(
+    () =>
+      transactions.reduce((sum, t) => {
+        const method = String(t.paymentMethod || "").toLowerCase();
+        if (method.startsWith("competition credit")) return sum;
+        return sum + (t.amount || 0);
+      }, 0),
     [transactions]
   );
   
@@ -96,66 +124,59 @@ export default function Dashboard() {
   );
   
   const totalOutstanding = useMemo(() => {
-    const currentDate = new Date();
-    const currentYear = currentDate.getFullYear();
-    const currentMonth = currentDate.getMonth() + 1; // 1-12
+    const now = new Date();
+    const endOfToday = new Date(now);
+    endOfToday.setHours(23, 59, 59, 999);
 
-    console.log('Current Month:', currentMonth);
-    console.log('Student fees:', studentSchoolFees);
-    console.log('Transactions:', transactions);
+    const generateAccruedBalance = (studentId: string) => {
+      const fees = studentSchoolFees
+        .filter((fee) => fee.studentId === studentId)
+        .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
 
-    // Calculate total outstanding from student fees and transactions
-    const totalOutstanding = studentSchoolFees.reduce((sum: number, fee: IStudentFeesSchema) => {
-      // Only include fees for the current year
-      if (new Date(fee.startDate).getFullYear() === currentYear) {
+      const studentTransactions = transactions.filter((t) => {
+        const paymentDate = new Date(t.paymentDate);
+        return t.studentId === studentId && !Number.isNaN(paymentDate.getTime()) && paymentDate <= endOfToday;
+      });
+
+      const items: { date: string; debit: number; credit: number }[] = [];
+
+      fees.forEach((fee) => {
         const startDate = new Date(fee.startDate);
-        const startMonth = startDate.getMonth() + 1; // 1-12
-        const startYear = startDate.getFullYear();
+        const endDate = new Date(fee.endDate);
+        if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime()) || startDate > endOfToday) return;
 
-        // Calculate number of months from start date to current month
-        const monthsToPay = (currentYear - startYear) * 12 + (currentMonth - startMonth) + 1;
+        const plan = schoolFeesSetup.find((setup) => setup.$id === fee.schoolFeesRegId);
+        if (plan?.registrationFee) {
+          items.push({ date: startDate.toISOString(), debit: plan.registrationFee, credit: 0 });
+        }
 
-        // Calculate total fees due
-        const monthlyFee = fee.fees;
-        const totalFeesDue = monthlyFee * monthsToPay;
+        if (fee.competitionWinner) {
+          const compCredit = Math.max(0, (fee.totalFees || 0) - Number(plan?.registrationFee || 0));
+          if (compCredit > 0) {
+            items.push({ date: startDate.toISOString(), debit: 0, credit: compCredit });
+          }
+          return;
+        }
 
-        // Get student's transactions for this year
-        const studentTransactions = transactions.filter(t => 
-          t.studentId === fee.studentId && 
-          new Date(t.paymentDate).getFullYear() === currentYear
-        );
+        items.push({ date: startDate.toISOString(), debit: fee.fees, credit: 0 });
+        const cursor = new Date(startDate);
+        cursor.setMonth(cursor.getMonth() + 1);
+        while (cursor <= endDate && cursor <= endOfToday) {
+          items.push({ date: cursor.toISOString(), debit: fee.fees, credit: 0 });
+          cursor.setMonth(cursor.getMonth() + 1);
+        }
+      });
 
-        // Calculate total payments made
-        const totalPayments = studentTransactions.reduce((sum, t) => sum + t.amount, 0);
+      studentTransactions.forEach((t) => {
+        items.push({ date: new Date(t.paymentDate).toISOString(), debit: 0, credit: t.amount || 0 });
+      });
 
-        // Get student details for logging
-        const student = students.find(s => s.$id === fee.studentId);
-        const studentName = student ? `${student.firstName} ${student.surname}` : 'Unknown Student';
+      items.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      return items.reduce((sum, item) => sum + item.debit - item.credit, 0);
+    };
 
-        console.log('Student Details:', {
-          name: studentName,
-          studentId: fee.studentId,
-          monthlyFee,
-          monthsToPay,
-          totalFeesDue,
-          totalPayments,
-          outstanding: totalFeesDue - totalPayments,
-          transactions: studentTransactions.map(t => ({
-            date: new Date(t.paymentDate).toLocaleDateString(),
-            amount: t.amount,
-            type: t.paymentMethod
-          }))
-        });
-
-        return sum + (totalFeesDue - totalPayments);
-      }
-      return sum;
-    }, 0);
-
-    console.log('Total outstanding:', totalOutstanding);
-
-    return totalOutstanding;
-  }, [studentSchoolFees, transactions, students]);
+    return students.reduce((sum, student) => sum + generateAccruedBalance(student.$id), 0);
+  }, [students, studentSchoolFees, transactions, schoolFeesSetup]);
 
   const summaryCards = [
     { title: "Total Revenue", amount: totalRevenue, icon: DollarSign, color: "bg-green-500" },
@@ -247,7 +268,7 @@ export default function Dashboard() {
   //   if (studentSchoolFeesStatus === 'idle') dispatch(fetchStudentSchoolFees());
   // }, [dispatch, studentSchoolFeesStatus]);
 
-  if (studentsLoading) {
+  if (studentsLoading || isLoading) {
     return <div>Loading...</div>;
   }
 

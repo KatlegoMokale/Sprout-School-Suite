@@ -37,7 +37,7 @@ export async function PUT(
     const body = await request.json();
 
     const salary = await StaffSalary.findByIdAndUpdate(id, body, {
-      new: true,
+      returnDocument: 'after',
       runValidators: true,
     }).lean();
 

@@ -37,7 +37,7 @@ export async function PUT(
     const body = await request.json();
 
     const fees = await SchoolFees.findByIdAndUpdate(id, body, {
-      new: true,
+      returnDocument: 'after',
       runValidators: true,
     }).lean();
 

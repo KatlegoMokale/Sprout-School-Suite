@@ -37,7 +37,7 @@ export async function PUT(
     const body = await request.json();
 
     const parent = await Parent.findByIdAndUpdate(id, body, {
-      new: true,
+      returnDocument: 'after',
       runValidators: true,
     }).lean();
 
