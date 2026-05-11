@@ -2,6 +2,32 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --background: 0 0% 100%;
+  --foreground: 222.2 84% 4.9%;
+}
+
+[data-theme="dark"] {
+  --background: 222.2 84% 4.9%;
+  --foreground: 210 40% 98%;
+}
+
+[data-theme="forest"] {
+  --background: 120 40% 96%;
+  --foreground: 156 55% 16%;
+}
+
+[data-theme="sunrise"] {
+  --background: 39 100% 97%;
+  --foreground: 20 70% 24%;
+}
+
+body {
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
 * {
   margin: 0;
   padding: 0;

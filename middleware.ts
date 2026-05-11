@@ -1,38 +1,36 @@
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from "next/server";
+import { getSessionFromRequest } from "@/lib/auth/session";
 
-const isPublicRoute = createRouteMatcher([
-  '/sign-in(.*)', 
-  '/sign-up(.*)',
-  '/api/(.*)'  // Add this to allow API routes
-]);
+const PUBLIC_ROUTES = ["/login", "/api/auth/login", "/api/auth/logout"];
 
-export default clerkMiddleware(async (auth, request) => {
-  // Add CORS headers
-  const response = NextResponse.next();
-  
-  response.headers.set('Access-Control-Allow-Origin', '*');
-  response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+function isPublicRoute(pathname: string) {
+  return PUBLIC_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`));
+}
 
-  // Check if it's an API route
-  if (request.url.includes('/api/')) {
-    return response; // Allow API requests to pass through
+export default async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  if (pathname.startsWith("/api/")) {
+    return NextResponse.next();
   }
 
-  // Protect non-public routes that aren't API routes
-  if (!isPublicRoute(request)) {
-    await auth.protect();
+  if (isPublicRoute(pathname)) {
+    return NextResponse.next();
   }
 
-  return response;
-});
+  const session = await getSessionFromRequest(request);
+
+  if (!session) {
+    const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("next", pathname);
+    return NextResponse.redirect(loginUrl);
+  }
+
+  return NextResponse.next();
+}
 
 export const config = {
   matcher: [
-    // Skip Next.js internals and all static files
-    '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-    // Always run for API routes
-    '/(api|trpc)(.*)',
+    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
   ],
 };

@@ -6,6 +6,7 @@ Run these commands from the project root:
 
 ```bash
 npm install
+npm run lint
 npm run build
 ```
 
@@ -16,9 +17,22 @@ If `npm run build` passes, the app is ready to deploy.
 1. Copy `.env.example` to your platform environment settings.
 2. Fill in all real values before deploying.
 
-`MONGODB_URI` is required for API routes and data persistence.
+Required:
+- `MONGODB_URI` for database access
+- `AUTH_SECRET` for signed login sessions
 
-## 3. Deploy on Vercel (recommended)
+## 3. Seed first admin user
+
+Before first login, create your admin account:
+
+```bash
+ADMIN_EMAIL="admin@yourdomain.com" \
+ADMIN_PASSWORD="strong-password-here" \
+ADMIN_FULL_NAME="Your Admin Name" \
+npm run seed:admin
+```
+
+## 4. Deploy on Vercel (recommended)
 
 1. Import this repo/project into Vercel.
 2. Set the framework to `Next.js` (auto-detected in most cases).
@@ -28,7 +42,7 @@ If `npm run build` passes, the app is ready to deploy.
 Build command: `npm run build`  
 Start command: `npm run start`
 
-## 4. Deploy on a Node server
+## 5. Deploy on a Node server
 
 ```bash
 npm install

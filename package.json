@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "seed:admin": "node scripts/seed-admin.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-location": "^3.726.1",
