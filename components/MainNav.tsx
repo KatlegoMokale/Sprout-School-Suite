@@ -87,7 +87,7 @@ const MainNav = () => {
 
   return (
     <section>
-      <aside className={cn("fixed inset-y-0 left-0 z-20 hidden flex-col border-r bg-background transition-all duration-200 sm:flex", isExpanded ? "w-72" : "w-14")}>
+      <aside className={cn("fixed inset-y-0 left-0 z-20 hidden flex-col border-r bg-background transition-all duration-200 sm:flex", isExpanded ? "w-72 shadow-2xl rounded-r-3xl" : "w-14")}>
         <div className="flex items-center justify-between px-2 py-4">
           <Link href="/" className="group flex h-10 items-center gap-2 rounded-full px-1">
             <Image src="/assets/logoSSS.png" width={32} height={32} alt="SSS Logo" />
@@ -147,7 +147,7 @@ const MainNav = () => {
                         <Link
                           key={shortcut.route}
                           href={shortcut.route}
-                          className={cn("block rounded-md px-2 py-1.5 text-xs transition-colors", isShortcutActive ? "bg-green-200 font-medium" : "text-muted-foreground hover:bg-accent hover:text-foreground")}
+                          className={cn("block rounded-md px-2 py-1.5 text-xs transition-colors", isShortcutActive ? "bg-green-200 font-medium" : "text-muted-foreground hover:bg-green-50 hover:text-foreground")}
                         >
                           {shortcut.label}
                         </Link>
@@ -160,7 +160,7 @@ const MainNav = () => {
           })}
         </nav>
 
-        <nav className="border-t px-2 py-3">
+        {/* <nav className="border-t px-2 py-3">
           {isExpanded ? (
             <Link href="/settings" className={cn("flex items-center justify-between rounded-lg px-3 py-2 text-sm hover:bg-accent", activeRoot === "Settings" ? "bg-green-100" : "") }>
               <span className="flex items-center gap-2"><Settings className="h-4 w-4" />Settings</span>
@@ -178,7 +178,7 @@ const MainNav = () => {
               </Tooltip>
             </TooltipProvider>
           )}
-        </nav>
+        </nav> */}
       </aside>
     </section>
   );
